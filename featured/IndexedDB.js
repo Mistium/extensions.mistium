@@ -17,6 +17,7 @@
       return {
         id: 'mistium_indexeddb',
         name: 'IndexedDB',
+        color1: '#C65B5B',
         blocks: [{
             opcode: 'setDBName',
             blockType: Scratch.BlockType.COMMAND,
