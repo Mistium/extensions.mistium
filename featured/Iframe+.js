@@ -38,33 +38,8 @@
       return {
         name: Scratch.translate("Iframe Plus"),
         id: "iframePlus",
-        color1: '#111429',
+        color1: '#333d82',
         blocks: [
-          {
-            opcode: "setLayerOfIframe",
-            blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("set layer of iframe with ID [ID] to [LAYER]"),
-            arguments: {
-              ID: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: "iframe1",
-              },
-              LAYER: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 1,
-              },
-            },
-          },
-          {
-            opcode: "getAllIframeIDs",
-            blockType: Scratch.BlockType.REPORTER,
-            text: Scratch.translate("all iframe IDs"),
-          },
-          {
-            opcode: "removeAllIframes",
-            blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("remove all iframes"),
-          },
           {
             opcode: "display",
             blockType: Scratch.BlockType.COMMAND,
@@ -81,9 +56,25 @@
             },
           },
           {
-            opcode: "getIframeTitle",
-            blockType: Scratch.BlockType.REPORTER,
-            text: Scratch.translate("get title of iframe with ID [ID]"),
+            opcode: "showHtmlContent",
+            blockType: Scratch.BlockType.COMMAND,
+            text: Scratch.translate("show HTML content [HTML] with ID [ID]"),
+            arguments: {
+              HTML: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "<p>Hello, world!</p>",
+              },
+              ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "iframe1",
+              },
+            },
+          },
+          "---",
+          {
+            opcode: "remove",
+            blockType: Scratch.BlockType.COMMAND,
+            text: Scratch.translate("remove iframe with ID [ID]"),
             arguments: {
               ID: {
                 type: Scratch.ArgumentType.STRING,
@@ -92,9 +83,15 @@
             },
           },
           {
-            opcode: "remove",
+            opcode: "removeAllIframes",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("remove iframe with ID [ID]"),
+            text: Scratch.translate("remove all iframes"),
+          },
+          "---",
+          {
+            opcode: "getIframeTitle",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("get title of iframe with ID [ID]"),
             arguments: {
               ID: {
                 type: Scratch.ArgumentType.STRING,
@@ -128,6 +125,7 @@
               },
             },
           },
+          "---",
           {
             opcode: "show",
             blockType: Scratch.BlockType.COMMAND,
@@ -150,6 +148,7 @@
               },
             },
           },
+          "---",
           {
             opcode: "resize",
             blockType: Scratch.BlockType.COMMAND,
@@ -226,6 +225,27 @@
               },
             },
           },
+          "---",
+          {
+            opcode: "setLayerOfIframe",
+            blockType: Scratch.BlockType.COMMAND,
+            text: Scratch.translate("set layer of iframe with ID [ID] to [LAYER]"),
+            arguments: {
+              ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "iframe1",
+              },
+              LAYER: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 1,
+              },
+            },
+          },
+          {
+            opcode: "getAllIframeIDs",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("all iframe IDs"),
+          },
           {
             opcode: "getTotalLayers",
             blockType: Scratch.BlockType.REPORTER,
@@ -285,6 +305,14 @@
         this.createFrame(src, ID);
       }
     }
+    
+    showHtmlContent({ HTML, ID }) {
+      this.remove({ ID }); // Remove existing iframe with the same ID, if any
+    
+      const src = `data:text/html;charset=utf-8,${encodeURIComponent(HTML)}`;
+      this.createFrame(src, ID);
+    }
+
 
     remove({ ID }) {
       const iframeInfo = iframesMap.get(ID);
