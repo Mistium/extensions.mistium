@@ -38,6 +38,7 @@
       return {
         name: Scratch.translate("Iframe Plus"),
         id: "iframePlus",
+        color1: '#111429',
         blocks: [
           {
             opcode: "setLayerOfIframe",
