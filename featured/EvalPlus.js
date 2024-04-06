@@ -3,15 +3,15 @@
         throw new Error("Better Eval must be unsandboxed");
     }
 
-    class BetterEval {
+    class EvalPlus {
         constructor() {
             this.enabled = true; // Eval is enabled by default
         }
 
         getInfo() {
             return {
-                id: 'Mistium_Eval+',
-                name: 'Eval+',
+                id: 'MistiumEval',
+                name: 'EvalPlus',
                 color1: '#b58707',
                 blocks: [
                     // Unrestricted Eval Blocks
@@ -164,5 +164,5 @@
         }
     }
 
-    Scratch.extensions.register(new BetterEval());
+    Scratch.extensions.register(new EvalPlus());
 })(Scratch);
