@@ -20,7 +20,7 @@
       return {
         id: 'keyhistoryextension',
         name: 'Key History Extension',
-        color1: '#0E1914',
+        color1: '#36644E',
         blocks: [
           {
             opcode: 'getRecentKeys',
