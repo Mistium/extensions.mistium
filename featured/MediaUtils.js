@@ -9,7 +9,7 @@ class MediaUtils {
 
     getInfo() {
         return {
-            id: 'Mistium_MediaUtils',
+            id: 'MistiumMediaUtils',
             name: 'MediaUtils',
             color1: '#FF66C4',
             blocks: [
