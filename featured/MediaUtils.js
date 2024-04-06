@@ -9,8 +9,8 @@ class MediaDevicesExtension {
 
     getInfo() {
         return {
-            id: 'mediaDevices',
-            name: 'Media Devices Extension',
+            id: 'Mistium_MediaUtils',
+            name: 'MediaUtils',
             color1: '#FF66C4',
             blocks: [
                 {
