@@ -2,7 +2,7 @@
 // By: @mistium on discord
 // Description: Allows you to view and check permssions for media devices
 
-class MediaDevicesExtension {
+class MediaUtils {
     constructor(runtime) {
         this.runtime = runtime;
     }
@@ -93,4 +93,4 @@ class MediaDevicesExtension {
     }
 }
 
-Scratch.extensions.register(new MediaDevicesExtension());
+Scratch.extensions.register(new MediaUtils());
