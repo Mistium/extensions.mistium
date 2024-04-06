@@ -15,7 +15,7 @@
 
     getInfo() {
       return {
-        id: 'mistium_indexeddb',
+        id: 'mistiumindexeddb',
         name: 'IndexedDB',
         color1: '#C65B5B',
         blocks: [{
