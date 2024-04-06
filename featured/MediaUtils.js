@@ -11,6 +11,7 @@ class MediaDevicesExtension {
         return {
             id: 'mediaDevices',
             name: 'Media Devices Extension',
+            color1: '#FF66C4',
             blocks: [
                 {
                     opcode: 'enumerateMediaDevices',
