@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>originOS</title>
+    <meta content="originOS" property="og:title" />
+    <meta content="A scratch based desktop gui made by @mistium" property="og:description" />
+    <meta content="https://origin.mistium.com" property="og:url" />
+    <meta content="https://c10.patreonusercontent.com/4/patreon-media/p/campaign/6360032/cd4d79c9837e432d8a738fcb20adddb0/eyJ3IjoyMDB9/1.gif?token-time=2145916800&token-hash=s7N1XbcZeTyM5x9yoeuBVHas76l-DLNV3C1F93rdAUs%3D" property="og:image" />
+    <meta content="#57cdac" data-react-helmet="true" name="theme-color" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="topbar"></div>
+    <script>
+        fetch('https://raw.githubusercontent.com/Mistium/Origin-OS/main/_site/topbar.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('topbar').innerHTML = html;
+            })
+            .catch(error => console.error('Error fetching topbar HTML:', error));
+    </script>
+    <div class="content">
+        <h1>Extensions</h1>
+        <h2>Featured</h2>
+        <div id="featuredCards"></div>
+        <h2>All ( Some may not work at all :P )</h2>
+        <div id="fileCards"></div>
+    </div>
+    <script>
+        // Function to fetch data from GitHub API
+        async function fetchData() {
+            try {
+                const [featuredResponse, filesResponse] = await Promise.all([
+                    fetch('https://api.github.com/repos/Mistium/extensions.mistium/contents/featured'),
+                    fetch('https://api.github.com/repos/Mistium/extensions.mistium/contents/files')
+                ]);
+                const featuredData = await featuredResponse.json();
+                const filesData = await filesResponse.json();
+                return { featured: featuredData, files: filesData };
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Function to generate profile cards
+        async function generateProfileCards() {
+            const featuredCardsContainer = document.getElementById("featuredCards");
+            const fileCardsContainer = document.getElementById("fileCards");
+            const data = await fetchData();
+            if (!data || !data.featured || !Array.isArray(data.featured) || !data.files || !Array.isArray(data.files)) return;
+
+            data.featured.forEach(item => {
+                const itemName = item.name.split('.')[0]; // Remove file extension
+                const isJsFile = item.name.endsWith('.js');
+
+                if (isJsFile) {
+                    const profileCardLink = document.createElement("a");
+                    profileCardLink.href = item.download_url;
+                    profileCardLink.target = "_blank";
+                    profileCardLink.rel = "noopener noreferrer";
+
+                    const profileCard = document.createElement("div");
+                    profileCard.classList.add("profile-card");
+
+                    const platformHeading = document.createElement("h2");
+                    platformHeading.textContent = itemName;
+
+                    const descriptionParagraph = document.createElement("p");
+
+                    const profileImage = document.createElement("img");
+                    profileImage.src = `https://raw.githubusercontent.com/Mistium/extensions.mistium/main/images/${itemName}.png`;
+                    profileImage.alt = itemName;
+                    profileImage.classList.add("profile-image");
+
+                    profileCard.appendChild(profileImage);
+                    profileCard.appendChild(platformHeading);
+
+                    profileCardLink.appendChild(profileCard);
+                    featuredCardsContainer.appendChild(profileCardLink);
+                }
+            });
+
+            data.files.forEach(item => {
+                const itemName = item.name.split('.')[0]; // Remove file extension
+                const isJsFile = item.name.endsWith('.js');
+
+                if (isJsFile) {
+                    const profileCardLink = document.createElement("a");
+                    profileCardLink.href = item.download_url;
+                    profileCardLink.target = "_blank";
+                    profileCardLink.rel = "noopener noreferrer";
+
+                    const profileCard = document.createElement("div");
+                    profileCard.classList.add("profile-card");
+
+                    const platformHeading = document.createElement("h2");
+                    platformHeading.textContent = itemName;
+
+                    const descriptionParagraph = document.createElement("p");
+                    descriptionParagraph.textContent = "Description of " + itemName;
+
+                    profileCard.appendChild(platformHeading);
+                    profileCard.appendChild(descriptionParagraph);
+
+                    profileCardLink.appendChild(profileCard);
+                    fileCardsContainer.appendChild(profileCardLink);
+                }
+            });
+        }
+
+        // Call the function to generate profile cards
+        generateProfileCards();
+    </script>
+</body>
+</html>
