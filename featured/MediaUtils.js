@@ -1,7 +1,3 @@
-// Name: MediaUtils
-// By: @mistium on discord
-// Description: Allows you to view and check permssions for media devices
-
 class MediaUtils {
     constructor(runtime) {
         this.runtime = runtime;
@@ -27,6 +23,87 @@ class MediaUtils {
                     opcode: 'checkMicrophonePermission',
                     blockType: Scratch.BlockType.BOOLEAN,
                     text: 'microphone permission granted?',
+                },
+                {
+                    opcode: 'checkSpeakerPermission',
+                    blockType: Scratch.BlockType.BOOLEAN,
+                    text: 'speaker permission granted?',
+                },
+                {
+                    opcode: 'checkAudioInputPermission',
+                    blockType: Scratch.BlockType.BOOLEAN,
+                    text: 'audio input permission granted?',
+                },
+                {
+                    opcode: 'checkAudioOutputPermission',
+                    blockType: Scratch.BlockType.BOOLEAN,
+                    text: 'audio output permission granted?',
+                },
+                {
+                    opcode: 'getDisplayMedia',
+                    blockType: Scratch.BlockType.REPORTER,
+                    text: 'get display media',
+                },
+                {
+                    opcode: 'getSupportedConstraints',
+                    blockType: Scratch.BlockType.REPORTER,
+                    text: 'get supported constraints',
+                },
+                {
+                    opcode: 'getMediaStream',
+                    blockType: Scratch.BlockType.REPORTER,
+                    text: 'get media stream',
+                    arguments: {
+                        DEVICE: { type: Scratch.ArgumentType.STRING, defaultValue: 'videoinput' },
+                    }
+                },
+                {
+                    opcode: 'getUserMedia',
+                    blockType: Scratch.BlockType.REPORTER,
+                    text: 'get user media with constraints [CONSTRAINTS]',
+                    arguments: {
+                        CONSTRAINTS: { type: Scratch.ArgumentType.STRING, defaultValue: '{"audio":true,"video":true}' },
+                    }
+                },
+                {
+                    opcode: 'stopMediaStream',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'stop media stream [STREAM]',
+                    arguments: {
+                        STREAM: { type: Scratch.ArgumentType.ANY, defaultValue: null },
+                    }
+                },
+                {
+                    opcode: 'pauseMediaStream',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'pause media stream [STREAM]',
+                    arguments: {
+                        STREAM: { type: Scratch.ArgumentType.ANY, defaultValue: null },
+                    }
+                },
+                {
+                    opcode: 'resumeMediaStream',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'resume media stream [STREAM]',
+                    arguments: {
+                        STREAM: { type: Scratch.ArgumentType.ANY, defaultValue: null },
+                    }
+                },
+                {
+                    opcode: 'muteMediaStream',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'mute media stream [STREAM]',
+                    arguments: {
+                        STREAM: { type: Scratch.ArgumentType.ANY, defaultValue: null },
+                    }
+                },
+                {
+                    opcode: 'unmuteMediaStream',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'unmute media stream [STREAM]',
+                    arguments: {
+                        STREAM: { type: Scratch.ArgumentType.ANY, defaultValue: null },
+                    }
                 }
             ]
         };
@@ -69,20 +146,76 @@ class MediaUtils {
     }
 
     checkCameraPermission() {
-        return new Promise((resolve) => {
-            navigator.permissions.query({ name: 'camera' })
-                .then(permissionStatus => {
-                    resolve(permissionStatus.state === 'granted');
-                })
-                .catch(() => {
-                    resolve(false);
-                });
-        });
+        return this.checkPermission('camera');
     }
 
     checkMicrophonePermission() {
+        return this.checkPermission('microphone');
+    }
+
+    checkSpeakerPermission() {
+        return this.checkPermission('speaker');
+    }
+
+    checkAudioInputPermission() {
+        return this.checkPermission('audioinput');
+    }
+
+    checkAudioOutputPermission() {
+        return this.checkPermission('audiooutput');
+    }
+
+    getDisplayMedia() {
+        return navigator.mediaDevices.getDisplayMedia
+            ? 'Display media supported'
+            : 'Display media not supported';
+    }
+
+    getSupportedConstraints() {
+        return JSON.stringify(navigator.mediaDevices.getSupportedConstraints());
+    }
+
+    getMediaStream(args) {
+        return navigator.mediaDevices.getUserMedia({ video: args.DEVICE === 'videoinput' });
+    }
+
+    getUserMedia(args) {
+        return navigator.mediaDevices.getUserMedia(JSON.parse(args.CONSTRAINTS));
+    }
+
+    stopMediaStream(args) {
+        if (args.STREAM && typeof args.STREAM.getTracks === 'function') {
+            args.STREAM.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    pauseMediaStream(args) {
+        if (args.STREAM && typeof args.STREAM.getTracks === 'function') {
+            args.STREAM.getTracks().forEach(track => track.enabled = false);
+        }
+    }
+
+    resumeMediaStream(args) {
+        if (args.STREAM && typeof args.STREAM.getTracks === 'function') {
+            args.STREAM.getTracks().forEach(track => track.enabled = true);
+        }
+    }
+
+    muteMediaStream(args) {
+        if (args.STREAM && typeof args.STREAM.getAudioTracks === 'function') {
+            args.STREAM.getAudioTracks().forEach(track => track.enabled = false);
+        }
+    }
+
+    unmuteMediaStream(args) {
+        if (args.STREAM && typeof args.STREAM.getAudioTracks === 'function') {
+            args.STREAM.getAudioTracks().forEach(track => track.enabled = true);
+        }
+    }
+
+    checkPermission(deviceType) {
         return new Promise((resolve) => {
-            navigator.permissions.query({ name: 'microphone' })
+            navigator.permissions.query({ name: deviceType })
                 .then(permissionStatus => {
                     resolve(permissionStatus.state === 'granted');
                 })
