@@ -2,7 +2,7 @@
     class URI_Utils {
         getInfo() {
             return {
-                id: 'URI Utilities',
+                id: 'URIUtilities',
                 name: 'URI Utilities',
                 color1: '#FF8C00',
                 blocks: [
