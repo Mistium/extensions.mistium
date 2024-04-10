@@ -1,10 +1,10 @@
 (function(Scratch) {
-    class DownloadAndConvert {
+    class URI_Utils {
         getInfo() {
             return {
-                id: 'downloadAndConvert',
-                name: 'Download and Convert',
-                color1: '#1E90FF',
+                id: 'URI Utilities',
+                name: 'URI Utilities',
+                color1: '#FF8C00',
                 blocks: [
                     {
                         opcode: 'downloadAndConvert',
@@ -13,7 +13,24 @@
                         arguments: {
                             URL: { type: Scratch.ArgumentType.STRING, defaultValue: 'https://example.com/image.png' }
                         }
-                    }
+                    },
+                    {
+                        opcode: 'stringToDataURI',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'convert [STRING] to data URI with type [TYPE]',
+                        arguments: {
+                            STRING: { type: Scratch.ArgumentType.STRING, defaultValue: 'Hello, World!' },
+                            TYPE: { type: Scratch.ArgumentType.STRING, defaultValue: 'text/plain' }
+                        }
+                    },
+                    {
+                        opcode: 'isDataURI',
+                        blockType: Scratch.BlockType.BOOLEAN,
+                        text: '[STRING] is data URI',
+                        arguments: {
+                            STRING: { type: Scratch.ArgumentType.STRING, defaultValue: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==' }
+                        }
+                    },
                 ]
             };
         }
@@ -41,7 +58,15 @@
                 reader.readAsDataURL(blob);
             });
         }
+        
+        stringToDataURI({ STRING, TYPE }) {
+            return `data:${TYPE};base64,${btoa(STRING)}`;
+        }
+
+        isDataURI({ STRING }) {
+            return /^data:/.test(STRING);
+        }
     }
 
-    Scratch.extensions.register(new DownloadAndConvert());
+    Scratch.extensions.register(new URI_Utils());
 })(Scratch);
