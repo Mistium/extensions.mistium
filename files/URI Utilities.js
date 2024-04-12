@@ -60,8 +60,12 @@
         }
         
         stringToDataURI({ STRING, TYPE }) {
-            return `data:${TYPE};base64,${btoa(STRING)}`;
+            // Convert the string to base64 using the encodeURIComponent function
+            const base64String = btoa(unescape(encodeURIComponent(STRING)));
+            // Construct and return the data URI
+            return `data:${TYPE};base64,${base64String}`;
         }
+
 
         isDataURI({ STRING }) {
             return /^data:/.test(STRING);
