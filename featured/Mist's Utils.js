@@ -232,7 +232,7 @@
             const A_letters = descendTillSource.call(this, node.A, caseSanitize);
             const B_letters = descendTillSource.call(this, node.B, caseSanitize);
             const C_letters = descendTillSource.call(this, node.C, caseSanitize);
-            this.source += `\nvm.runtime.visualReport("${block.id}", (${C_letters}).substring(Math.max(Number(${A_letters}) - 1, 0), Math.min(Number(${B_letters}), ${C_letters.length})));\n`;
+            this.source += `\nvm.runtime.visualReport("${block.id}", (${C_letters}).substring(Math.max(Number(${A_letters}) - 1, 0), Math.min(Number(${B_letters}), (${C_letters}).length)));\n`;
             return;
           case 'mistsutils.split':
             const A_split = descendTillSource.call(this, node.A, caseSanitize);
@@ -287,7 +287,7 @@
             const A_letters = descendTillSource.call(this, node.A, caseSanitize);
             const B_letters = descendTillSource.call(this, node.B, caseSanitize);
             const C_letters = descendTillSource.call(this, node.C, caseSanitize);
-            return new TypedInput(`(${C_letters}).substring(Math.max(Number(${A_letters}) - 1, 0), Math.min(Number(${B_letters}), ${C_letters.length}))`, TYPE_NUMBER);
+            return new TypedInput(`(${C_letters}).substring(Math.max(Number(${A_letters}) - 1, 0), Math.min(Number(${B_letters}), (${C_letters}).length))`, TYPE_NUMBER);
           case 'mistsutils.split':
             const A_split = descendTillSource.call(this, node.A, caseSanitize);
             const B_split = descendTillSource.call(this, node.B, caseSanitize);
