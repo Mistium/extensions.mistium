@@ -203,13 +203,13 @@
           const A_clamp = descendTillSource.call(this, node.A, caseSanitize);
           const B_clamp = descendTillSource.call(this, node.B, caseSanitize);
           const C_clamp = descendTillSource.call(this, node.C, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", Math.max((${B_clamp}).asNumber(), Math.min((${C_clamp}).asNumber(), (${A_clamp}).asNumber())));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", Math.max(((${B_clamp}) || 0), Math.min(((${C_clamp}) || 0), ((${A_clamp})) || 0)));\n`;
           return;
         case 'mistsutils.letters':
           const A_letters = descendTillSource.call(this, node.A, caseSanitize);
           const B_letters = descendTillSource.call(this, node.B, caseSanitize);
           const C_letters = descendTillSource.call(this, node.C, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", (${C_letters}.asString()).substring(Math.max((${A_letters}).asNumber() - 1, 0), Math.min((${B_letters}).asNumber(), (${C_letters}).length)));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${C_letters}).substring(Math.max(((${A_letters}) || 0) - 1, 0), Math.min(((${B_letters}) || 0), (${C_letters}).length)));\n`;
           return;
         case 'mistsutils.split':
           const A_split = descendTillSource.call(this, node.A, caseSanitize);
@@ -220,7 +220,7 @@
           const A_item = descendTillSource.call(this, node.A, caseSanitize);
           const B_item = descendTillSource.call(this, node.B, caseSanitize);
           const C_item = descendTillSource.call(this, node.C, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", (${A_item}).split(${B_item})[Number(${C_item}) - 1]);\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${A_item}).split(${B_item})[((${C_item}) || 1) - 1]);\n`;
           return;
         case 'mistsutils.replace':
           const A_repl = descendTillSource.call(this, node.A, caseSanitize);
