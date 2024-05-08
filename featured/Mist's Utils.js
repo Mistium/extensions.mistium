@@ -226,7 +226,7 @@
             const A_clamp = descendTillSource.call(this, node.A, caseSanitize);
             const B_clamp = descendTillSource.call(this, node.B, caseSanitize);
             const C_clamp = descendTillSource.call(this, node.C, caseSanitize);
-            this.source += `\nvm.runtime.visualReport("${block.id}", Math.max(${B_clamp}, Math.min(${C_clamp}, ${A_clamp})));\n`;
+            this.source += `\nvm.runtime.visualReport("${block.id}", Math.max((${B_clamp}), Math.min((${C_clamp}), (${A_clamp}))));\n`;
             return;
           case 'mistsutils.letters':
             const A_letters = descendTillSource.call(this, node.A, caseSanitize);
