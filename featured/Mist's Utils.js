@@ -146,17 +146,18 @@
   const mist_STGP = mist_STG.prototype;
 
   // Importing classes and "TYPE_*"s from JSG
-  const {
-    TypedInput,
-    VariableInput,
-    ConstantInput,
-    Frame,
-    TYPE_STRING,
-    TYPE_NUMBER,
-    TYPE_BOOLEAN,
-    TYPE_NUMBER_NAN,
-    TYPE_UNKNOWN
-  } = mist_JSG.unstable_exports;
+  const TYPE_NUMBER = 1;
+  const TYPE_STRING = 2;
+  const TYPE_BOOLEAN = 3;
+  const TYPE_UNKNOWN = 4;
+  const TYPE_NUMBER_NAN = 5;
+  // prettier-ignore
+  class TypedInput{constructor(t,s){if("number"!=typeof s)throw Error("type is invalid");this.source=t,this.type=s}asNumber(){return this.type===TYPE_NUMBER?this.source:this.type===TYPE_NUMBER_NAN?`(${this.source} || 0)`:`(+${this.source} || 0)`}asNumberOrNaN(){return this.type===TYPE_NUMBER||this.type===TYPE_NUMBER_NAN?this.source:`(+${this.source})`}asString(){return this.type===TYPE_STRING?this.source:`("" + ${this.source})`}asBoolean(){return this.type===TYPE_BOOLEAN?this.source:`toBoolean(${this.source})`}asColor(){return this.asUnknown()}asUnknown(){return this.source}asSafe(){return this.asUnknown()}isAlwaysNumber(){return this.type===TYPE_NUMBER}isAlwaysNumberOrNaN(){return this.type===TYPE_NUMBER||this.type===TYPE_NUMBER_NAN}isNeverNumber(){return!1}}
+  // prettier-ignore
+  class ConstantInput{constructor(t,s){this.constantValue=t,this.safe=s}asNumber(){let t=+this.constantValue;return t?t.toString():Object.is(t,-0)?"-0":"0"}asNumberOrNaN(){return this.asNumber()}asString(){return`"${sanitize(""+this.constantValue)}"`}asBoolean(){return Cast.toBoolean(this.constantValue).toString()}asColor(){if(/^#[0-9a-f]{6,8}$/i.test(this.constantValue)){let t=this.constantValue.substr(1);return Number.parseInt(t,16).toString()}return this.asUnknown()}asUnknown(){if("number"==typeof this.constantValue)return this.constantValue;let t=+this.constantValue;return t.toString()===this.constantValue?this.constantValue:this.asString()}asSafe(){return this.safe?this.asUnknown():this.asString()}isAlwaysNumber(){let t=+this.constantValue;return!Number.isNaN(t)&&(0!==t||""!==this.constantValue.toString().trim())}isAlwaysNumberOrNaN(){return this.isAlwaysNumber()}isNeverNumber(){return Number.isNaN(+this.constantValue)}}
+  // prettier-ignore
+  class VariableInput{constructor(t){this.source=t,this.type=TYPE_UNKNOWN,this._value=null}setInput(t){if(t instanceof VariableInput){if(t._value)t=t._value;else{this.type=TYPE_UNKNOWN,this._value=null;return}}this._value=t,t instanceof TypedInput?this.type=t.type:this.type=TYPE_UNKNOWN}asNumber(){return this.type===TYPE_NUMBER?this.source:this.type===TYPE_NUMBER_NAN?`(${this.source} || 0)`:`(+${this.source} || 0)`}asNumberOrNaN(){return this.type===TYPE_NUMBER||this.type===TYPE_NUMBER_NAN?this.source:`(+${this.source})`}asString(){return this.type===TYPE_STRING?this.source:`("" + ${this.source})`}asBoolean(){return this.type===TYPE_BOOLEAN?this.source:`toBoolean(${this.source})`}asColor(){return this.asUnknown()}asUnknown(){return this.source}asSafe(){return this.asUnknown()}isAlwaysNumber(){return!!this._value&&this._value.isAlwaysNumber()}isAlwaysNumberOrNaN(){return!!this._value&&this._value.isAlwaysNumberOrNaN()}isNeverNumber(){return!!this._value&&this._value.isNeverNumber()}}
+  
 
   const PATCHES_ID = 'mistsutils';
   const cst_patch = (obj, functions) => {
