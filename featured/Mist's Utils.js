@@ -87,6 +87,18 @@
             },
           },
           {
+            opcode: 'true',
+            func: 'err',
+            text: 'true',
+            blockType: Scratch.BlockType.BOOLEAN,
+          },
+          {
+            opcode: 'false',
+            func: 'err',
+            text: 'false',
+            blockType: Scratch.BlockType.BOOLEAN,
+          },
+          {
             opcode: 'performancenow',
             func: 'err',
             text: 'performance.now()',
@@ -229,6 +241,12 @@
           const C_repl = descendTillSource.call(this, node.C, caseSanitize);
           this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_repl} || "")).replace(new RegExp(((${C_repl}) ?? ""), 'g'), (${B_repl}) ?? ""));\n`;
           return;
+        case 'mistsutils.true':
+          this.source += `\nvm.runtime.visualReport("${block.id}", "true");\n`;
+          return;
+        case 'mistsutils.false':
+          this.source += `\nvm.runtime.visualReport("${block.id}", "false");\n`;
+          return;
         case 'mistsutils.performancenow':
           this.source += `\nvm.runtime.visualReport("${block.id}", window.performance.now());\n`;
           return;
@@ -276,6 +294,10 @@
           const B_repl = descendTillSource.call(this, node.B, caseSanitize);
           const C_repl = descendTillSource.call(this, node.C, caseSanitize);
           return new TypedInput(`((${A_repl} || "")).replace(new RegExp(((${C_repl}) ?? ""), 'g'), (${B_repl}) ?? "")`, TYPE_STRING);
+        case 'mistsutils.true':
+          return new TypedInput(true, TYPE_BOOLEAN);
+        case 'mistsutils.false':
+          return new TypedInput(false, TYPE_BOOLEAN);
         case 'mistsutils.performancenow':
           return new TypedInput('window.performance.now()', TYPE_NUMBER);
         case 'mistsutils.stagewidth':
@@ -426,6 +448,14 @@
         case 'mistsutils_performancenow':
           return {
             kind: 'mistsutils.performancenow',
+          };
+        case 'mistsutils_true':
+          return {
+            kind: 'mistsutils.true',
+          };
+        case 'mistsutils_false':
+          return {
+            kind: 'mistsutils.false',
           };
         case 'mistsutils_stagewidth':
           return {
