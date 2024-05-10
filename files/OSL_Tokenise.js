@@ -1,6 +1,6 @@
-// Name: Camera
+// Name: Tokeniser
 // By: @mistium on discord
-// Description: Use the camera :P
+// Description: Tokenise stuff like osl
 
 (function (Scratch) {
   "use strict";
