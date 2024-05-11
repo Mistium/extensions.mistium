@@ -98,13 +98,13 @@
       this.vars = []
       this.pc = 1
       this.output = []
-      this.comp = CODE.length / 4 + 1
-      while (this.pc < this.comp) {
-        this.temp = this.pc * 4 - 1
-        this.cmd = CODE[this.temp - 3]
-        this.in1 = CODE[this.temp - 2]-1
-        this.in2 = CODE[this.temp - 1]
-        this.in3 = CODE[this.temp]
+      const comp = CODE.length / 4 + 1
+      while (this.pc < comp) {
+        const temp = this.pc * 4 - 1
+        this.cmd = CODE[temp - 3]
+        this.in1 = CODE[temp - 2]-1
+        this.in2 = CODE[temp - 1]
+        this.in3 = CODE[temp]
         switch (this.cmd) {
           case "1":
             this.vars[this.in1] = ""    
@@ -190,7 +190,7 @@
             break;
             case "24":
               this.vars[this.in2-1] = 0
-              this.in1 = CODE[this.temp - 2]
+              this.in1 = CODE[temp - 2]
               if (this.in1 === "mousepos") {
                 this.vars[this.in2-1] = runtime.ioDevices.mouse.getScratchX() - X
                 this.vars[this.in3-1] = runtime.ioDevices.mouse.getScratchY() - Y
@@ -207,38 +207,38 @@
               }
             break;
             case "25":
-              this.vars[this.in1] = Math.sin(this.vars[this.in1])
+              this.vars[this.in1] = Math.sin(this.vars[this.in1]);
             break;
             case "26":
-              this.vars[this.in1] = Math.cos(this.vars[this.in1])
+              this.vars[this.in1] = Math.cos(this.vars[this.in1]);
             break;
             case "27":
-              this.vars[this.in1] = Math.tan(this.vars[this.in1])
+              this.vars[this.in1] = Math.tan(this.vars[this.in1]);
             break;
             case "28":
-              this.vars[this.in1] %= this.vars[this.in2-1]
+              this.vars[this.in1] %= this.vars[this.in2-1];
             break;
             case "29":
-              this.vars[this.in1] = Math.sqrt(this.vars[this.in1])
+              this.vars[this.in1] = Math.sqrt(this.vars[this.in1]);
             break;
             case "30":
-              this.vars[this.in1] = this.vars[this.vars[this.in2-1]-1]
+              this.vars[this.in1] = this.vars[this.vars[this.in2-1]-1];
             break;
             case "31":
-              this.vars[this.in3-1] = this.vars[this.in1][this.vars[this.in2-1]-1]
+              this.vars[this.in3-1] = this.vars[this.in1][this.vars[this.in2-1]-1];
             break;
             case "32":
-              this.vars[this.in2-1] = this.vars[this.in1].length
+              this.vars[this.in2-1] = this.vars[this.in1].length;
             break;
             case "33":
               this.vars[this.in3-1] = this.vars[this.in1] + this.vars[this.in2-1]
             break;
             default:
-              console.log("Unknown Command: " + this.cmd)
+              console.log("Unknown Command: " + this.cmd);
           }
-          this.pc ++
+          this.pc++;
         }
-        return JSON.stringify(this.output)
+        return this.output.length > 0 ? JSON.stringify(this.output) : '[]';
       }
 
     
