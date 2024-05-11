@@ -8,6 +8,10 @@
   const vm = Scratch.vm,
   runtime = vm.runtime;
   
+  if (!Scratch.vm.extensionManager.isExtensionLoaded("pen")) {
+    runtime.extensionManager.loadExtensionIdSync("pen");
+  }
+  
   class OASM {
     getInfo() {
       return {
@@ -28,7 +32,7 @@
           {
             opcode: 'run',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'Run [CODE]',
+            text: 'Run  At [X],[Y] Code: [CODE]',
             arguments: {
                 CODE: {
                   type: Scratch.ArgumentType.STRING,
@@ -44,6 +48,16 @@
                 },
             },
           },
+          {
+            opcode: 'lastvars',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'Variable data',
+          },
+          {
+            opcode: 'lastoutput',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'Console Data',
+          },
         ],
       };
     }
@@ -52,6 +66,7 @@
     run({CODE,X,Y}) {
       CODE = JSON.parse(CODE)
       const target = vm.editingTarget
+      target.setXY(X,Y);
       this.vars = []
       this.pc = 1
       this.output = []
@@ -59,65 +74,65 @@
       while (this.pc < this.comp) {
         this.temp = this.pc * 4 - 1
         this.cmd = CODE[this.temp - 3]
-        this.in1 = CODE[this.temp - 2]
+        this.in1 = CODE[this.temp - 2]-1
         this.in2 = CODE[this.temp - 1]
         this.in3 = CODE[this.temp]
         switch (this.cmd) {
           case "1":
-            this.vars[this.in1-1] = ""    
+            this.vars[this.in1] = ""    
           break;
           case "2":
             if (isNaN(this.in2)) {
-              this.vars[this.in1-1] = this.in2
+              this.vars[this.in1] = this.in2
             } else {
-              this.vars[this.in1-1] = parseInt(this.in2)
+              this.vars[this.in1] = parseInt(this.in2)
             }
             break;
             case "3":
-              this.vars[this.in1-1] += this.vars[this.in2-1]
+              this.vars[this.in1] += this.vars[this.in2-1]
             break;
             case "4":
-              this.pc = +this.in1
+              this.pc = +this.in1+1
             break;
             case "5":
-              if (this.vars[this.in1-1] === this.vars[this.in2-1]) {
+              if (this.vars[this.in1] === this.vars[this.in2-1]) {
                 this.pc = +this.in3
               }
             break;
             case "6":
-              if (this.vars[this.in1-1] > this.vars[this.in2-1]) {
+              if (this.vars[this.in1] > this.vars[this.in2-1]) {
                 this.pc = +this.in3
               }
             break;
             case "7":
-              if (this.vars[this.in1-1] < this.vars[this.in2-1]) {
+              if (this.vars[this.in1] < this.vars[this.in2-1]) {
                 this.pc = +this.in3
               }
             break;
             case "8":
-              this.output.push(this.vars[this.in1-1])
+              this.output.push(this.vars[this.in1])
             break;
             case "9":
-              if (this.vars[this.in1-1] <= this.vars[this.in2-1]) {
+              if (this.vars[this.in1] <= this.vars[this.in2-1]) {
                 this.pc = +this.in3
               }
             break;
             case "10":
-              if (this.vars[this.in1-1] >= this.vars[this.in2-1]) {
+              if (this.vars[this.in1] >= this.vars[this.in2-1]) {
                 this.pc = +this.in3
               }
             break;
             case "11":
-              this.vars[this.in1-1] = +this.vars[this.in2-1]
+              this.vars[this.in1] = +this.vars[this.in2-1]
             break;
             case "12":
-              this.vars[this.in1-1] *= this.vars[this.in2-1]
+              this.vars[this.in1] *= this.vars[this.in2-1]
             break;
             case "13":
-              this.vars[this.in1-1] /= this.vars[this.in2-1]
+              this.vars[this.in1] /= this.vars[this.in2-1]
             break;
             case "14":
-              this.vars[this.in1-1] -= this.vars[this.in2-1]
+              this.vars[this.in1] -= this.vars[this.in2-1]
             break;
             case "15":
               runtime.ext_pen._penDown(target);
@@ -126,26 +141,29 @@
               runtime.ext_pen._penUp(target);
             break;
             case "17":
-              runtime.ext_pen._setPenColorToColor(this.vars[this.in1-1], target);
+              runtime.ext_pen._setPenColorToColor(this.vars[this.in1], target);
             break;
             case "18":
-              runtime.ext_pen._setPenSizeTo(this.vars[this.in1-1], target);
+              runtime.ext_pen._setPenSizeTo(this.vars[this.in1], target);
             break;
             case "19":
               runtime.ext_pen.clear();
             break;
             case "20":
-              target.setXY(X + this.vars[this.in1-1],target.y);
+              target.setXY(X + this.vars[this.in1],target.y);
             break;
             case "21":
-              target.setXY(target.x,Y + this.vars[this.in1-1]);
+              target.setXY(target.x,Y + this.vars[this.in1]);
             break;
             case "22":
-              target.setXY(X + this.vars[this.in2-1],Y + this.vars[this.in2-1]);
+              target.setXY(X + this.vars[this.in1],Y + this.vars[this.in2-1]);
+            break;
+            case "23":
             break;
             case "24":
-              this.vars[this.in2] = 0
-              if (in1 === "mousepos") {
+              this.vars[this.in2-1] = 0
+              this.in1 = CODE[this.temp - 2]
+              if (this.in1 === "mousepos") {
                 this.vars[this.in2-1] = runtime.ioDevices.mouse.getScratchX() - X
                 this.vars[this.in3-1] = runtime.ioDevices.mouse.getScratchY() - Y
               } else if (this.in1 === "timestamp") {
@@ -161,31 +179,31 @@
               }
             break;
             case "25":
-              this.vars[this.in1-1] = Math.sin(this.vars[this.in1-1])
+              this.vars[this.in1] = Math.sin(this.vars[this.in1])
             break;
             case "26":
-              this.vars[this.in1-1] = Math.cos(this.vars[this.in1-1])
+              this.vars[this.in1] = Math.cos(this.vars[this.in1])
             break;
             case "27":
-              this.vars[this.in1-1] = Math.tan(this.vars[this.in1-1])
+              this.vars[this.in1] = Math.tan(this.vars[this.in1])
             break;
             case "28":
-              this.vars[this.in1-1] %= this.vars[this.in2-1]
+              this.vars[this.in1] %= this.vars[this.in2-1]
             break;
             case "29":
-              this.vars[this.in1-1] = Math.sqrt(this.vars[this.in1-1])
+              this.vars[this.in1] = Math.sqrt(this.vars[this.in1])
             break;
             case "30":
-              this.vars[this.in1-1] = this.vars[this.vars[this.in2-1]-1]
+              this.vars[this.in1] = this.vars[this.vars[this.in2-1]-1]
             break;
             case "31":
-              this.vars[this.in3-1] = this.vars[this.in1-1][this.vars[this.in2-1]-1]
+              this.vars[this.in3-1] = this.vars[this.in1][this.vars[this.in2-1]-1]
             break;
             case "32":
-              this.vars[this.in2-1] = this.vars[this.in1-1].length
+              this.vars[this.in2-1] = this.vars[this.in1].length
             break;
             case "33":
-              this.vars[this.in3-1] = this.vars[this.in1-1] + this.vars[this.in2-1]
+              this.vars[this.in3-1] = this.vars[this.in1] + this.vars[this.in2-1]
             break;
             default:
               console.log("Unknown Command: " + this.cmd)
@@ -194,6 +212,15 @@
         }
         return JSON.stringify(this.output)
       }
+
+    
+    lastvars() {
+      return JSON.stringify(this.vars)
+    }
+
+    lastoutput() {
+      return JSON.stringify(this.output)
+    }
     
     compile({CODE}) {
       const all_oasm_commands = ["totv","setv","chav","jump","equl","gthn","lthn","prnt","ngth","nlth","svto","mulv","divv","subv","pend","penu","penc","pens","pene","setx","sety","setp","labl","getd","sinv","cosv","tanv","modv","sqrt","copy","letr","leng"]
