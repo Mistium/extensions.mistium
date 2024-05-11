@@ -82,6 +82,11 @@
             blockType: Scratch.BlockType.REPORTER,
             text: 'Console Data',
           },
+          {
+            opcode: 'allcmds',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'All Commands',
+          },
         ],
       };
     }
