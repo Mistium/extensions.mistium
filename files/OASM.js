@@ -1,12 +1,14 @@
-// Name: Tokeniser
+// Name: OASM SYS
 // By: @mistium on discord
-// Description: Tokenise stuff like osl
+// Description: Run the full oasm interpreter except very fast.
 
 (function (Scratch) {
   "use strict";
 
+  const vm = Scratch.vm,
+  runtime = vm.runtime;
+  
   class OASM {
-
     getInfo() {
       return {
         id: 'OASM',
@@ -23,11 +25,175 @@
                 },
             },
           },
+          {
+            opcode: 'run',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'Run [CODE]',
+            arguments: {
+                CODE: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: ""
+                },
+                X: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0
+                },
+                Y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0
+                },
+            },
+          },
         ],
       };
     }
 
 
+    run({CODE,X,Y}) {
+      CODE = JSON.parse(CODE)
+      this.vars = []
+      this.pc = 1
+      this.output = []
+      this.comp = CODE.length / 4 + 1
+      while (this.pc < this.comp) {
+        this.temp = this.pc * 4 - 1
+        this.cmd = CODE[this.temp - 3]
+        this.in1 = CODE[this.temp - 2]
+        this.in2 = CODE[this.temp - 1]
+        this.in3 = CODE[this.temp]
+        switch (this.cmd) {
+          case "1":
+            this.vars[this.in1-1] = ""    
+          break;
+          case "2":
+            if (isNaN(this.in2)) {
+              this.vars[this.in1-1] = this.in2
+            } else {
+              this.vars[this.in1-1] = parseInt(this.in2)
+            }
+            break;
+            case "3":
+              this.vars[this.in1-1] += this.vars[this.in2-1]
+            break;
+            case "4":
+              this.pc = +this.in1
+            break;
+            case "5":
+              if (this.vars[this.in1-1] === this.vars[this.in2-1]) {
+                this.pc = +this.in3
+              }
+            break;
+            case "6":
+              if (this.vars[this.in1-1] > this.vars[this.in2-1]) {
+                this.pc = +this.in3
+              }
+            break;
+            case "7":
+              if (this.vars[this.in1-1] < this.vars[this.in2-1]) {
+                this.pc = +this.in3
+              }
+            break;
+            case "8":
+              this.output.push(this.vars[this.in1-1])
+            break;
+            case "9":
+              if (this.vars[this.in1-1] <= this.vars[this.in2-1]) {
+                this.pc = +this.in3
+              }
+            break;
+            case "10":
+              if (this.vars[this.in1-1] >= this.vars[this.in2-1]) {
+                this.pc = +this.in3
+              }
+            break;
+            case "11":
+              this.vars[this.in1-1] = +this.vars[this.in2-1]
+            break;
+            case "12":
+              this.vars[this.in1-1] *= this.vars[this.in2-1]
+            break;
+            case "13":
+              this.vars[this.in1-1] /= this.vars[this.in2-1]
+            break;
+            case "14":
+              this.vars[this.in1-1] -= this.vars[this.in2-1]
+            break;
+            case "15":
+              runtime.ext_pen._penDown(target);
+            break;
+            case "16":
+              runtime.ext_pen._penUp(target);
+            break;
+            case "17":
+              runtime.ext_pen._setPenColorToColor(this.in1, target);
+            break;
+            case "18":
+              runtime.ext_pen._setPenSizeTo(+this.in1, target);
+            break;
+            case "19":
+              runtime.ext_pen.clear();
+            break;
+            case "20":
+              target.setXY(X + +this.in1,target.y);
+            break;
+            case "21":
+              target.setXY(target.x,Y + this.in1);
+            break;
+            case "22":
+              target.setXY(X + this.in1,Y + this.in2);
+            break;
+            case "24":
+              this.vars[this.in2] = 0
+              if (in1 === "mousepos") {
+                this.vars[this.in2-1] = runtime.ioDevices.mouse.getScratchX() - X
+                this.vars[this.in3-1] = runtime.ioDevices.mouse.getScratchY() - Y
+              } else if (this.in1 === "timestamp") {
+                this.vars[this.in2-1] = Date.now()
+              } else if (this.in1 === "mouseclick") {
+                this.vars[this.in2-1] = ((+runtime.ioDevices.mouse.getIsDown() || 0) - 0)
+              } else if (this.in1 === "timer") {
+                this.vars[this.in2-1] = runtime.ioDevices.clock.projectTimer()
+              } else if (this.in2 === "line") {
+                this.vars[this.in2-1] = this.pc
+              } else if (this.in1 === ("key" + runtime.ioDevices.keyboard.getLastKeyPressed())) {
+                this.vars[this.in2-1] = ((+runtime.ioDevices.keyboard.getKeyIsDown(runtime.ioDevices.keyboard.getLastKeyPressed())))
+              }
+            break;
+            case "25":
+              this.vars[this.in1-1] = Math.sin(this.vars[this.in1-1])
+            break;
+            case "26":
+              this.vars[this.in1-1] = Math.cos(this.vars[this.in1-1])
+            break;
+            case "27":
+              this.vars[this.in1-1] = Math.tan(this.vars[this.in1-1])
+            break;
+            case "28":
+              this.vars[this.in1-1] %= this.vars[this.in2-1]
+            break;
+            case "29":
+              this.vars[this.in1-1] = Math.sqrt(this.vars[this.in1-1])
+            break;
+            case "30":
+              this.vars[this.in1-1] = this.vars[this.vars[this.in2-1]-1]
+            break;
+            case "31":
+              this.vars[this.in3-1] = this.vars[this.in1-1][this.vars[this.in2-1]-1]
+            break;
+            case "32":
+              this.vars[this.in2-1] = this.vars[this.in1-1].length
+            break;
+            case "33":
+              this.vars[this.in3-1] = this.vars[this.in1-1] + this.vars[this.in2-1]
+            break;
+            default:
+              console.log("Unknown Command: " + this.cmd)
+          }
+          this.pc ++
+        }
+        return JSON.stringify(this.output)
+      }
+    
     compile({CODE}) {
       const all_oasm_commands = ["totv","setv","chav","jump","equl","gthn","lthn","prnt","ngth","nlth","svto","mulv","divv","subv","pend","penu","penc","pens","pene","setx","sety","setp","labl","getd","sinv","cosv","tanv","modv","sqrt","copy","letr","leng"]
       const all_oasm_jumps = ["jump","equl","gthn","lthn","ngth","nlth"]
