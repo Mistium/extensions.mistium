@@ -19,9 +19,9 @@
         name: 'OASM',
         blocks: [
           {
-            func: "docs",
+            func: 'docs',
             blockType: Scratch.BlockType.BUTTON,
-            text: "Learn OASM",
+            text: 'Learn OASM',
           },
           {
             opcode: 'compile',
@@ -30,7 +30,27 @@
             arguments: {
                 CODE: {
                   type: Scratch.ArgumentType.STRING,
-                  defaultValue: "[\"setv msg hello\",\"prnt msg\"]"
+                  defaultValue: '["setv msg hello","prnt msg"]'
+                },
+            },
+          },
+          {
+            opcode: 'runblock',
+            func: 'run',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'Run  At [X],[Y] Code: [CODE]',
+            arguments: {
+                CODE: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: ''
+                },
+                X: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0
+                },
+                Y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0
                 },
             },
           },
@@ -41,7 +61,7 @@
             arguments: {
                 CODE: {
                   type: Scratch.ArgumentType.STRING,
-                  defaultValue: ""
+                  defaultValue: ''
                 },
                 X: {
                   type: Scratch.ArgumentType.NUMBER,
