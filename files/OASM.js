@@ -51,6 +51,7 @@
 
     run({CODE,X,Y}) {
       CODE = JSON.parse(CODE)
+      const target = vm.editingTarget
       this.vars = []
       this.pc = 1
       this.output = []
@@ -125,22 +126,22 @@
               runtime.ext_pen._penUp(target);
             break;
             case "17":
-              runtime.ext_pen._setPenColorToColor(this.in1, target);
+              runtime.ext_pen._setPenColorToColor(this.vars[this.in1-1], target);
             break;
             case "18":
-              runtime.ext_pen._setPenSizeTo(+this.in1, target);
+              runtime.ext_pen._setPenSizeTo(this.vars[this.in1-1], target);
             break;
             case "19":
               runtime.ext_pen.clear();
             break;
             case "20":
-              target.setXY(X + +this.in1,target.y);
+              target.setXY(X + this.vars[this.in1-1],target.y);
             break;
             case "21":
-              target.setXY(target.x,Y + this.in1);
+              target.setXY(target.x,Y + this.vars[this.in1-1]);
             break;
             case "22":
-              target.setXY(X + this.in1,Y + this.in2);
+              target.setXY(X + this.vars[this.in2-1],Y + this.vars[this.in2-1]);
             break;
             case "24":
               this.vars[this.in2] = 0
