@@ -19,6 +19,11 @@
         name: 'OASM',
         blocks: [
           {
+            func: "docs",
+            blockType: Scratch.BlockType.BUTTON,
+            text: "Learn OASM",
+          },
+          {
             opcode: 'compile',
             blockType: Scratch.BlockType.REPORTER,
             text: 'Compile [CODE]',
@@ -62,6 +67,9 @@
       };
     }
 
+    docs() {
+      window.open("https://github.com/Mistium/Origin-OS/wiki/OASM-%E2%80%90-Origin-Assembly", '_blank').focus();
+    }
 
     run({CODE,X,Y}) {
       CODE = JSON.parse(CODE)
