@@ -255,7 +255,7 @@
     }
 
     allcmds() {
-      return ["totv", "setv", "chav", "jump", "equl", "gthn", "lthn", "prnt", "ngth", "nlth", "svto", "mulv", "divv", "subv", "pend", "penu", "penc", "pens", "pene", "setx", "sety", "setp", "labl", "getd", "sinv", "cosv", "tanv", "modv", "sqrt", "copy", "letr", "leng"]
+      return JSON.stringify(["totv", "setv", "chav", "jump", "equl", "gthn", "lthn", "prnt", "ngth", "nlth", "svto", "mulv", "divv", "subv", "pend", "penu", "penc", "pens", "pene", "setx", "sety", "setp", "labl", "getd", "sinv", "cosv", "tanv", "modv", "sqrt", "copy", "letr", "leng"])
     }
 
     compile({CODE}) {
