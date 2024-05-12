@@ -1,4 +1,5 @@
 // Made originally by 2Digit_co
+// https://biggiecheesetherat.github.io/packagecat/
 // Modified by Mistium
 
 (async function(Scratch) {
