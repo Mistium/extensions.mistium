@@ -116,6 +116,26 @@
             text: 'Stage Height',
             blockType: Scratch.BlockType.REPORTER,
           },
+          {
+            opcode: 'starts',
+            func: 'err',
+            text: '[A] starts with [B]',
+            blockType: Scratch.BlockType.BOOLEAN,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+              B: { type: Scratch.ArgumentType.STRING, defaultValue: 'app' },
+            },
+          },
+          {
+            opcode: 'ends',
+            func: 'err',
+            text: '[A] ends with [B]',
+            blockType: Scratch.BlockType.BOOLEAN,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+              B: { type: Scratch.ArgumentType.STRING, defaultValue: 'app' },
+            },
+          },
         ],
       };
     }
@@ -257,6 +277,16 @@
         case 'mistsutils.stageheight':
           this.source += `\nvm.runtime.visualReport("${block.id}", Scratch.vm.runtime.stageHeight);\n`;
           return;
+        case 'mistsutils.starts':
+          const A_starts = descendTillSource.call(this, node.A, caseSanitize);
+          const B_starts = descendTillSource.call(this, node.B, caseSanitize);
+          this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${A_starts}).startsWith("" + (${B_starts}))));\n`;
+          return;
+        case 'mistsutils.ends':
+          const A_ends = descendTillSource.call(this, node.A, caseSanitize);
+          const B_ends = descendTillSource.call(this, node.B, caseSanitize);
+          this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${A_ends}).endsWith("" + (${B_ends}))));\n`;
+          return;
         default:
           return originalFn(node);
       }
@@ -305,6 +335,14 @@
           return new TypedInput('Scratch.vm.runtime.stageWidth', TYPE_NUMBER);
         case 'mistsutils.stageheight':
           return new TypedInput('Scratch.vm.runtime.stageHeight', TYPE_NUMBER);
+        case 'mistsutils.starts':
+          const A_starts = descendTillSource.call(this, node.A, caseSanitize);
+          const B_starts = descendTillSource.call(this, node.B, caseSanitize);
+          return new TypedInput(`("" + (${A_starts}).startsWith("" + (${B_starts})))`, TYPE_BOOLEAN);
+        case 'mistsutils.ends':
+          const A_ends = descendTillSource.call(this, node.A, caseSanitize);
+          const B_ends = descendTillSource.call(this, node.B, caseSanitize);
+          return new TypedInput(`("" + (${A_ends}).endsWith("" + (${B_ends})))`, TYPE_BOOLEAN);
         default:
           return originalFn(node);
       }
@@ -388,6 +426,20 @@
             block,
             kind: 'mistsutils.stageheight',
           };
+        case 'mistsutils_starts':
+          return {
+            block,
+            kind: 'mistsutils.starts',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_ends':
+          return {
+            block,
+            kind: 'mistsutils.ends',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
         default:
           return originalFn(block);
       }
@@ -465,6 +517,18 @@
         case 'mistsutils_stageheight':
           return {
             kind: 'mistsutils.stageheight',
+          };
+        case 'mistsutils_starts':
+          return {
+            kind: 'mistsutils.starts',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_ends':
+          return {
+            kind: 'mistsutils.ends',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
           };
         default:
           return originalFn(block);
