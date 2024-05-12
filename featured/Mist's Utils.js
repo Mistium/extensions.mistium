@@ -280,12 +280,12 @@
         case 'mistsutils.starts':
           const A_starts = descendTillSource.call(this, node.A, caseSanitize);
           const B_starts = descendTillSource.call(this, node.B, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", ("" + ("" + (${A_starts})).startsWith("" + (${B_starts}))));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${A_starts})).startsWith("" + (${B_starts})));\n`;
           return;
         case 'mistsutils.ends':
           const A_ends = descendTillSource.call(this, node.A, caseSanitize);
           const B_ends = descendTillSource.call(this, node.B, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", ("" + ("" + (${A_ends})).endsWith("" + (${B_ends}))));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${A_ends})).endsWith("" + (${B_ends})));\n`;
           return;
         default:
           return originalFn(node);
@@ -338,11 +338,11 @@
         case 'mistsutils.starts':
           const A_starts = descendTillSource.call(this, node.A, caseSanitize);
           const B_starts = descendTillSource.call(this, node.B, caseSanitize);
-          return new TypedInput(`("" + ("" + (${A_starts})).startsWith("" + (${B_starts})))`, TYPE_BOOLEAN);
+          return new TypedInput(`("" + (${A_starts})).startsWith("" + (${B_starts}))`, TYPE_BOOLEAN);
         case 'mistsutils.ends':
           const A_ends = descendTillSource.call(this, node.A, caseSanitize);
           const B_ends = descendTillSource.call(this, node.B, caseSanitize);
-          return new TypedInput(`("" + (""+(${A_ends})).endsWith("" + (${B_ends})))`, TYPE_BOOLEAN);
+          return new TypedInput(`("" + (${A_ends})).endsWith("" + (${B_ends}))`, TYPE_BOOLEAN);
         default:
           return originalFn(node);
       }
