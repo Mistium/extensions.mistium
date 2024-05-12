@@ -1,11 +1,14 @@
 (function (Scratch) {
     if (!Scratch.extensions.unsandboxed) {
-        throw new Error("Better Eval must be unsandboxed");
+        throw new Error("EvalPlus must be unsandboxed");
     }
+
 
     class EvalPlus {
         constructor() {
             this.enabled = true; // Eval is enabled by default
+            this.pythonLoaded = false;
+            setupPyodide()
         }
 
         getInfo() {
@@ -82,7 +85,7 @@
                         blockType: Scratch.BlockType.COMMAND,
                         text: 'disable eval',
                         func: 'disableEval'
-                    }
+                    },
                 ]
             };
         }
