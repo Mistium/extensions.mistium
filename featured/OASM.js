@@ -2,6 +2,8 @@
 // By: @mistium on discord
 // Description: Run the full oasm interpreter except very fast.
 
+// OASM v9
+
 (function(Scratch) {
   "use strict";
 
@@ -46,10 +48,11 @@
       return {
         id: 'OASM',
         name: 'OASM',
+        color1: '#101010',
         blocks: [{
             func: 'docs',
             blockType: Scratch.BlockType.BUTTON,
-            text: 'Learn OASM',
+            text: 'Learn OASM(v9)',
           },
           {
             opcode: 'compile',
@@ -250,8 +253,8 @@
               this.vars[this.in2 - 1] = runtime.ioDevices.clock.projectTimer()
             } else if (this.in2 === "line") {
               this.vars[this.in2 - 1] = this.pc
-            } else if (this.in1 === ("key" + runtime.ioDevices.keyboard.getLastKeyPressed())) {
-              this.vars[this.in2 - 1] = ((+runtime.ioDevices.keyboard.getKeyIsDown(runtime.ioDevices.keyboard.getLastKeyPressed())))
+            } else if (this.in1.startsWith("key")) {
+              this.vars[this.in2 - 1] = (+runtime.ioDevices.keyboard.getKeyIsDown(this.in1))
             }
             break;
           case "25":
@@ -417,6 +420,38 @@
           case 'jump':
             this.spl[0] = 'jump';
             break;
+          case 'mouse.pos':
+            this.spl[0] = 'getd';
+            this.spl[3] = this.spl[2]
+            this.spl[2] = this.spl[1]
+            this.spl[1] = "mousepos"
+            break;
+          case 'now.timestamp':
+            this.spl[0] = 'getd';
+            this.spl[2] = this.spl[1]
+            this.spl[1] = "timestamp"
+            break;
+          case 'now.timer':
+            this.spl[0] = 'getd';
+            this.spl[2] = this.spl[1]
+            this.spl[1] = "timer"
+            break;
+          case 'data.line':
+            this.spl[0] = 'getd';
+            this.spl[2] = this.spl[1]
+            this.spl[1] = "line"
+            break;
+          case 'mouse.click':
+            this.spl[0] = 'getd';
+            this.spl[2] = this.spl[1]
+            this.spl[1] = "mouseclick"
+            break;
+          case 'input.keypress':
+            this.spl[0] = 'getd';
+            this.spl[2] = this.spl[1]
+            this.spl[1] = "key" + this.spl[1]
+            break;
+          
           case 'if':
             switch (this.spl[2]) {
               case '=':
