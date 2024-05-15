@@ -12,7 +12,36 @@
     runtime.extensionManager.loadExtensionIdSync("pen");
   }
 
+  function makeidOTAS(length) {
+    let result = '';
+    const characters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
+  }
+
+  function createLiteralOTAS(vars, spl, id, prep) {
+    let index = vars.indexOf(spl[id]) === -1;
+    if (index) {
+      let newid = makeidOTAS(7);
+      prep.unshift("setv " + newid + " " + spl[id])
+      return newid;
+    } else {
+      return spl[id];
+    }
+  }
+
   class OASM {
+    constructor() {
+      this.prep = [];
+      this.errors = []
+    }
+    
     getInfo() {
       return {
         id: 'OASM',
@@ -25,11 +54,22 @@
           {
             opcode: 'compile',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'Compile [CODE]',
+            text: 'Compile OASM [CODE]',
             arguments: {
               CODE: {
                 type: Scratch.ArgumentType.STRING,
                 defaultValue: '["setv msg hello","prnt msg"]'
+              },
+            },
+          },
+          {
+            opcode: 'transpileOTAS',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'Transpile OTAS To OASM [CODE]',
+            arguments: {
+              CODE: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: '["msg = hello","print msg"]'
               },
             },
           },
@@ -95,7 +135,11 @@
       window.open("https://github.com/Mistium/Origin-OS/wiki/OASM-%E2%80%90-Origin-Assembly", '_blank').focus();
     }
 
-    run({CODE,X,Y}) {
+    run({
+      CODE,
+      X,
+      Y
+    }) {
       CODE = JSON.parse(CODE)
       const target = vm.editingTarget
       target.setXY(X, Y);
@@ -240,7 +284,7 @@
           default:
             console.log("Unknown Command: " + cmd);
         }
-        this.pc+=1;
+        this.pc += 1;
       }
       return this.output.length > 0 ? JSON.stringify(this.output) : '[]';
     }
@@ -258,7 +302,9 @@
       return JSON.stringify(["totv", "setv", "chav", "jump", "equl", "gthn", "lthn", "prnt", "ngth", "nlth", "svto", "mulv", "divv", "subv", "pend", "penu", "penc", "pens", "pene", "setx", "sety", "setp", "labl", "getd", "sinv", "cosv", "tanv", "modv", "sqrt", "copy", "letr", "leng"])
     }
 
-    compile({CODE}) {
+    compile({
+      CODE
+    }) {
       const all_oasm_commands = ["totv", "setv", "chav", "jump", "equl", "gthn", "lthn", "prnt", "ngth", "nlth", "svto", "mulv", "divv", "subv", "pend", "penu", "penc", "pens", "pene", "setx", "sety", "setp", "labl", "getd", "sinv", "cosv", "tanv", "modv", "sqrt", "copy", "letr", "leng"]
       const all_oasm_jumps = ["jump", "equl", "gthn", "lthn", "ngth", "nlth"]
       CODE = JSON.parse(CODE)
@@ -309,6 +355,155 @@
         this.commands = this.item.concat(this.commands)
       }
       return JSON.stringify(this.commands);
+    }
+
+    transpileOTAS({
+      CODE
+    }) {
+      this.CODE = JSON.parse(CODE)
+      let prep = [];
+      let OUT = [];
+      let vars = [];
+      let errors = []
+      for (let i = 0; i < this.CODE.length; i++) {
+        this.spl = this.CODE[i].split(' ');
+        switch (this.spl[0]) {
+          case 'print':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[0] = 'prnt';
+            break;
+          case 'pen.clearall':
+            this.spl[0] = 'pene';
+            break;
+          case 'pen.down':
+            this.spl[0] = 'pend';
+            break;
+          case 'pen.colour':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[0] = 'penc';
+            break;
+          case 'pen.size':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[0] = 'pens';
+            break;
+          case 'pen.up':
+            this.spl[0] = 'penu';
+            break;
+          case 'pen.goto':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            this.spl[0] = 'setp';
+            break;
+          case 'pen.setx':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[0] = 'setx';
+            break;
+          case 'pen.sety':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[0] = 'sety';
+            break;
+          case 'math.sin':
+            this.spl[0] = 'sinv';
+            break;
+          case 'math.cos':
+            this.spl[0] = 'cosv';
+            break;
+          case 'math.tan':
+            this.spl[0] = 'tanv';
+            break;
+          case 'math.root':
+            this.spl[0] = 'sqrt';
+            break;
+          case 'jump':
+            this.spl[0] = 'jump';
+            break;
+          case 'if':
+            switch (this.spl[2]) {
+              case '=':
+                this.spl[0] = 'equl';
+                break;
+              case '>':
+                this.spl[0] = 'gthn';
+                break;
+              case '<':
+                this.spl[0] = 'lthn';
+                break;
+              case '!>':
+                this.spl[0] = 'ngth';
+                break;
+              case '!<':
+                this.spl[0] = 'nlth';
+                break;
+              default:
+                errors.push("Unknown Comparison On Line: " + (i+1))
+                break;
+            }
+            this.temp = [];
+            this.temp.push(this.spl[0]);
+            this.temp.push(this.spl[1]);
+            this.temp.push(this.spl[3]);
+            this.temp.push(this.spl[4]);
+            this.spl = this.temp;
+            break;
+          default:
+            switch (this.spl[1]) {
+              case '=':
+                this.spl[1] = this.spl[0];
+                if (vars.indexOf(this.spl[1]) === -1) {
+                  this.spl[0] = 'setv';
+                  vars.push(this.spl[1]);
+                } else {
+                  this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                  this.spl[0] = 'svto';
+                }
+                break;
+              case '+=':
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[1] = this.spl[0];
+                this.spl[0] = 'chav';
+                break;
+              case '-=':
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[1] = spl[0];
+                this.spl[0] = 'subv';
+                break;
+              case '/=':
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[1] = spl[0];
+                this.spl[0] = 'divv';
+                break;
+              case '*=':
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[1] = spl[0];
+                this.spl[0] = 'mulv';
+                break;
+              case '%=':
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[1] = this.spl[0];
+                this.spl[0] = 'modv';
+                break;
+              default:
+                if (this.spl[0][0] === ':') {
+                  this.spl[1] = this.spl[0];
+                  this.spl[0] = 'labl';
+                } else {
+                  errors.push("Unknown Command On Line: " + (i+1))
+                }
+                break;
+            }
+            break;
+        }
+
+        OUT.push(this.spl.join(' '));
+      }
+      OUT = prep.concat(OUT)
+      console.log(OUT)
+      console.log(errors)
+      if (errors.length > 0) {
+        return "Errors:\n " + errors.join("\n")
+      } else {
+        return JSON.stringify(OUT);
+      }
     }
   }
 
