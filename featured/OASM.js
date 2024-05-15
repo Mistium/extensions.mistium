@@ -532,8 +532,6 @@
         OUT.push(this.spl.join(' '));
       }
       OUT = prep.concat(OUT)
-      console.log(OUT)
-      console.log(errors)
       if (errors.length > 0) {
         return "Errors:\n " + errors.join("\n")
       } else {
