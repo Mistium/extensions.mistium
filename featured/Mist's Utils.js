@@ -136,6 +136,15 @@
               B: { type: Scratch.ArgumentType.STRING, defaultValue: 'app' },
             },
           },
+          {
+            opcode: 'toUnicode',
+            func: 'err',
+            text: 'Unicode Of [A]',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'A' },
+            },
+          },
         ],
       };
     }
@@ -287,6 +296,9 @@
           const B_ends = descendTillSource.call(this, node.B, caseSanitize);
           this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${A_ends})).endsWith("" + (${B_ends})));\n`;
           return;
+        case 'mistsutils.toUnicode':
+          this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${descendTillSource.call(this, node.A, caseSanitize)})).codePointAt(0));\n`;
+          return;
         default:
           return originalFn(node);
       }
@@ -343,6 +355,8 @@
           const A_ends = descendTillSource.call(this, node.A, caseSanitize);
           const B_ends = descendTillSource.call(this, node.B, caseSanitize);
           return new TypedInput(`("" + (${A_ends})).endsWith("" + (${B_ends}))`, TYPE_BOOLEAN);
+        case "mistsutils.toUnicode":
+          return new TypedInput(`("" + (${descendTillSource.call(this, node.A, caseSanitize)})).codePointAt(0)`, TYPE_NUMBER);
         default:
           return originalFn(node);
       }
@@ -440,6 +454,12 @@
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
           };
+        case 'mistsutils_toUnicode':
+          return {
+            block,
+            kind: 'mistsutils.toUnicode',
+            A: this.descendInputOfBlock(block, 'A'),
+          };
         default:
           return originalFn(block);
       }
@@ -529,6 +549,11 @@
             kind: 'mistsutils.ends',
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_toUnicode':
+          return {
+            kind: 'mistsutils.toUnicode',
+            A: this.descendInputOfBlock(block, 'A'),
           };
         default:
           return originalFn(block);
