@@ -1,0 +1,1 @@
+All of these images are licensed under CCBY4.0 https://creativecommons.org/licenses/by/4.0/
