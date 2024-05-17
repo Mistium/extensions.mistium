@@ -175,7 +175,7 @@
             this.vars[this.in1] += this.vars[this.in2 - 1]
             break;
           case "4":
-            this.pc = +this.in1 + 1
+            this.pc = +this.in1
             break;
           case "5":
             if (this.vars[this.in1] === this.vars[this.in2 - 1]) {
@@ -323,25 +323,25 @@
         this.cur = this.cur.concat(Array(4 - this.cur.length).fill("0"))
         if (this.cur[0] === "labl") {
           this.mapcur = []
-          CODE = CODE.map((x) => {
-            this.mapcur = x.split(" ")
-            if (all_oasm_jumps.indexOf(this.mapcur[0]) !== -1) {
-              if (this.mapcur[3] === this.cur[1]) {
-                this.mapcur[3] = i.toString()
-              } else if (this.mapcur[1] === this.cur[1]) {
-                this.mapcur[1] = this.i.toString()
+          CODE = CODE.map((line) => {
+            this.mapline = line.split(" ")
+            if (all_oasm_jumps.indexOf(this.mapline[0]) !== -1) {
+              if (this.mapline[3] === this.cur[1]) {
+                this.mapline[3] = (i+1).toString()
+              } else if (this.mapline[1] === this.cur[1]) {
+                this.mapline[1] = (i+1).toString()
               }
-              return this.mapcur.join(" ")
+              return this.mapline.join(" ")
             }
-            return x
+            return line
           })
         } else if (this.cur[0] === "setv") {
           if (!Number.isInteger(Number(this.cur[1])) && this.vars.indexOf(this.cur[1]) === -1) {
             this.vars.push(this.cur[1])
             this.len = this.vars.length
             this.mapcur = []
-            CODE = CODE.map((x) => {
-              this.mapcur = x.split(" ")
+            CODE = CODE.map((line) => {
+              this.mapcur = line.split(" ")
               if (this.mapcur[1] === this.cur[1]) {
                 this.mapcur[1] = this.len
               } else if (this.mapcur[2] === this.cur[1]) {
