@@ -508,17 +508,17 @@
                 break;
               case '-=':
                 this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
-                this.spl[1] = spl[0];
+                this.spl[1] = this.spl[0];
                 this.spl[0] = 'subv';
                 break;
               case '/=':
                 this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
-                this.spl[1] = spl[0];
+                this.spl[1] = this.spl[0];
                 this.spl[0] = 'divv';
                 break;
               case '*=':
                 this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
-                this.spl[1] = spl[0];
+                this.spl[1] = this.spl[0];
                 this.spl[0] = 'mulv';
                 break;
               case '%=':
