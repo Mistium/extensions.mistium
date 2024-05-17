@@ -521,6 +521,12 @@
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'modv';
                 break;
+              case '-':
+                this.spl[0] = ''
+                break;
+              case '':
+                this.spl[0] = ''
+                break;
               default:
                 if (this.spl[0][0] === ':') {
                   this.spl[1] = this.spl[0];
@@ -532,8 +538,9 @@
             }
             break;
         }
-
-        OUT.push(this.spl.join(' '));
+        if (this.spl[0] !== '') {
+          OUT.push(this.spl.join(' '));
+        }
       }
       OUT = prep.concat(OUT)
       if (errors.length > 0) {
