@@ -455,7 +455,12 @@
             this.spl[2] = this.spl[1]
             this.spl[1] = "key" + this.spl[1]
             break;
-          
+          case '-':
+            this.spl[0] = ''
+            break;
+          case '':
+            this.spl[0] = ''
+            break;
           case 'if':
             switch (this.spl[2]) {
               case '=':
@@ -520,12 +525,6 @@
                 this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'modv';
-                break;
-              case '-':
-                this.spl[0] = ''
-                break;
-              case '':
-                this.spl[0] = ''
                 break;
               default:
                 if (this.spl[0][0] === ':') {
