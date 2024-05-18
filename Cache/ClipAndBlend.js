@@ -503,4 +503,4 @@
 
   Scratch.extensions.register(new Extension());
 })(Scratch);
- })(Scratch);
+})(Scratch);
