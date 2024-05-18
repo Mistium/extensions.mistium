@@ -11,46 +11,42 @@
 (function(Scratch) {
   "use strict";
 
-  function makeidOTAS(length) {
-    let result = '';
-    const characters =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let counter = 0;
-    while (counter < length) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      counter += 1;
-    }
-    return result;
-  }
-
-  function createLiteralOTAS(vars, spl, id, prep) {
-    let index = vars.indexOf(spl[id]) === -1;
-    if (index) {
-      let newid = makeidOTAS(7);
-      prep.unshift("setv " + newid + " " + spl[id])
-      return newid;
-    } else {
-      return spl[id];
-    }
-  }
 
   class OASM {
     constructor() {
-      const vm = Scratch.vm,
-      runtime = vm.runtime;
-      if (!Scratch.vm.extensionManager.isExtensionLoaded("pen")) {
-        runtime.extensionManager.loadExtensionIdSync("pen");
-      }
       this.prep = [];
-      this.errors = []
+      this.errors = [];
+      this.OASM_vm = Scratch.vm;
+      if (!Scratch.vm.extensionManager.isExtensionLoaded("pen")) {
+        Scratch.vm.runtime.extensionManager.loadExtensionIdSync("pen");
+      }
+      function makeidOTAS(length) {
+        this.result = '';
+        this.counter = 0;
+        while (this.counter < length) {
+          this.result += 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.charAt(Math.floor(Math.random() * 62));
+          this.counter += 1;
+        }
+        return this.result;
+      }
+
+      function createLiteralOTAS(vars, spl, id, prep) {
+        if (vars.indexOf(spl[id]) === -1) {
+          this.newid = this.makeidOTAS(7);
+          prep.unshift("setv " + this.newid + " " + spl[id])
+          return this.newid;
+        } else {
+          return spl[id];
+        }
+      }
     }
+    
     
     getInfo() {
       return {
         id: 'OASM',
         name: 'OASM',
-        color1: '#101010',
+        color1: '#151515',
         blocks: [{
             func: 'docs',
             blockType: Scratch.BlockType.BUTTON,
@@ -146,8 +142,8 @@
       Y
     }) {
       CODE = JSON.parse(CODE)
-      const target = vm.editingTarget
-      target.setXY(X, Y);
+      this.target = this.OASM_vm.editingTarget
+      this.target.setXY(X, Y);
       this.vars = []
       this.pc = 1
       this.output = []
@@ -216,28 +212,28 @@
             this.vars[this.in1] -= this.vars[this.in2 - 1]
             break;
           case "15":
-            runtime.ext_pen._penDown(target);
+            Scratch.vm.runtime.ext_pen._penDown(this.target);
             break;
           case "16":
-            runtime.ext_pen._penUp(target);
+            Scratch.vm.runtime.ext_pen._penUp(this.target);
             break;
           case "17":
-            runtime.ext_pen._setPenColorToColor(this.vars[this.in1], target);
+            Scratch.vm.runtime.ext_pen._setPenColorToColor(this.vars[this.in1], this.target);
             break;
           case "18":
-            runtime.ext_pen._setPenSizeTo(this.vars[this.in1], target);
+            Scratch.vm.runtime.ext_pen._setPenSizeTo(this.vars[this.in1], this.target);
             break;
           case "19":
-            runtime.ext_pen.clear();
+            Scratch.vm.runtime.ext_pen.clear();
             break;
           case "20":
-            target.setXY(X + this.vars[this.in1], target.y);
+            this.target.setXY(X + this.vars[this.in1], this.target.y);
             break;
           case "21":
-            target.setXY(target.x, Y + this.vars[this.in1]);
+            this.target.setXY(this.target.x, Y + this.vars[this.in1]);
             break;
           case "22":
-            target.setXY(X + this.vars[this.in1], Y + this.vars[this.in2 - 1]);
+            this.target.setXY(X + this.vars[this.in1], Y + this.vars[this.in2 - 1]);
             break;
           case "23":
             break;
@@ -245,18 +241,18 @@
             this.vars[this.in2 - 1] = 0
             this.in1 = CODE[temp - 2]
             if (this.in1 === "mousepos") {
-              this.vars[this.in2 - 1] = runtime.ioDevices.mouse.getScratchX() - X
-              this.vars[this.in3 - 1] = runtime.ioDevices.mouse.getScratchY() - Y
+              this.vars[this.in2 - 1] = Scratch.vm.runtime.ioDevices.mouse.getScratchX() - X
+              this.vars[this.in3 - 1] = Scratch.vm.runtime.ioDevices.mouse.getScratchY() - Y
             } else if (this.in1 === "timestamp") {
               this.vars[this.in2 - 1] = Date.now()
             } else if (this.in1 === "mouseclick") {
-              this.vars[this.in2 - 1] = ((+runtime.ioDevices.mouse.getIsDown() || 0) - 0)
+              this.vars[this.in2 - 1] = ((+Scratch.vm.runtime.ioDevices.mouse.getIsDown() || 0) - 0)
             } else if (this.in1 === "timer") {
-              this.vars[this.in2 - 1] = runtime.ioDevices.clock.projectTimer()
+              this.vars[this.in2 - 1] = Scratch.vm.runtime.ioDevices.clock.projectTimer()
             } else if (this.in2 === "line") {
               this.vars[this.in2 - 1] = this.pc
             } else if (this.in1.startsWith("key")) {
-              this.vars[this.in2 - 1] = (+runtime.ioDevices.keyboard.getKeyIsDown(this.in1))
+              this.vars[this.in2 - 1] = (+Scratch.vm.runtime.ioDevices.keyboard.getKeyIsDown(this.in1))
             }
             break;
           case "25":
@@ -374,7 +370,7 @@
         this.spl = this.CODE[i].split(' ');
         switch (this.spl[0]) {
           case 'print':
-            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
             this.spl[0] = 'prnt';
             break;
           case 'pen.clearall':
@@ -384,27 +380,27 @@
             this.spl[0] = 'pend';
             break;
           case 'pen.colour':
-            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
             this.spl[0] = 'penc';
             break;
           case 'pen.size':
-            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
             this.spl[0] = 'pens';
             break;
           case 'pen.up':
             this.spl[0] = 'penu';
             break;
           case 'pen.goto':
-            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
-            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
             this.spl[0] = 'setp';
             break;
           case 'pen.setx':
-            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
             this.spl[0] = 'setx';
             break;
           case 'pen.sety':
-            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
             this.spl[0] = 'sety';
             break;
           case 'math.sin':
@@ -495,32 +491,32 @@
                   this.spl[0] = 'setv';
                   vars.push(this.spl[1]);
                 } else {
-                  this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                  this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
                   this.spl[0] = 'svto';
                 }
                 break;
               case '+=':
-                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'chav';
                 break;
               case '-=':
-                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'subv';
                 break;
               case '/=':
-                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'divv';
                 break;
               case '*=':
-                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'mulv';
                 break;
               case '%=':
-                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'modv';
                 break;
