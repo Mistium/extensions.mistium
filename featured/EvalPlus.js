@@ -11,15 +11,13 @@
     class EvalPlus {
         constructor() {
             this.enabled = true; // Eval is enabled by default
-            this.pythonLoaded = false;
-            setupPyodide()
         }
 
         getInfo() {
             return {
                 id: 'MistiumEval',
                 name: 'EvalPlus',
-                color1: '#b58707',
+                color1: '#f7df1e',
                 blocks: [
                     // Unrestricted Eval Blocks
                     {
