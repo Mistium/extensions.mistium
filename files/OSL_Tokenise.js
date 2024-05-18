@@ -11,6 +11,10 @@
 
   class OSLTokenise {
 
+    constructor() {
+      this.regex = /"[^"]+"|{[^}]+}|\[[^\]]+\]|[^."(]*\((?:(?:"[^"]+")*[^.]+)*|\d[\d.]+\d|[^." ]+/g;
+    }
+    
     getInfo() {
       return {
         id: 'OSLTokenise',
@@ -27,10 +31,24 @@
                 },
             },
           },
+          {
+            opcode: 'splitmethods',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'Tokenise Methods [CODE]',
+            arguments: {
+                CODE: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "\"hello\".index(\"l\").bool"
+                },
+            },
+          },
         ],
       };
     }
 
+    splitmethods({CODE}) {
+      return JSON.stringify(CODE.match(this.regex) || []);
+    }
 
     tokenise({CODE}) {
       this.letter = 0;
