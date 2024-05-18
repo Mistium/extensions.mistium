@@ -11,13 +11,6 @@
 (function(Scratch) {
   "use strict";
 
-  const vm = Scratch.vm,
-    runtime = vm.runtime;
-
-  if (!Scratch.vm.extensionManager.isExtensionLoaded("pen")) {
-    runtime.extensionManager.loadExtensionIdSync("pen");
-  }
-
   function makeidOTAS(length) {
     let result = '';
     const characters =
@@ -44,6 +37,11 @@
 
   class OASM {
     constructor() {
+      const vm = Scratch.vm,
+      runtime = vm.runtime;
+      if (!Scratch.vm.extensionManager.isExtensionLoaded("pen")) {
+        runtime.extensionManager.loadExtensionIdSync("pen");
+      }
       this.prep = [];
       this.errors = []
     }
