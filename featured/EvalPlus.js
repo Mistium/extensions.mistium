@@ -17,7 +17,7 @@
             return {
                 id: 'MistiumEval',
                 name: 'EvalPlus',
-                color1: '#f7df1e',
+                color1: '#1c2827',
                 blocks: [
                     // Unrestricted Eval Blocks
                     {
