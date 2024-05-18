@@ -10,35 +10,30 @@
 
 (function(Scratch) {
   "use strict";
-
-
+  
+  function createLiteralOTAS(vars, spl, id, prep) {
+    if (vars.indexOf(spl[id]) === -1) {
+      this.newid = this.makeidOTAS(7);
+      prep.unshift("setv " + this.newid + " " + spl[id])
+      return this.newid;
+    } else {
+      return spl[id];
+    }
+  }
+  function makeidOTAS(length) {
+    this.result = '';
+    this.counter = 0;
+    while (this.counter < length) {
+      this.result += 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.charAt(Math.floor(Math.random() * 62));
+      this.counter += 1;
+    }
+    return this.result;
+  }
+  
   class OASM {
     constructor() {
       this.prep = [];
       this.errors = [];
-      this.OASM_vm = Scratch.vm;
-      if (!Scratch.vm.extensionManager.isExtensionLoaded("pen")) {
-        Scratch.vm.runtime.extensionManager.loadExtensionIdSync("pen");
-      }
-      function makeidOTAS(length) {
-        this.result = '';
-        this.counter = 0;
-        while (this.counter < length) {
-          this.result += 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.charAt(Math.floor(Math.random() * 62));
-          this.counter += 1;
-        }
-        return this.result;
-      }
-
-      function createLiteralOTAS(vars, spl, id, prep) {
-        if (vars.indexOf(spl[id]) === -1) {
-          this.newid = this.makeidOTAS(7);
-          prep.unshift("setv " + this.newid + " " + spl[id])
-          return this.newid;
-        } else {
-          return spl[id];
-        }
-      }
     }
     
     
@@ -142,7 +137,8 @@
       Y
     }) {
       CODE = JSON.parse(CODE)
-      this.target = this.OASM_vm.editingTarget
+      this.vm = Scratch.vm;
+      this.target = Scratch.vm.editingTarget
       this.target.setXY(X, Y);
       this.vars = []
       this.pc = 1
@@ -362,15 +358,15 @@
       CODE
     }) {
       this.CODE = JSON.parse(CODE)
-      let prep = [];
-      let OUT = [];
+      this.prep = [];
+      this.OUT = [];
       let vars = [];
       let errors = []
       for (let i = 0; i < this.CODE.length; i++) {
         this.spl = this.CODE[i].split(' ');
         switch (this.spl[0]) {
           case 'print':
-            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, this.prep);
             this.spl[0] = 'prnt';
             break;
           case 'pen.clearall':
@@ -380,27 +376,27 @@
             this.spl[0] = 'pend';
             break;
           case 'pen.colour':
-            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, this.prep);
             this.spl[0] = 'penc';
             break;
           case 'pen.size':
-            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, this.prep);
             this.spl[0] = 'pens';
             break;
           case 'pen.up':
             this.spl[0] = 'penu';
             break;
           case 'pen.goto':
-            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
-            this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, this.prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, this.prep);
             this.spl[0] = 'setp';
             break;
           case 'pen.setx':
-            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, this.prep);
             this.spl[0] = 'setx';
             break;
           case 'pen.sety':
-            this.spl[1] = this.createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, this.prep);
             this.spl[0] = 'sety';
             break;
           case 'math.sin':
@@ -491,32 +487,32 @@
                   this.spl[0] = 'setv';
                   vars.push(this.spl[1]);
                 } else {
-                  this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
+                  this.spl[2] = createLiteralOTAS(vars, this.spl, 2, this.prep);
                   this.spl[0] = 'svto';
                 }
                 break;
               case '+=':
-                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, this.prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'chav';
                 break;
               case '-=':
-                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, this.prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'subv';
                 break;
               case '/=':
-                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, this.prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'divv';
                 break;
               case '*=':
-                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, this.prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'mulv';
                 break;
               case '%=':
-                this.spl[2] = this.createLiteralOTAS(vars, this.spl, 2, prep);
+                this.spl[2] = createLiteralOTAS(vars, this.spl, 2, this.prep);
                 this.spl[1] = this.spl[0];
                 this.spl[0] = 'modv';
                 break;
@@ -532,14 +528,14 @@
             break;
         }
         if (this.spl[0] !== '') {
-          OUT.push(this.spl.join(' '));
+          this.OUT.push(this.spl.join(' '));
         }
       }
-      OUT = prep.concat(OUT)
+      this.OUT = this.prep.concat(this.OUT)
       if (errors.length > 0) {
         return "Errors:\n " + errors.join("\n")
       } else {
-        return JSON.stringify(OUT);
+        return JSON.stringify(this.OUT);
       }
     }
   }
