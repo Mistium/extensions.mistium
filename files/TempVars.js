@@ -167,8 +167,8 @@ class TempVars {
     }
 
     forEachTempVar({NAME, REPEAT}, util) {
-        const count = Cast.toNumber(REPEAT);
-        const name = Cast.toString(NAME);
+        const count = Scratch.Cast.toNumber(REPEAT);
+        const name = Scratch.Cast.toString(NAME);
 
         if (typeof util.stackFrame.loopCounter === 'undefined') {
             util.stackFrame.loopCounter = count;
