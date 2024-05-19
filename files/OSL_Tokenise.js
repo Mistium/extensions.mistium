@@ -1,18 +1,10 @@
-// Name: Tokeniser
-// By: @mistium on discord
-// Description: Tokenise stuff like osl
-// License: MPL-2.0
-// This Source Code is subject to the terms of the Mozilla Public License, v2.0,
-// If a copy of the MPL was not distributed with this file,
-// Then you can obtain one at https://mozilla.org/MPL/2.0/
-
 (function (Scratch) {
   "use strict";
 
   class OSLTokenise {
 
     constructor() {
-      this.regex = /"[^"]+"|{[^}]+}|\[[^\]]+\]|[^."(]*\((?:(?:"[^"]+")*[^.]+)*|\d[\d.]+\d|[^." ]+/g;
+      this.regex = /"[^"\\]*(?:\\.[^"\\]*)*"|{[^}]+}|\[[^\]]+\]|\b\d[\d.]*\b|\S+/g;
     }
     
     getInfo() {
@@ -51,29 +43,32 @@
     }
 
     tokenise({CODE}) {
-      this.letter = 0;
-      this.temp = "";
-      this.brackets = 0;
-      this.out = "";
-      this.split = [];
-      this.len = CODE.length;
-      while (this.letter < this.len) {
-        this.temp = CODE[this.letter];
-        if (this.temp === "\"") {
-          this.brackets = 1 - this.brackets;
-          this.out += "\"";
+      let tokens = [];
+      let inQuotes = false;
+      let currentToken = '';
+
+      for (let i = 0; i < CODE.length; i++) {
+        const char = CODE[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+          currentToken += char;
+        } else if (inQuotes && char === '\\') {
+          currentToken += char + CODE[++i];
+        } else if (!inQuotes && char === ' ') {
+          if (currentToken.trim() !== '') {
+            tokens.push(currentToken);
+            currentToken = '';
+          }
         } else {
-          this.out += this.temp;
-        }
-        this.letter++;
-        if (1 > this.brackets && CODE[this.letter] === " ") {
-          this.split.push(this.out);
-          this.out = "";
-          this.letter++;
+          currentToken += char;
         }
       }
-      this.split.push(this.out);
-      return JSON.stringify(this.split);
+
+      if (currentToken.trim() !== '') {
+        tokens.push(currentToken);
+      }
+
+      return JSON.stringify(tokens);
     }
   }
 
