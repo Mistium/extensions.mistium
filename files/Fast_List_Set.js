@@ -9,6 +9,7 @@
 
     class SetListMist {
         constructor() {
+            this.listVariable = '';
         }
 
         getInfo() {
@@ -20,23 +21,33 @@
                     {
                         opcode: 'setlist',
                         blockType: Scratch.BlockType.COMMAND,
-                        text: 'Set List [Name] to [Array]',
+                        text: 'Set Selected List to [Array]',
+                        arguments: {
+                            Array: { type: Scratch.ArgumentType.STRING, defaultValue: '[]' }
+                        },
+                    },
+                    {
+                        opcode: 'selectlist',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'Select List [Name]',
                         arguments: {
                             Name: { type: Scratch.ArgumentType.STRING, defaultValue: 'List Name' },
-                            Array: { type: Scratch.ArgumentType.STRING, defaultValue: 'List Name' }
                         },
                     },
                 ]
             }
         }
-      setlist({ Name, Array }, util) {
+      setlist({ Array }, util) {
         try {
-          let listVariable = util.target.lookupVariableByNameAndType(Name, "list");
           Array = JSON.parse(Array);
-          listVariable.value = Array;
+          this.listVariable = Array;
         } catch(e) {
           // skip
         }
+      }
+
+      selectlist({ Name }, util) {
+          this.listVariable = util.target.lookupVariableByNameAndType(Name, "list");
       }
     }
     Scratch.extensions.register(new SetListMist());
