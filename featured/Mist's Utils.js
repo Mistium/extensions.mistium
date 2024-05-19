@@ -44,6 +44,16 @@
             },
           },
           {
+            opcode: 'power',
+            func: 'err',
+            text: '[A] ^ [B]',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.NUMBER, defaultValue: 3 },
+              B: { type: Scratch.ArgumentType.NUMBER, defaultValue: 4 },
+            },
+          },
+          {
             opcode: 'clamp',
             func: 'err',
             text: 'clamp [A] between [B] and [C]',
@@ -242,6 +252,11 @@
           const B_noteql = descendTillSource.call(this, node.B, caseSanitize);
           this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_noteql}) !== (${B_noteql})));\n`;
           return;
+        case 'mistsutils.power':
+          const A_power = descendTillSource.call(this, node.A, caseSanitize);
+          const B_power = descendTillSource.call(this, node.B, caseSanitize);
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_power}) ** (${B_power})));\n`;
+          return;
         case 'mistsutils.clamp':
           const A_clamp = descendTillSource.call(this, node.A, caseSanitize);
           const B_clamp = descendTillSource.call(this, node.B, caseSanitize);
@@ -313,6 +328,10 @@
           const A_noteql = descendTillSource.call(this, node.A, caseSanitize);
           const B_noteql = descendTillSource.call(this, node.B, caseSanitize);
           return new TypedInput(`((${A_noteql}) !== (${B_noteql}))`, TYPE_BOOLEAN);
+        case 'mistsutils.power':
+          const A_power = descendTillSource.call(this, node.A, caseSanitize);
+          const B_power = descendTillSource.call(this, node.B, caseSanitize);
+          return new TypedInput(`((${A_power}) ** (${B_power}))`, TYPE_NUMBER);
         case 'mistsutils.clamp':
           const A_clamp = descendTillSource.call(this, node.A, caseSanitize);
           const B_clamp = descendTillSource.call(this, node.B, caseSanitize);
@@ -376,6 +395,13 @@
           return {
             block,
             kind: 'mistsutils.notequals',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_power':
+          return {
+            block,
+            kind: 'mistsutils.power',
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
           };
@@ -475,6 +501,12 @@
         case 'mistsutils_notequals':
           return {
             kind: 'mistsutils.notequals',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_power':
+          return {
+            kind: 'mistsutils.power',
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
           };
