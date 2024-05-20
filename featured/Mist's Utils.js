@@ -245,17 +245,17 @@
         case 'mistsutils.equals':
           const A_eql = descendTillSource.call(this, node.A, caseSanitize);
           const B_eql = descendTillSource.call(this, node.B, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_eql}) === (${B_eql})));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((""+(${A_eql})) === (""+(${B_eql}))));\n`;
           return;
         case 'mistsutils.notequals':
           const A_noteql = descendTillSource.call(this, node.A, caseSanitize);
           const B_noteql = descendTillSource.call(this, node.B, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_noteql}) !== (${B_noteql})));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((""+(${A_noteql})) !== (""+(${B_noteql}))));\n`;
           return;
         case 'mistsutils.power':
           const A_power = descendTillSource.call(this, node.A, caseSanitize);
           const B_power = descendTillSource.call(this, node.B, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_power}) ** (${B_power})));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_power} || 0) ** (${B_power} || 0)));\n`;
           return;
         case 'mistsutils.clamp':
           const A_clamp = descendTillSource.call(this, node.A, caseSanitize);
@@ -272,19 +272,19 @@
         case 'mistsutils.split':
           const A_split = descendTillSource.call(this, node.A, caseSanitize);
           const B_split = descendTillSource.call(this, node.B, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify((${A_split}).split(${B_split})));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify((""+(${A_split})).split(""+(${B_split}))));\n`;
           return;
         case 'mistsutils.item':
           const A_item = descendTillSource.call(this, node.A, caseSanitize);
           const B_item = descendTillSource.call(this, node.B, caseSanitize);
           const C_item = descendTillSource.call(this, node.C, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", (${A_item}).split(${B_item})[((${C_item}) || 1) - 1]);\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${A_item})).split(""+(${B_item}))[((${C_item}) || 1) - 1]);\n`;
           return;
         case 'mistsutils.replace':
           const A_repl = descendTillSource.call(this, node.A, caseSanitize);
           const B_repl = descendTillSource.call(this, node.B, caseSanitize);
           const C_repl = descendTillSource.call(this, node.C, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_repl} || "")).replace(new RegExp(((${C_repl}) ?? ""), 'g'), (${B_repl}) ?? ""));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${A_repl})).replace(new RegExp((""+(${C_repl})), 'g'), ""+(${B_repl})));\n`;
           return;
         case 'mistsutils.true':
           this.source += `\nvm.runtime.visualReport("${block.id}", "true");\n`;
@@ -304,12 +304,12 @@
         case 'mistsutils.starts':
           const A_starts = descendTillSource.call(this, node.A, caseSanitize);
           const B_starts = descendTillSource.call(this, node.B, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${A_starts})).startsWith("" + (${B_starts})));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_starts})||"").startsWith((${B_starts})||""));\n`;
           return;
         case 'mistsutils.ends':
           const A_ends = descendTillSource.call(this, node.A, caseSanitize);
           const B_ends = descendTillSource.call(this, node.B, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${A_ends})).endsWith("" + (${B_ends})));\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((${A_ends})||"").endsWith((${B_ends})||""));\n`;
           return;
         case 'mistsutils.toUnicode':
           this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${descendTillSource.call(this, node.A, caseSanitize)})).codePointAt(0));\n`;
@@ -323,15 +323,15 @@
         case 'mistsutils.equals':
           const A_eql = descendTillSource.call(this, node.A, caseSanitize);
           const B_eql = descendTillSource.call(this, node.B, caseSanitize);
-          return new TypedInput(`((${A_eql}) === (${B_eql}))`, TYPE_BOOLEAN);
+          return new TypedInput(`((""+(${A_eql})) === (""+(${B_eql})))`, TYPE_BOOLEAN);
         case 'mistsutils.notequals':
           const A_noteql = descendTillSource.call(this, node.A, caseSanitize);
           const B_noteql = descendTillSource.call(this, node.B, caseSanitize);
-          return new TypedInput(`((${A_noteql}) !== (${B_noteql}))`, TYPE_BOOLEAN);
+          return new TypedInput(`((""+(${A_noteql})) !== (""+(${B_noteql})))`, TYPE_BOOLEAN);
         case 'mistsutils.power':
           const A_power = descendTillSource.call(this, node.A, caseSanitize);
           const B_power = descendTillSource.call(this, node.B, caseSanitize);
-          return new TypedInput(`((${A_power}) ** (${B_power}))`, TYPE_NUMBER);
+          return new TypedInput(`(+(${A_power}) ** +(${B_power}))`, TYPE_NUMBER);
         case 'mistsutils.clamp':
           const A_clamp = descendTillSource.call(this, node.A, caseSanitize);
           const B_clamp = descendTillSource.call(this, node.B, caseSanitize);
@@ -345,17 +345,17 @@
         case 'mistsutils.split':
           const A_split = descendTillSource.call(this, node.A, caseSanitize);
           const B_split = descendTillSource.call(this, node.B, caseSanitize);
-          return new TypedInput(`JSON.stringify((${A_split}).split(${B_split}))`, TYPE_STRING);
+          return new TypedInput(`JSON.stringify((""+(${A_split})).split(""+(${B_split})))`, TYPE_STRING);
         case 'mistsutils.item':
           const A_item = descendTillSource.call(this, node.A, caseSanitize);
           const B_item = descendTillSource.call(this, node.B, caseSanitize);
           const C_item = descendTillSource.call(this, node.C, caseSanitize);
-          return new TypedInput(`(${A_item}).split(${B_item})[((${C_item}) || 1) - 1]`, TYPE_STRING);
+          return new TypedInput(`(""+(${A_item})).split(""+(${B_item}))[((${C_item}) || 1) - 1]`, TYPE_STRING);
         case 'mistsutils.replace':
           const A_repl = descendTillSource.call(this, node.A, caseSanitize);
           const B_repl = descendTillSource.call(this, node.B, caseSanitize);
           const C_repl = descendTillSource.call(this, node.C, caseSanitize);
-          return new TypedInput(`((${A_repl} || "")).replace(new RegExp(((${C_repl}) ?? ""), 'g'), (${B_repl}) ?? "")`, TYPE_STRING);
+          return new TypedInput(`(""+(${A_repl})).replace(new RegExp((""+(${C_repl})), 'g'), ""+(${B_repl}))`, TYPE_STRING);
         case 'mistsutils.true':
           return new TypedInput(true, TYPE_BOOLEAN);
         case 'mistsutils.false':
@@ -369,13 +369,13 @@
         case 'mistsutils.starts':
           const A_starts = descendTillSource.call(this, node.A, caseSanitize);
           const B_starts = descendTillSource.call(this, node.B, caseSanitize);
-          return new TypedInput(`("" + (${A_starts})).startsWith("" + (${B_starts}))`, TYPE_BOOLEAN);
+          return new TypedInput(`("" + ((${A_starts})||"")).startsWith((${B_starts})||"")`, TYPE_BOOLEAN);
         case 'mistsutils.ends':
           const A_ends = descendTillSource.call(this, node.A, caseSanitize);
           const B_ends = descendTillSource.call(this, node.B, caseSanitize);
-          return new TypedInput(`("" + (${A_ends})).endsWith("" + (${B_ends}))`, TYPE_BOOLEAN);
+          return new TypedInput(`("" + ((${A_ends})||"")).endsWith((${B_ends})||"")`, TYPE_BOOLEAN);
         case "mistsutils.toUnicode":
-          return new TypedInput(`("" + (${descendTillSource.call(this, node.A, caseSanitize)})).codePointAt(0)`, TYPE_NUMBER);
+          return new TypedInput(`("" + ((${descendTillSource.call(this, node.A, caseSanitize)})||"")).codePointAt(0)`, TYPE_NUMBER);
         default:
           return originalFn(node);
       }
