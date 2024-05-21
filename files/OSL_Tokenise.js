@@ -4,7 +4,7 @@
   class OSLTokenise {
 
     constructor() {
-      this.regex = /"[^"\\]*(?:\\.[^"\\]*)*"|{[^}]+}|\[[^\]]+\]|\b\d[\d.]*\b|\S+/g;
+      this.regex = /"[^"]+"|{[^}]+}|\[[^\]]+\]|[^."(]*\((?:(?:"[^"]+")*[^.]+)*|\d[\d.]+\d|[^." ]+/g;
     }
 
     getInfo() {
@@ -96,33 +96,30 @@
       }
     }
 
-    tokenise({
-      CODE
-    }) {
-      let tokens = [];
-      let inQuotes = false;
-      let currentToken = '';
-
-      for (let i = 0; i < CODE.length; i++) {
-        const char = CODE[i];
-        if (char === '"') {
-          inQuotes = !inQuotes;
-          currentToken += char;
-        } else if (!inQuotes && char === ' ') {
-          if (currentToken.trim() !== '') {
-            tokens.push(currentToken);
-            currentToken = '';
-          }
+    tokenise({CODE}) {
+      this.letter = 0;
+      this.temp = "";
+      this.brackets = 0;
+      this.out = "";
+      this.split = [];
+      this.len = CODE.length;
+      while (this.letter < this.len) {
+        this.temp = CODE[this.letter];
+        if (this.temp === "\"") {
+          this.brackets = 1 - this.brackets;
+          this.out += "\"";
         } else {
-          currentToken += char;
+          this.out += this.temp;
+        }
+        this.letter++;
+        if (1 > this.brackets && CODE[this.letter] === " ") {
+          this.split.push(this.out);
+          this.out = "";
+          this.letter++;
         }
       }
-
-      if (currentToken.trim() !== '') {
-        tokens.push(currentToken);
-      }
-
-      return JSON.stringify(tokens);
+      this.split.push(this.out);
+      return JSON.stringify(this.split);
     }
   }
 
