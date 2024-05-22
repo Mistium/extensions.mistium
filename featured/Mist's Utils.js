@@ -216,6 +216,15 @@
               B: { type: Scratch.ArgumentType.STRING, defaultValue: '1' },
             },
           },
+          {
+            opcode: 'patchcommand',
+            func: 'err',
+            text: 'Patch [A]',
+            blockType: Scratch.BlockType.COMMAND,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+            },
+          },
           "---",
           {
             opcode: 'true',
@@ -441,6 +450,10 @@
           const A_patch2 = descendTillSource.call(this, node.A, caseSanitize);
           const B_patch2 = descendTillSource.call(this, node.B, caseSanitize);
           this.source += `\nvm.runtime.visualReport("${block.id}", ${A_patch2}${B_patch2});\n`;
+          return;
+        case 'mistsutils.patchcommand':
+          this.source += ``;
+          return;
         default:
           return originalFn(node);
       }
@@ -523,11 +536,15 @@
           return new TypedInput(`JSON.stringify(${descendTillSource.call(this, node.A, caseSanitize)})`, TYPE_UNKNOWN);
         case 'mistsutils.patchreporter':
           const A_patch = descendTillSource.call(this, node.A, caseSanitize);
-          return new TypedInput(`${A_patch}${B_patch}`, TYPE_UNKNOWN);
+          return new TypedInput(`${A_patch}`, TYPE_UNKNOWN);
         case 'mistsutils.patchreporter2':
           const A_patch2 = descendTillSource.call(this, node.A, caseSanitize);
           const B_patch2 = descendTillSource.call(this, node.B, caseSanitize);
           return new TypedInput(`${A_patch2}${B_patch2}`, TYPE_UNKNOWN);
+        case 'mistsutils.patchcommand':
+          const A_patchcmd = descendTillSource.call(this, node.A, caseSanitize);
+          return new TypedInput('${A_patchcmd}', TYPE_UNKNOWN);
+
         default:
           return originalFn(node);
       }
@@ -691,6 +708,12 @@
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
           };
+        case 'mistsutils_patchcommand':
+          return {
+            block,
+            kind: 'mistsutils.patchcommand',
+            A: this.descendInputOfBlock(block, 'A'),
+          };
         default:
           return originalFn(block);
       }
@@ -830,13 +853,17 @@
           return {
             kind: 'mistsutils.patchreporter',
             A: this.descendInputOfBlock(block, 'A'),
-            B: this.descendInputOfBlock(block, 'B'),
           };
         case 'mistsutils_patchreporter2':
           return {
             kind: 'mistsutils.patchreporter2',
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_patchcommand':
+          return {
+            kind: 'mistsutils.patchcommand',
+            A: this.descendInputOfBlock(block, 'A'),
           };
         default:
           return originalFn(block);
