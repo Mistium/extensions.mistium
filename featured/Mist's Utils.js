@@ -344,8 +344,9 @@
         case 'mistsutils.compare':
           const A_cmp = descendTillSource.call(this, node.A, caseSanitize);
           const B_cmp = descendTillSource.call(this, node.B, caseSanitize);
-          const C_cmp = descendTillSource.call(this, node.C, caseSanitize);
+          const C_cmp = descendTillSource.call(this, node.C, fakeSanitise);
           this.source += `\nvm.runtime.visualReport("${block.id}", (${A_cmp}) ${C_cmp} (${B_cmp}));\n`;
+          return;
         case 'mistsutils.power':
           const A_power = descendTillSource.call(this, node.A, caseSanitize);
           const B_power = descendTillSource.call(this, node.B, caseSanitize);
@@ -376,6 +377,7 @@
         case 'mistsutils.length':
           const A_length = descendTillSource.call(this, node.A, caseSanitize);
           this.source += `\nvm.runtime.visualReport("${block.id}", (${A_length}).length);\n`;
+          return;
         case 'mistsutils.item':
           const A_item = descendTillSource.call(this, node.A, caseSanitize);
           const B_item = descendTillSource.call(this, node.B, caseSanitize);
