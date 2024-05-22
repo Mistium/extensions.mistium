@@ -453,7 +453,7 @@
           this.source += `\nvm.runtime.visualReport("${block.id}", ${A_patch2}${B_patch2});\n`;
           return;
         case 'mistsutils.patchcommand':
-          this.source += ``;
+          this.source += `\nvm.runtime.visualReport("${block.id}", ${descendTillSource.call(this, node.A, fakeSanitise)});\n`;
           return;
         default:
           return originalFn(node);
@@ -543,9 +543,7 @@
           const B_patch2 = descendTillSource.call(this, node.B, fakeSanitise);
           return new TypedInput(`${A_patch2}${B_patch2}`, TYPE_UNKNOWN);
         case 'mistsutils.patchcommand':
-          const A_patchcmd = descendTillSource.call(this, node.A, fakeSanitise);
-          return new TypedInput('${A_patchcmd}', TYPE_UNKNOWN);
-
+          return new TypedInput(`${descendTillSource.call(this, node.A, fakeSanitise)}`, TYPE_UNKNOWN);
         default:
           return originalFn(node);
       }
