@@ -443,12 +443,12 @@
           this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify(${descendTillSource.call(this, node.A, caseSanitize)}));\n`;
           return;
         case 'mistsutils.patchreporter':
-          const A_patch = descendTillSource.call(this, node.A, caseSanitize);
+          const A_patch = descendTillSource.call(this, node.A, fakeSanitise);
           this.source += `\nvm.runtime.visualReport("${block.id}", ${A_patch});\n`;
           return;
         case 'mistsutils.patchreporter2':
-          const A_patch2 = descendTillSource.call(this, node.A, caseSanitize);
-          const B_patch2 = descendTillSource.call(this, node.B, caseSanitize);
+          const A_patch2 = descendTillSource.call(this, node.A, fakeSanitise);
+          const B_patch2 = descendTillSource.call(this, node.B, fakeSanitise);
           this.source += `\nvm.runtime.visualReport("${block.id}", ${A_patch2}${B_patch2});\n`;
           return;
         case 'mistsutils.patchcommand':
@@ -535,14 +535,14 @@
         case 'mistsutils.jsonstringify':
           return new TypedInput(`JSON.stringify(${descendTillSource.call(this, node.A, caseSanitize)})`, TYPE_UNKNOWN);
         case 'mistsutils.patchreporter':
-          const A_patch = descendTillSource.call(this, node.A, caseSanitize);
+          const A_patch = descendTillSource.call(this, node.A, fakeSanitise);
           return new TypedInput(`${A_patch}`, TYPE_UNKNOWN);
         case 'mistsutils.patchreporter2':
-          const A_patch2 = descendTillSource.call(this, node.A, caseSanitize);
-          const B_patch2 = descendTillSource.call(this, node.B, caseSanitize);
+          const A_patch2 = descendTillSource.call(this, node.A, fakeSanitise);
+          const B_patch2 = descendTillSource.call(this, node.B, fakeSanitise);
           return new TypedInput(`${A_patch2}${B_patch2}`, TYPE_UNKNOWN);
         case 'mistsutils.patchcommand':
-          const A_patchcmd = descendTillSource.call(this, node.A, caseSanitize);
+          const A_patchcmd = descendTillSource.call(this, node.A, fakeSanitise);
           return new TypedInput('${A_patchcmd}', TYPE_UNKNOWN);
 
         default:
