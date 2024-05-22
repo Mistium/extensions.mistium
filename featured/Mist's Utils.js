@@ -167,6 +167,7 @@
               B: { type: Scratch.ArgumentType.STRING, defaultValue: 'l' },
               C: { type: Scratch.ArgumentType.STRING, defaultValue: 'p' },
             },
+            hideFromPalette: true,
           },
           "---",
           {
