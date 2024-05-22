@@ -44,6 +44,17 @@
             },
           },
           {
+            opcode: 'compare',
+            func: 'err',
+            text: '[A] [C] [B]',
+            blockType: Scratch.BlockType.BOOLEAN,
+            arguments: {
+              A: { type: Scratch.ArgumentType.NUMBER, defaultValue: 3 },
+              B: { type: Scratch.ArgumentType.NUMBER, defaultValue: 4 },
+              C: { type: Scratch.ArgumentType.STRING, defaultValue: '<' },
+            },
+          },
+          {
             opcode: 'power',
             func: 'err',
             text: '[A] ^ [B]',
@@ -53,6 +64,7 @@
               B: { type: Scratch.ArgumentType.NUMBER, defaultValue: 4 },
             },
           },
+          "---",
           {
             opcode: 'clamp',
             func: 'err',
@@ -96,6 +108,15 @@
             },
           },
           {
+            opcode: 'length',
+            func: 'err',
+            text: '[A].length',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: "apple" },
+            },
+          },
+          {
             opcode: 'item',
             func: 'err',
             text: 'item [C] of [A] split by [B]',
@@ -105,36 +126,6 @@
               B: { type: Scratch.ArgumentType.STRING, defaultValue: "l" },
               C: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 },
             },
-          },
-          {
-            opcode: 'true',
-            func: 'err',
-            text: 'true',
-            blockType: Scratch.BlockType.BOOLEAN,
-          },
-          {
-            opcode: 'false',
-            func: 'err',
-            text: 'false',
-            blockType: Scratch.BlockType.BOOLEAN,
-          },
-          {
-            opcode: 'performancenow',
-            func: 'err',
-            text: 'performance.now()',
-            blockType: Scratch.BlockType.REPORTER,
-          },
-          {
-            opcode: 'stagewidth',
-            func: 'err',
-            text: 'Stage Width',
-            blockType: Scratch.BlockType.REPORTER,
-          },
-          {
-            opcode: 'stageheight',
-            func: 'err',
-            text: 'Stage Height',
-            blockType: Scratch.BlockType.REPORTER,
           },
           "---",
           {
@@ -205,7 +196,50 @@
             arguments: {
               A: { type: Scratch.ArgumentType.STRING, defaultValue: '{"a": 1}' },
             },
-          }
+          },
+          {
+            opcode: 'patchreporter',
+            func: 'err',
+            text: 'Patch [A][B][C][D]',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+              B: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+              C: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+              D: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+            },
+          },
+          "---",
+          {
+            opcode: 'true',
+            func: 'err',
+            text: 'true',
+            blockType: Scratch.BlockType.BOOLEAN,
+          },
+          {
+            opcode: 'false',
+            func: 'err',
+            text: 'false',
+            blockType: Scratch.BlockType.BOOLEAN,
+          },
+          {
+            opcode: 'performancenow',
+            func: 'err',
+            text: 'performance.now()',
+            blockType: Scratch.BlockType.REPORTER,
+          },
+          {
+            opcode: 'stagewidth',
+            func: 'err',
+            text: 'Stage Width',
+            blockType: Scratch.BlockType.REPORTER,
+          },
+          {
+            opcode: 'stageheight',
+            func: 'err',
+            text: 'Stage Height',
+            blockType: Scratch.BlockType.REPORTER,
+          },
         ],
       };
     }
@@ -276,6 +310,10 @@
     return String(case_);
   }
 
+  function fakeSanitise(input) {
+    return input;
+  }
+
   function descendTillSource(input, san) {
     let des = this.descendInput(input),
     src = false;
@@ -303,6 +341,11 @@
           const B_noteql = descendTillSource.call(this, node.B, caseSanitize);
           this.source += `\nvm.runtime.visualReport("${block.id}", ((""+(${A_noteql})) !== (""+(${B_noteql}))));\n`;
           return;
+        case 'mistsutils.compare':
+          const A_cmp = descendTillSource.call(this, node.A, caseSanitize);
+          const B_cmp = descendTillSource.call(this, node.B, caseSanitize);
+          const C_cmp = descendTillSource.call(this, node.C, caseSanitize);
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${A_cmp}) ${C_cmp} (${B_cmp}));\n`;
         case 'mistsutils.power':
           const A_power = descendTillSource.call(this, node.A, caseSanitize);
           const B_power = descendTillSource.call(this, node.B, caseSanitize);
@@ -330,6 +373,9 @@
           const B_splitarray = descendTillSource.call(this, node.B, caseSanitize);
           this.source += `\nvm.runtime.visualReport("${block.id}", ("${A_splitarray}").split("${B_splitarray}"));\n`;
           return;
+        case 'mistsutils.length':
+          const A_length = descendTillSource.call(this, node.A, caseSanitize);
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${A_length}).length);\n`;
         case 'mistsutils.item':
           const A_item = descendTillSource.call(this, node.A, caseSanitize);
           const B_item = descendTillSource.call(this, node.B, caseSanitize);
@@ -378,6 +424,13 @@
         case 'mistsutils.jsonstringify':
           this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify(${descendTillSource.call(this, node.A, caseSanitize)}));\n`;
           return;
+        case 'mistsutils.patchreporter':
+          const A_patch = descendTillSource.call(this, node.A, caseSanitize);
+          const B_patch = descendTillSource.call(this, node.B, caseSanitize);
+          const C_patch = descendTillSource.call(this, node.C, caseSanitize);
+          const D_patch = descendTillSource.call(this, node.D, caseSanitize);
+          this.source += `\nvm.runtime.visualReport("${block.id}", ${A_patch}${B_patch}${C_patch}${D_patch});\n`;
+          return;
         default:
           return originalFn(node);
       }
@@ -392,6 +445,11 @@
           const A_noteql = descendTillSource.call(this, node.A, caseSanitize);
           const B_noteql = descendTillSource.call(this, node.B, caseSanitize);
           return new TypedInput(`((""+(${A_noteql})) !== (""+(${B_noteql})))`, TYPE_BOOLEAN);
+        case 'mistsutils.compare':
+          const A_cmp = descendTillSource.call(this, node.A, caseSanitize);
+          const B_cmp = descendTillSource.call(this, node.B, caseSanitize);
+          const C_cmp = descendTillSource.call(this, node.C, caseSanitize);
+          return new TypedInput(`(${A_cmp}) ${C_cmp} (${B_cmp})`, TYPE_BOOLEAN);
         case 'mistsutils.power':
           const A_power = descendTillSource.call(this, node.A, caseSanitize);
           const B_power = descendTillSource.call(this, node.B, caseSanitize);
@@ -414,6 +472,9 @@
           const A_splitarray = descendTillSource.call(this, node.A, caseSanitize);
           const B_splitarray = descendTillSource.call(this, node.B, caseSanitize);
           return new TypedInput(`(""+(${A_splitarray})).split(""+(${B_splitarray}))`, TYPE_STRING);
+        case 'mistsutils.length':
+          const A_length = descendTillSource.call(this, node.A, caseSanitize);
+          return new TypedInput(`(${A_length}).length`, TYPE_NUMBER);
         case 'mistsutils.item':
           const A_item = descendTillSource.call(this, node.A, caseSanitize);
           const B_item = descendTillSource.call(this, node.B, caseSanitize);
@@ -450,6 +511,12 @@
           return new TypedInput(`JSON.parse(${descendTillSource.call(this, node.A, caseSanitize)})`, TYPE_UNKNOWN);
         case 'mistsutils.jsonstringify':
           return new TypedInput(`JSON.stringify(${descendTillSource.call(this, node.A, caseSanitize)})`, TYPE_UNKNOWN);
+        case 'mistsutils.patchreporter':
+          const A_patch = descendTillSource.call(this, node.A, caseSanitize);
+          const B_patch = descendTillSource.call(this, node.B, caseSanitize);
+          const C_patch = descendTillSource.call(this, node.C, caseSanitize);
+          const D_patch = descendTillSource.call(this, node.D, caseSanitize);
+          return new TypedInput(`${A_patch}${B_patch}${C_patch}${D_patch}`, TYPE_UNKNOWN);
         default:
           return originalFn(node);
       }
@@ -471,6 +538,14 @@
             kind: 'mistsutils.notequals',
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_compare':
+          return {
+            block,
+            kind: 'mistsutils.compare',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+            C: this.descendInputOfBlock(block, 'C'),
           };
         case 'mistsutils_power':
           return {
@@ -515,6 +590,12 @@
             kind: 'mistsutils.splitarray',
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_length':
+          return {
+            block,
+            kind: 'mistsutils.length',
+            A: this.descendInputOfBlock(block, 'A'),
           };
         case 'mistsutils_item':
           return {
@@ -586,6 +667,12 @@
             kind: 'mistsutils.jsonstringify',
             A: this.descendInputOfBlock(block, 'A'),
           };
+        case 'mistsutils_patchreporter':
+          return {
+            block,
+            kind: 'mistsutils.patchreporter',
+            A: this.descendInputOfBlock(block, 'A'),
+          };
         default:
           return originalFn(block);
       }
@@ -603,6 +690,13 @@
             kind: 'mistsutils.notequals',
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_compare':
+          return {
+            kind: 'mistsutils.compare',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+            C: this.descendInputOfBlock(block, 'C'),
           };
         case 'mistsutils_power':
           return {
@@ -641,6 +735,11 @@
             kind: 'mistsutils.splitarray',
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_length':
+          return {
+            kind: 'mistsutils.length',
+            A: this.descendInputOfBlock(block, 'A'),
           };
         case 'mistsutils_item':
           return {
@@ -708,6 +807,12 @@
           return {
             kind: 'mistsutils.jsonstringify',
             A: this.descendInputOfBlock(block, 'A'),
+          };
+        case 'mistsutils_patchreporter':
+          return {
+            kind: 'mistsutils.patchreporter',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
           };
         default:
           return originalFn(block);
