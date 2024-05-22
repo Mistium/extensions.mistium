@@ -78,7 +78,17 @@
           {
             opcode: 'split',
             func: 'err',
-            text: 'split [A] by [B]',
+            text: 'split [A] by [B] (stringify)',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: "apple" },
+              B: { type: Scratch.ArgumentType.STRING, defaultValue: "l" },
+            },
+          },
+          {
+            opcode: 'splitarray',
+            func: 'err',
+            text: 'split [A] by [B] (array)',
             blockType: Scratch.BlockType.REPORTER,
             arguments: {
               A: { type: Scratch.ArgumentType.STRING, defaultValue: "apple" },
@@ -126,6 +136,7 @@
             text: 'Stage Height',
             blockType: Scratch.BlockType.REPORTER,
           },
+          "---",
           {
             opcode: 'starts',
             func: 'err',
@@ -155,6 +166,46 @@
               A: { type: Scratch.ArgumentType.STRING, defaultValue: 'A' },
             },
           },
+          {
+            opcode: 'replace',
+            func: 'err',
+            text: 'replace [C] in [A] with [B]',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+              B: { type: Scratch.ArgumentType.STRING, defaultValue: 'l' },
+              C: { type: Scratch.ArgumentType.STRING, defaultValue: 'p' },
+            },
+          },
+          "---",
+          {
+            opcode: 'squarebrackets',
+            func: 'err',
+            text: '[A] item [B]',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+              B: { type: Scratch.ArgumentType.STRING, defaultValue: '1' },
+            },
+          },
+          {
+            opcode: 'jsonparse',
+            func: 'err',
+            text: 'JSON.parse [A]',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: '{"a": 1}' },
+            },
+          },
+          {
+            opcode: 'jsonstringify',
+            func: 'err',
+            text: 'JSON.stringify [A]',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: '{"a": 1}' },
+            },
+          }
         ],
       };
     }
@@ -274,6 +325,11 @@
           const B_split = descendTillSource.call(this, node.B, caseSanitize);
           this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify((""+(${A_split})).split(""+(${B_split}))));\n`;
           return;
+        case 'mistsutils.splitarray':
+          const A_splitarray = descendTillSource.call(this, node.A, caseSanitize);
+          const B_splitarray = descendTillSource.call(this, node.B, caseSanitize);
+          this.source += `\nvm.runtime.visualReport("${block.id}", ("${A_splitarray}").split("${B_splitarray}"));\n`;
+          return;
         case 'mistsutils.item':
           const A_item = descendTillSource.call(this, node.A, caseSanitize);
           const B_item = descendTillSource.call(this, node.B, caseSanitize);
@@ -284,8 +340,7 @@
           const A_repl = descendTillSource.call(this, node.A, caseSanitize);
           const B_repl = descendTillSource.call(this, node.B, caseSanitize);
           const C_repl = descendTillSource.call(this, node.C, caseSanitize);
-          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${A_repl})).replace(new RegExp((""+(${C_repl})), 'g'), ""+(${B_repl})));\n`;
-          return;
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${A_repl})).replace(new RegExp((""+(${C_repl})), 'g'), ""+(${B_repl}));\n`;
         case 'mistsutils.true':
           this.source += `\nvm.runtime.visualReport("${block.id}", "true");\n`;
           return;
@@ -313,6 +368,15 @@
           return;
         case 'mistsutils.toUnicode':
           this.source += `\nvm.runtime.visualReport("${block.id}", ("" + (${descendTillSource.call(this, node.A, caseSanitize)})).codePointAt(0));\n`;
+          return;
+        case 'mistsutils.squarebrackets':
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${descendTillSource.call(this, node.A, caseSanitize)})[(${descendTillSource.call(this, node.B, caseSanitize)})]);\n`;
+          return;
+        case 'mistsutils.jsonparse':
+          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.parse(${descendTillSource.call(this, node.A, caseSanitize)}));\n`;
+          return;
+        case 'mistsutils.jsonstringify':
+          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify(${descendTillSource.call(this, node.A, caseSanitize)}));\n`;
           return;
         default:
           return originalFn(node);
@@ -346,6 +410,10 @@
           const A_split = descendTillSource.call(this, node.A, caseSanitize);
           const B_split = descendTillSource.call(this, node.B, caseSanitize);
           return new TypedInput(`JSON.stringify((""+(${A_split})).split(""+(${B_split})))`, TYPE_STRING);
+        case 'mistsutils.splitarray':
+          const A_splitarray = descendTillSource.call(this, node.A, caseSanitize);
+          const B_splitarray = descendTillSource.call(this, node.B, caseSanitize);
+          return new TypedInput(`(""+(${A_splitarray})).split(""+(${B_splitarray}))`, TYPE_STRING);
         case 'mistsutils.item':
           const A_item = descendTillSource.call(this, node.A, caseSanitize);
           const B_item = descendTillSource.call(this, node.B, caseSanitize);
@@ -376,6 +444,12 @@
           return new TypedInput(`("" + ((${A_ends})||"")).endsWith((${B_ends})||"")`, TYPE_BOOLEAN);
         case "mistsutils.toUnicode":
           return new TypedInput(`("" + ((${descendTillSource.call(this, node.A, caseSanitize)})||"")).codePointAt(0)`, TYPE_NUMBER);
+        case 'mistsutils.squarebrackets':
+          return new TypedInput(`${descendTillSource.call(this, node.A, caseSanitize)}[${descendTillSource.call(this, node.B, caseSanitize)}]`, TYPE_UNKNOWN);
+        case 'mistsutils.jsonparse':
+          return new TypedInput(`JSON.parse(${descendTillSource.call(this, node.A, caseSanitize)})`, TYPE_UNKNOWN);
+        case 'mistsutils.jsonstringify':
+          return new TypedInput(`JSON.stringify(${descendTillSource.call(this, node.A, caseSanitize)})`, TYPE_UNKNOWN);
         default:
           return originalFn(node);
       }
@@ -435,6 +509,13 @@
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
           };
+        case 'mistsutils_splitarray':
+          return {
+            block,
+            kind: 'mistsutils.splitarray',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
         case 'mistsutils_item':
           return {
             block,
@@ -484,6 +565,25 @@
           return {
             block,
             kind: 'mistsutils.toUnicode',
+            A: this.descendInputOfBlock(block, 'A'),
+          };
+        case 'mistsutils_squarebrackets':
+          return {
+            block,
+            kind: 'mistsutils.squarebrackets',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_jsonparse':
+          return {
+            block,
+            kind: 'mistsutils.jsonparse',
+            A: this.descendInputOfBlock(block, 'A'),
+          };
+        case 'mistsutils_jsonstringify':
+          return {
+            block,
+            kind: 'mistsutils.jsonstringify',
             A: this.descendInputOfBlock(block, 'A'),
           };
         default:
@@ -536,6 +636,12 @@
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
           };
+        case 'mistsutils_splitarray':
+          return {
+            kind: 'mistsutils.splitarray',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
         case 'mistsutils_item':
           return {
             kind: 'mistsutils.item',
@@ -585,6 +691,22 @@
         case 'mistsutils_toUnicode':
           return {
             kind: 'mistsutils.toUnicode',
+            A: this.descendInputOfBlock(block, 'A'),
+          };
+        case 'mistsutils_squarebrackets':
+          return {
+            kind: 'mistsutils.squarebrackets',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_jsonparse':
+          return {
+            kind: 'mistsutils.jsonparse',
+            A: this.descendInputOfBlock(block, 'A'),
+          };
+        case 'mistsutils_jsonstringify':
+          return {
+            kind: 'mistsutils.jsonstringify',
             A: this.descendInputOfBlock(block, 'A'),
           };
         default:
