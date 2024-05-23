@@ -1,10 +1,13 @@
-(function(Scratch) {
+(function (Scratch) {
   "use strict";
-
+  
+  const vm = Scratch.vm;
+  
   class OSLTokenise {
 
     constructor() {
       this.regex = /"[^"]+"|{[^}]+}|\[[^\]]+\]|[^."(]*\((?:(?:"[^"]+")*[^.]+)*|\d[\d.]+\d|[^." ]+/g;
+      this.listVariable = '';
     }
 
     getInfo() {
@@ -12,38 +15,60 @@
         id: 'OSLTokenise',
         name: 'OSL Tokenise',
         blocks: [{
-            opcode: 'tokenise',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Tokenise OSL [CODE]',
-            arguments: {
-              CODE: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: "log \"hello\""
-              },
+          opcode: 'tokenise',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Tokenise OSL [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "log \"hello\""
             },
           },
-          {
-            opcode: 'splitmethods',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Tokenise Methods [CODE]',
-            arguments: {
-              CODE: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: "\"hello\".index(\"l\").bool"
-              },
+        },
+        {
+          opcode: 'splitmethods',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Tokenise Methods [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "\"hello\".index(\"l\").bool"
             },
           },
-          {
-            opcode: 'getMethodInputs',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Get Method Inputs [CODE]',
-            arguments: {
-              CODE: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: 'hi("wow","test")'
-              },
+        },
+        {
+          opcode: 'getMethodInputs',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Get Method Inputs [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'hi("wow","test")'
             },
           },
+        },
+        {
+          opcode: 'setlist',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'Set List to OSL Tokenise [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'log "hello"'
+            },
+          },
+        },
+        {
+          opcode: 'selectlist',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'Select List [Name]',
+          arguments: {
+            Name: { 
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'List Name'
+            },
+          },
+        },
         ],
       };
     }
@@ -96,7 +121,7 @@
       }
     }
 
-    tokenise({CODE}) {
+    tokenise({ CODE }) {
       this.letter = 0;
       this.temp = "";
       this.brackets = 0;
@@ -120,6 +145,41 @@
       }
       this.split.push(this.out);
       return JSON.stringify(this.split);
+    }
+
+
+    setlist({ CODE }, util) {
+      try {
+        this.letter = 0;
+        this.temp = "";
+        this.brackets = 0;
+        this.out = "";
+        this.split = [];
+        this.len = CODE.length;
+        while (this.letter < this.len) {
+          this.temp = CODE[this.letter];
+          if (this.temp === "\"") {
+            this.brackets = 1 - this.brackets;
+            this.out += "\"";
+          } else {
+            this.out += this.temp;
+          }
+          this.letter++;
+          if (1 > this.brackets && CODE[this.letter] === " ") {
+            this.split.push(this.out);
+            this.out = "";
+            this.letter++;
+          }
+        }
+        this.split.push(this.out);
+        this.listVariable.value = this.split;
+      } catch (e) {
+        console.warn(e)
+      }
+    }
+
+    selectlist({ Name }, util) {
+      this.listVariable = util.target.lookupVariableByNameAndType(Name, "list");
     }
   }
 
