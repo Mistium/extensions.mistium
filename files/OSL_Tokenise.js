@@ -174,7 +174,7 @@
         this.split.push(this.out);
         this.listVariable.value = this.split;
       } catch (e) {
-        console.warn(e)
+        // skip
       }
     }
 
