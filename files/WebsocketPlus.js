@@ -10,7 +10,6 @@
             this.messageQueue = {};
             this.connectedServers = {};
             this.newMessages = {};
-            this.nextId = 1;
         }
 
         getInfo() {
@@ -94,8 +93,12 @@
             };
         }
 
+        generateRandomId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
         connect({ URL, PORT }) {
-            const serverId = `${this.nextId++}`;
+            const serverId = this.generateRandomId();
             if (!this.wsServers[serverId]) {
                 const ws = new WebSocket(`ws://${URL}:${PORT}`);
                 this.setupWebSocketHandlers(serverId, ws);
@@ -105,7 +108,7 @@
         }
 
         connectSecure({ URL, PORT }) {
-            const serverId = `${this.nextId++}`;
+            const serverId = this.generateRandomId();
             if (!this.wsServers[serverId]) {
                 const ws = new WebSocket(`wss://${URL}:${PORT}`);
                 this.setupWebSocketHandlers(serverId, ws);
