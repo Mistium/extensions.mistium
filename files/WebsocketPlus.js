@@ -10,6 +10,7 @@
             this.messageQueue = {};
             this.connectedServers = {};
             this.newMessages = {};
+            this.nextId = 1;
         }
 
         getInfo() {
@@ -19,17 +20,8 @@
                 color1: '#FF5722',
                 blocks: [
                     {
-                        opcode: 'connect',
-                        blockType: Scratch.BlockType.COMMAND,
-                        text: 'connect to server [URL] on port [PORT]',
-                        arguments: {
-                            URL: { type: Scratch.ArgumentType.STRING, defaultValue: 'localhost' },
-                            PORT: { type: Scratch.ArgumentType.STRING, defaultValue: '8080' }
-                        }
-                    },
-                    {
                         opcode: 'connectSecure',
-                        blockType: Scratch.BlockType.COMMAND,
+                        blockType: Scratch.BlockType.REPORTER,
                         text: 'connect to secure server [URL] on port [PORT]',
                         arguments: {
                             URL: { type: Scratch.ArgumentType.STRING, defaultValue: 'echo.websocket.org' },
@@ -39,63 +31,63 @@
                     {
                         opcode: 'send',
                         blockType: Scratch.BlockType.COMMAND,
-                        text: 'send [MESSAGE] to server [SERVER]',
+                        text: 'send [MESSAGE] to connection [ID]',
                         arguments: {
                             MESSAGE: { type: Scratch.ArgumentType.STRING, defaultValue: 'Hello, Server!' },
-                            SERVER: { type: Scratch.ArgumentType.STRING, defaultValue: 'server1' }
+                            ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
                         }
                     },
                     {
                         opcode: 'getNextMessage',
                         blockType: Scratch.BlockType.REPORTER,
-                        text: 'get next message from server [SERVER]',
+                        text: 'get next message from connection [ID]',
                         arguments: {
-                            SERVER: { type: Scratch.ArgumentType.STRING, defaultValue: 'echo.websocket.org:443' }
+                            ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
                         }
                     },
                     {
                         opcode: 'discardNextMessage',
                         blockType: Scratch.BlockType.COMMAND,
-                        text: 'discard next message from server [SERVER]',
+                        text: 'discard next message from connection [ID]',
                         arguments: {
-                            SERVER: { type: Scratch.ArgumentType.STRING, defaultValue: 'echo.websocket.org:443' }
+                            ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
                         }
                     },
                     {
                         opcode: 'isConnected',
                         blockType: Scratch.BlockType.BOOLEAN,
-                        text: 'server [SERVER] connected?',
+                        text: 'connection [ID] connected?',
                         arguments: {
-                            SERVER: { type: Scratch.ArgumentType.STRING, defaultValue: 'echo.websocket.org:443' }
+                            ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
                         }
                     },
                     {
-                        opcode: 'getConnectedServers',
+                        opcode: 'getConnectedConnections',
                         blockType: Scratch.BlockType.REPORTER,
-                        text: 'get connected servers'
+                        text: 'get connected connections'
                     },
                     {
                         opcode: 'hasNewMessages',
                         blockType: Scratch.BlockType.BOOLEAN,
-                        text: 'new messages from server [SERVER]?',
+                        text: 'new messages from connection [ID]?',
                         arguments: {
-                            SERVER: { type: Scratch.ArgumentType.STRING, defaultValue: 'echo.websocket.org:443' }
+                            ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
                         }
                     },
                     {
                         opcode: 'getAllMessages',
                         blockType: Scratch.BlockType.REPORTER,
-                        text: 'get all messages from server [SERVER]',
+                        text: 'get all messages from connection [ID]',
                         arguments: {
-                            SERVER: { type: Scratch.ArgumentType.STRING, defaultValue: 'echo.websocket.org:443' }
+                            ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
                         }
                     },
                     {
-                        opcode: 'disconnectFromServer',
+                        opcode: 'disconnectFromConnection',
                         blockType: Scratch.BlockType.COMMAND,
-                        text: 'disconnect from server [SERVER]',
+                        text: 'disconnect from connection [ID]',
                         arguments: {
-                            SERVER: { type: Scratch.ArgumentType.STRING, defaultValue: 'server1' }
+                            ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
                         }
                     }
                 ]
@@ -103,19 +95,23 @@
         }
 
         connect({ URL, PORT }) {
-            const serverId = `${URL}:${PORT}`;
+            const serverId = `${this.nextId++}`;
             if (!this.wsServers[serverId]) {
                 const ws = new WebSocket(`ws://${URL}:${PORT}`);
                 this.setupWebSocketHandlers(serverId, ws);
+                return serverId;
             }
+            return '';
         }
 
         connectSecure({ URL, PORT }) {
-            const serverId = `${URL}:${PORT}`;
+            const serverId = `${this.nextId++}`;
             if (!this.wsServers[serverId]) {
                 const ws = new WebSocket(`wss://${URL}:${PORT}`);
                 this.setupWebSocketHandlers(serverId, ws);
+                return serverId;
             }
+            return '';
         }
 
         setupWebSocketHandlers(serverId, ws) {
@@ -141,53 +137,53 @@
             };
         }
 
-        send({ MESSAGE, SERVER }) {
-            const ws = this.wsServers[SERVER];
+        send({ MESSAGE, ID }) {
+            const ws = this.wsServers[ID];
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(MESSAGE);
             }
         }
 
-        getNextMessage({ SERVER }) {
-            const queue = this.messageQueue[SERVER];
+        getNextMessage({ ID }) {
+            const queue = this.messageQueue[ID];
             if (queue && queue.length > 0) {
                 return queue[0];
             }
             return '';
         }
 
-        discardNextMessage({ SERVER }) {
-            const queue = this.messageQueue[SERVER];
+        discardNextMessage({ ID }) {
+            const queue = this.messageQueue[ID];
             if (queue && queue.length > 0) {
                 queue.shift();
             }
         }
 
-        isConnected({ SERVER }) {
-            return this.connectedServers[SERVER] || false;
+        isConnected({ ID }) {
+            return this.connectedServers[ID] || false;
         }
 
-        getConnectedServers() {
+        getConnectedConnections() {
             return Object.keys(this.connectedServers);
         }
 
-        hasNewMessages({ SERVER }) {
-            return this.newMessages[SERVER] || false;
+        hasNewMessages({ ID }) {
+            return this.newMessages[ID] || false;
         }
-      
-        getAllMessages({ SERVER }) {
-            const queue = this.messageQueue[SERVER] || [];
+
+        getAllMessages({ ID }) {
+            const queue = JSON.stringify(this.messageQueue[ID] || []);
             return queue;
         }
 
-        disconnectFromServer({ SERVER }) {
-            const ws = this.wsServers[SERVER];
+        disconnectFromConnection({ ID }) {
+            const ws = this.wsServers[ID];
             if (ws) {
                 ws.close();
-                delete this.wsServers[SERVER];
-                delete this.messageQueue[SERVER];
-                delete this.connectedServers[SERVER];
-                delete this.newMessages[SERVER];
+                delete this.wsServers[ID];
+                delete this.messageQueue[ID];
+                delete this.connectedServers[ID];
+                delete this.newMessages[ID];
             }
         }
     }
