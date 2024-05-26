@@ -9,7 +9,6 @@
             this.wsServers = {};
             this.messageQueue = {};
             this.connectedServers = {};
-            this.newMessages = {};
         }
 
         getInfo() {
@@ -97,16 +96,6 @@
             return Math.random().toString(36).substr(2, 9);
         }
 
-        connect({ URL, PORT }) {
-            const serverId = this.generateRandomId();
-            if (!this.wsServers[serverId]) {
-                const ws = new WebSocket(`ws://${URL}:${PORT}`);
-                this.setupWebSocketHandlers(serverId, ws);
-                return serverId;
-            }
-            return '';
-        }
-
         connectSecure({ URL, PORT }) {
             const serverId = this.generateRandomId();
             if (!this.wsServers[serverId]) {
@@ -119,7 +108,6 @@
 
         setupWebSocketHandlers(serverId, ws) {
             ws.onopen = () => {
-                console.log(`Connected to ${serverId}`);
                 this.wsServers[serverId] = ws;
                 this.connectedServers[serverId] = true;
             };
@@ -128,13 +116,11 @@
                     this.messageQueue[serverId] = [];
                 }
                 this.messageQueue[serverId].push(event.data);
-                this.newMessages[serverId] = true;
             };
             ws.onerror = (error) => {
                 console.error(`WebSocket error on ${serverId}:`, error);
             };
             ws.onclose = () => {
-                console.log(`Connection closed to ${serverId}`);
                 delete this.wsServers[serverId];
                 delete this.connectedServers[serverId];
             };
@@ -167,11 +153,11 @@
         }
 
         getConnectedConnections() {
-            return Object.keys(this.connectedServers);
+            return JSON.stringify(Object.keys(this.connectedServers));
         }
 
         hasNewMessages({ ID }) {
-            return this.newMessages[ID] || false;
+            return (this.messageQueue[ID].length > 0) || false;
         }
 
         getAllMessages({ ID }) {
@@ -186,7 +172,6 @@
                 delete this.wsServers[ID];
                 delete this.messageQueue[ID];
                 delete this.connectedServers[ID];
-                delete this.newMessages[ID];
             }
         }
     }
