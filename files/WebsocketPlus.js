@@ -157,7 +157,8 @@
         }
 
         hasNewMessages({ ID }) {
-            return (this.messageQueue[ID].length > 0) || false;
+            const queue = this.messageQueue[ID];
+            return queue && queue.length > 0;
         }
 
         getAllMessages({ ID }) {
