@@ -122,29 +122,33 @@
     }
 
     tokenise({ CODE }) {
-      this.letter = 0;
-      this.temp = "";
-      this.brackets = 0;
-      this.out = "";
-      this.split = [];
-      this.len = CODE.length;
-      while (this.letter < this.len) {
-        this.temp = CODE[this.letter];
-        if (this.temp === "\"") {
-          this.brackets = 1 - this.brackets;
-          this.out += "\"";
-        } else {
-          this.out += this.temp;
-        }
-        this.letter++;
-        if (1 > this.brackets && CODE[this.letter] === " ") {
-          this.split.push(this.out);
-          this.out = "";
+      try {
+        this.letter = 0;
+        this.temp = "";
+        this.brackets = 0;
+        this.out = "";
+        this.split = [];
+        this.len = (""+CODE).length;
+        while (this.letter < this.len) {
+          this.temp = CODE[this.letter];
+          if (this.temp === "\"") {
+            this.brackets = 1 - this.brackets;
+            this.out += "\"";
+          } else {
+            this.out += this.temp;
+          }
           this.letter++;
+          if (1 > this.brackets && CODE[this.letter] === " ") {
+            this.split.push(this.out);
+            this.out = "";
+            this.letter++;
+          }
         }
+        this.split.push(this.out);
+        return JSON.stringify(this.split);
+      } catch(e) {
+        // skip
       }
-      this.split.push(this.out);
-      return JSON.stringify(this.split);
     }
 
 
