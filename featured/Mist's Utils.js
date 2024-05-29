@@ -247,7 +247,7 @@
           {
             opcode: 'patchreporter3',
             func: 'err',
-            text: 'Patch [A][B]',
+            text: 'Patch [A][B][C]',
             blockType: Scratch.BlockType.REPORTER,
             arguments: {
               A: { type: Scratch.ArgumentType.STRING, defaultValue: 'return' },
