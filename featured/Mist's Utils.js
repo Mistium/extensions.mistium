@@ -245,6 +245,17 @@
             },
           },
           {
+            opcode: 'patchreporter3',
+            func: 'err',
+            text: 'Patch [A][B]',
+            blockType: Scratch.BlockType.REPORTER,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'return' },
+              B: { type: Scratch.ArgumentType.STRING, defaultValue: '""' },
+              C: { type: Scratch.ArgumentType.STRING, defaultValue: ';' },
+            },
+          },
+          {
             opcode: 'patchcommand',
             func: 'err',
             text: 'Patch [A]',
@@ -485,13 +496,18 @@
           this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify(${descendTillSource.call(this, node.A, caseSanitize)}));\n`;
           return;
         case 'mistsutils.patchreporter':
-          const A_patch = descendTillSource.call(this, node.A, fakeSanitise);
-          this.source += `\nvm.runtime.visualReport("${block.id}", ${A_patch});\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", ${descendTillSource.call(this, node.A, fakeSanitise)});\n`;
           return;
         case 'mistsutils.patchreporter2':
           const A_patch2 = descendTillSource.call(this, node.A, fakeSanitise);
           const B_patch2 = descendTillSource.call(this, node.B, fakeSanitise);
           this.source += `\nvm.runtime.visualReport("${block.id}", ${A_patch2}${B_patch2});\n`;
+          return;
+        case 'mistsutils.patchreporter3':
+          const A_patch3 = descendTillSource.call(this, node.A, fakeSanitise);
+          const B_patch3 = descendTillSource.call(this, node.B, fakeSanitise);
+          const C_patch3 = descendTillSource.call(this, node.C, fakeSanitise);
+          this.source += `\nvm.runtime.visualReport("${block.id}", ${A_patch3}${B_patch3}${C_patch3});\n`;
           return;
         case 'mistsutils.patchcommand':
           this.source += `\n${descendTillSource.call(this, node.A, fakeSanitise)};\n`;
@@ -592,6 +608,11 @@
           const A_patch2 = descendTillSource.call(this, node.A, fakeSanitise);
           const B_patch2 = descendTillSource.call(this, node.B, fakeSanitise);
           return new TypedInput(`${A_patch2}${B_patch2}`, TYPE_UNKNOWN);
+        case 'mistsutils.patchreporter3':
+          const A_patch3 = descendTillSource.call(this, node.A, fakeSanitise);
+          const B_patch3 = descendTillSource.call(this, node.B, fakeSanitise);
+          const C_patch3 = descendTillSource.call(this, node.C, fakeSanitise);
+          return new TypedInput(`${A_patch3}${B_patch3}${C_patch3}`, TYPE_UNKNOWN);
         case 'mistsutils.patchcommand':
           return new TypedInput(`${descendTillSource.call(this, node.A, fakeSanitise)}`, TYPE_UNKNOWN);
         default:
@@ -772,6 +793,14 @@
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
           };
+        case 'mistsutils_patchreporter3':
+          return {
+            block,
+            kind: 'mistsutils.patchreporter3',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+            C: this.descendInputOfBlock(block, 'C'),
+          };
         case 'mistsutils_patchcommand':
           return {
             block,
@@ -936,6 +965,13 @@
             kind: 'mistsutils.patchreporter2',
             A: this.descendInputOfBlock(block, 'A'),
             B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_patchreporter3':
+          return {
+            kind: 'mistsutils.patchreporter2',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+            C: this.descendInputOfBlock(block, 'C'),
           };
         case 'mistsutils_patchcommand':
           return {
