@@ -1,33 +1,35 @@
 function tokenise(CODE) {
   try {
-    this.letter = 0;
-    this.depth = "";
-    this.brackets = 0;
-    this.out = "";
-    this.split = [];
-    this.len = ("" + CODE).length;
-    while (this.letter < this.len) {
-      this.depth = CODE[this.letter];
-      if (this.depth === "\"") {
-        this.brackets = 1 - this.brackets;
-        this.out += "\"";
+    let letter = 0;
+    let depth = "";
+    let brackets = 0;
+    let out = [];
+    let split = [];
+    const len = CODE.length;
+
+    while (letter < len) {
+      depth = CODE[letter];
+      if (depth === "\"") {
+        brackets = 1 - brackets;
+        out.push("\"");
       } else {
-        this.out += this.depth;
+        out.push(depth);
       }
-      this.letter++;
-      if (1 > this.brackets && CODE[this.letter] === " ") {
-        this.split.push(this.out);
-        this.out = "";
-        this.letter++;
+      letter++;
+
+      if (brackets === 0 && CODE[letter] === " ") {
+        split.push(out.join(''));
+        out = [];
+        letter++;
       }
     }
-    this.split.push(this.out);
-    return this.split;
+    split.push(out.join(''));
+    return split;
   } catch (e) {
     return [];
-    // skip
   }
 }
+
 
 (function (Scratch) {
   "use strict";
@@ -270,8 +272,7 @@ function tokenise(CODE) {
   }
 
   function compileOSL(OSL, ICONS) {
-    OSL = OSL.join("\n")
-    OSL = OSL.replace(/\n+/gi, "\n").replace(/\n +/gm, "\n").replace(/\n\/[^\n]+/gm, "").trim().split("\n");
+    OSL = OSL.join("\n").replace(/\n+/gi, "\n").replace(/\n +/gm, "\n").replace(/\n\/[^\n]+/gm, "").trim().split("\n");
     OSL = compileModifiers(OSL)
     OSL = compileStringConcat(OSL)
     OSL = compileBrackets(OSL)
@@ -559,33 +560,7 @@ function tokenise(CODE) {
     }
 
     tokenise({ CODE }) {
-      try {
-        this.letter = 0;
-        this.temp = "";
-        this.brackets = 0;
-        this.out = "";
-        this.split = [];
-        this.len = ("" + CODE).length;
-        while (this.letter < this.len) {
-          this.temp = CODE[this.letter];
-          if (this.temp === "\"") {
-            this.brackets = 1 - this.brackets;
-            this.out += "\"";
-          } else {
-            this.out += this.temp;
-          }
-          this.letter++;
-          if (1 > this.brackets && CODE[this.letter] === " ") {
-            this.split.push(this.out);
-            this.out = "";
-            this.letter++;
-          }
-        }
-        this.split.push(this.out);
-        return JSON.stringify(this.split);
-      } catch (e) {
-        // skip
-      }
+      return JSON.stringify(tokenise(CODE));
     }
 
     ScratchcompileOSL({ CODE, PASS }) {
