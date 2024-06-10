@@ -6,9 +6,9 @@
 // If a copy of the MPL was not distributed with this file,
 // Then you can obtain one at https://mozilla.org/MPL/2.0/
 
-// OASM v9
+// OASM v10
 
-(function(Scratch) {
+(function (Scratch) {
   "use strict";
 
   const vm = Scratch.vm,
@@ -43,93 +43,93 @@
       this.prep = [];
       this.errors = []
     }
-    
+
     getInfo() {
       return {
         id: 'OASM',
         name: 'OASM',
         color1: '#101010',
         blocks: [{
-            func: 'docs',
-            blockType: Scratch.BlockType.BUTTON,
-            text: 'Learn OASM(v9)',
-          },
-          {
-            opcode: 'compile',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Compile OASM [CODE]',
-            arguments: {
-              CODE: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: '["setv msg hello","prnt msg"]'
-              },
+          func: 'docs',
+          blockType: Scratch.BlockType.BUTTON,
+          text: 'Learn OASM(v9)',
+        },
+        {
+          opcode: 'compile',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Compile OASM [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: '["setv msg hello","prnt msg"]'
             },
           },
-          {
-            opcode: 'transpileOTAS',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Transpile OTAS To OASM [CODE]',
-            arguments: {
-              CODE: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: '["msg = hello","print msg"]'
-              },
+        },
+        {
+          opcode: 'transpileOTAS',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Transpile OTAS To OASM [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: '["msg = hello","print msg"]'
             },
           },
-          {
-            opcode: 'runblock',
-            func: 'run',
-            blockType: Scratch.BlockType.COMMAND,
-            text: 'Run  At [X],[Y] Code: [CODE]',
-            arguments: {
-              CODE: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: ''
-              },
-              X: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 0
-              },
-              Y: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 0
-              },
+        },
+        {
+          opcode: 'runblock',
+          func: 'run',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'Run  At [X],[Y] Code: [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: ''
+            },
+            X: {
+              type: Scratch.ArgumentType.NUMBER,
+              defaultValue: 0
+            },
+            Y: {
+              type: Scratch.ArgumentType.NUMBER,
+              defaultValue: 0
             },
           },
-          {
-            opcode: 'run',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Run  At [X],[Y] Code: [CODE]',
-            arguments: {
-              CODE: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: ''
-              },
-              X: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 0
-              },
-              Y: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 0
-              },
+        },
+        {
+          opcode: 'run',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Run  At [X],[Y] Code: [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: ''
+            },
+            X: {
+              type: Scratch.ArgumentType.NUMBER,
+              defaultValue: 0
+            },
+            Y: {
+              type: Scratch.ArgumentType.NUMBER,
+              defaultValue: 0
             },
           },
-          {
-            opcode: 'lastvars',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Variable data',
-          },
-          {
-            opcode: 'lastoutput',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Console Data',
-          },
-          {
-            opcode: 'allcmds',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'All Commands',
-          },
+        },
+        {
+          opcode: 'lastvars',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Variable data',
+        },
+        {
+          opcode: 'lastoutput',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Console Data',
+        },
+        {
+          opcode: 'allcmds',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'All Commands',
+        },
         ],
       };
     }
@@ -279,10 +279,18 @@
             this.vars[this.in3 - 1] = this.vars[this.in1][this.vars[this.in2 - 1] - 1];
             break;
           case "32":
-            this.vars[this.in2 - 1] = this.vars[this.in1].length;
+            this.vars[this.in2 - 1] = ("" + this.vars[this.in1]).length;
             break;
           case "33":
-            this.vars[this.in3 - 1] = this.vars[this.in1] + this.vars[this.in2 - 1]
+            this.vars[this.in3 - 1] = ("" + this.vars[this.in1]) + ("" + this.vars[this.in2 - 1])
+            break;
+          case "34":
+            if (this.vars[this.in1] !== this.vars[this.in2 - 1]) {
+              this.pc = +this.in3
+            }
+            break;
+          case "35":
+            this.vars[this.in3 - 1] = ("" + this.vars[this.in1]) + " " + ("" + this.vars[this.in2 - 1])
             break;
           default:
             console.log("Unknown Command: " + cmd);
@@ -302,13 +310,13 @@
     }
 
     allcmds() {
-      return JSON.stringify(["totv", "setv", "chav", "jump", "equl", "gthn", "lthn", "prnt", "ngth", "nlth", "svto", "mulv", "divv", "subv", "pend", "penu", "penc", "pens", "pene", "setx", "sety", "setp", "labl", "getd", "sinv", "cosv", "tanv", "modv", "sqrt", "copy", "letr", "leng"])
+      return '["totv", "setv", "chav", "jump", "equl", "gthn", "lthn", "prnt", "ngth", "nlth", "svto", "mulv", "divv", "subv", "pend", "penu", "penc", "pens", "pene", "setx", "sety", "setp", "labl", "getd", "sinv", "cosv", "tanv", "modv", "sqrt", "copy", "letr", "leng", "join", "neql","jnws"]'
     }
 
     compile({
       CODE
     }) {
-      const all_oasm_commands = ["totv", "setv", "chav", "jump", "equl", "gthn", "lthn", "prnt", "ngth", "nlth", "svto", "mulv", "divv", "subv", "pend", "penu", "penc", "pens", "pene", "setx", "sety", "setp", "labl", "getd", "sinv", "cosv", "tanv", "modv", "sqrt", "copy", "letr", "leng"]
+      const all_oasm_commands = ["totv", "setv", "chav", "jump", "equl", "gthn", "lthn", "prnt", "ngth", "nlth", "svto", "mulv", "divv", "subv", "pend", "penu", "penc", "pens", "pene", "setx", "sety", "setp", "labl", "getd", "sinv", "cosv", "tanv", "modv", "sqrt", "copy", "letr", "leng", "join", "neql", "jnws"]
       const all_oasm_jumps = ["jump", "equl", "gthn", "lthn", "ngth", "nlth"]
       CODE = JSON.parse(CODE)
       this.vars = []
@@ -323,9 +331,9 @@
             this.mapline = line.split(" ")
             if (all_oasm_jumps.indexOf(this.mapline[0]) !== -1) {
               if (this.mapline[3] === this.cur[1]) {
-                this.mapline[3] = (i+1).toString()
+                this.mapline[3] = (i + 1).toString()
               } else if (this.mapline[1] === this.cur[1]) {
-                this.mapline[1] = (i+1).toString()
+                this.mapline[1] = (i + 1).toString()
               }
               return this.mapline.join(" ")
             }
@@ -405,6 +413,29 @@
             this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
             this.spl[0] = 'sety';
             break;
+          case 'strings.length':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            this.spl[0] = 'leng';
+            break;
+          case 'strings.letter':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            this.spl[3] = createLiteralOTAS(vars, this.spl, 3, prep);
+            this.spl[0] = 'letr';
+            break;
+          case 'strings.join':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            this.spl[3] = createLiteralOTAS(vars, this.spl, 3, prep);
+            this.spl[0] = 'join';
+            break;
+          case 'strings.joinspace':
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            this.spl[3] = createLiteralOTAS(vars, this.spl, 3, prep);
+            this.spl[0] = 'jnws';
+            break;
           case 'math.sin':
             this.spl[0] = 'sinv';
             break;
@@ -462,6 +493,9 @@
               case '=':
                 this.spl[0] = 'equl';
                 break;
+              case '!':
+                this.spl[0] = 'neql';
+                break;
               case '>':
                 this.spl[0] = 'gthn';
                 break;
@@ -475,7 +509,7 @@
                 this.spl[0] = 'nlth';
                 break;
               default:
-                errors.push("Unknown Comparison On Line: " + (i+1))
+                errors.push("Unknown Comparison On Line: " + (i + 1))
                 break;
             }
             this.temp = [];
@@ -527,7 +561,7 @@
                   this.spl[1] = this.spl[0];
                   this.spl[0] = 'labl';
                 } else {
-                  errors.push("Unknown Command On Line: " + (i+1))
+                  errors.push("Unknown Command On Line: " + (i + 1))
                 }
                 break;
             }
