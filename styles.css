@@ -1,238 +1,50 @@
-html, body {
+html,
+body {
   min-height: max(100%, 100vh);
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-    transition: background-color 0.3s ease;
-    color: #fff;
-    background: linear-gradient(135deg, #000, #57cdac);
-  }
-  
-  
-  .nav-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-  }
-  
-  .logo {
-    font-size: 20px;
-    font-weight: bold;
-  }
-  
-  .nav-menu {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .nav-menu li {
-    display: inline;
-    margin-right: 20px;
-  }
-  
-  .nav-menu li a {
-    text-decoration: none;
-    color: inherit;
-  }
-  
-  .content {
-    padding: 0px;
-  }
-  
-  .image-container {
-    position: relative;
-    height: 50vw;
-    overflow: hidden;
-  }
-  
-  .image {
-    width: 50%;
-    transition: 0.2s;
-  }
-  
-  .image:hover {
-    width: 52%;
-    transition: 0.2s;
-  }
-  
-  #Image1 {
-    position: absolute;
-    top: calc(50% + 5vw);
-    left: calc(50% + 5vw);
-    transform: translate(-50%, -50%);
-  }
-  
-  /* Specify styles for the other images */
-  #Image2 {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    /* Adjust as needed */
-    transform: translate(-50%, -50%);
-  }
-  
-  #Image3 {
-    position: absolute;
-    top: calc(50% - 5vw);
-    left: calc(50% - 5vw);
-    transform: translate(-50%, -50%);
-  }
-  
-  .content {
-    text-align: center;
-  }
-  
-  .kernel-info {
-    background-color: #111;
-    border-radius: 10px;
-    opacity: 0.9;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-width: 700px;
-    margin: 0 auto;
-  }
-  
-  .kernel-info h1 {
-    opacity: 1;
-    font-size: 24px;
-    margin-top: 0;
-  }
-  
-  .kernel-info p {
-    opacity: 1;
-    margin: 10px 0;
-  }
-  
-  .kernel-info .item {
-    opacity: 1;
-    border-radius: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .kernel-info .item:nth-child(even) {
-    opacity: 1;
-    background-color: #222;
-  }
-  
-  .quote {
-    background-color: #333;
-    border-radius: 5px;
-    padding: 20px;
-  }
-  
-  .quote h3 {
-    margin-top: 0;
-    font-size: 20px;
-    color: #fff;
-  }
-  
-  .quote p {
-    margin: 10px 0;
-    max-width: 450px;
-  }
-  
-  .quote blockquote {
-    font-style: italic;
-    color: #ddd;
-    max-width: 600px;
-    border-radius: 10px;
-    padding: 20px;
-  }
-  
-  .quote footer {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #888;
-  }
-  
-  .badges {
-    text-decoration: none;
-    color: #fff;
-    scale: 1;
-    transition: 0.2s;
-  }
-  
-  .badges:hover {
-    color: #ddd;
-    scale: 1.05;
-    transition: 0.2s;
-  }
-  
-  .card-svg-bg {
-    background-color: #222;
-    border-radius: 10px;
-    width: 100px;
-    height: 100px;
-    padding: 40px;
-  }
-  
-  .card-svg {
-    fill: #fff;
-  }
-  
-  .card {
-    border-color: #57cdac;
-    border-width: 2px;
-    background-color: #111;
-    display: flex;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    max-width: 700px;
-    max-height: 180px;
-    margin: 20px auto;
-    transition-duration: 0.2s;
-    overflow: hidden;
-  }
-  
-  .card:hover {
-    opacity: 1;
-    scale: 1.025;
-    transition-duration: 0.2s;
-  }
-  
-  .card-content {
-    opacity: 1;
-    flex: 1;
-    margin: 20px;
-  }
-  
-  .card-content h2 {
-    opacity: 1;
-    font-size: 1.5rem;
-    margin: 0px 0px;
-  }
-  
-  .card-content p {
-    opacity: 1;
-    font-size: 1rem;
-    line-height: 1.5;
-  }
-  
-  .card-content a {
-    opacity: 1;
-    font-size: medium;
-    background-color: #333;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: 0px;
-    text-decoration: none;
-    color: #fff;
-  }
-  
-  .card-content a:hover {
-    font-size: medium;
-    background-color: #444;
-    color: #ddd;
-  }
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.3s ease;
+  color: #fff;
+  background: linear-gradient(135deg, #000, #57cdac);
+}
+
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.nav-menu {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-menu li {
+  display: inline;
+  margin-right: 20px;
+}
+
+.nav-menu li a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.content {
+  padding: 0px;
+  text-align: center;
+}
 
 /* Style for profile cards */
 .profile-card {
@@ -265,8 +77,8 @@ body {
 
 a:focus,
 a:active {
-    color: #fff;
-    outline: none;
+  color: #fff;
+  outline: none;
 }
 
 .profile-image {
@@ -277,4 +89,20 @@ a:active {
   height: 200px;
   margin: 0 auto;
   display: block;
+}
+
+
+.gallery-card {
+  border-color: #57cdac;
+  border-width: 2px;
+  background-color: #111;
+  display: flex;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  max-width: 700px;
+  max-height: 180px;
+  margin: 20px auto;
+  transition-duration: 0.2s;
+  overflow: hidden;
 }
