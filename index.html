@@ -28,6 +28,8 @@
         <div id="featuredCards"></div>
         <h2>All ( Some may not work at all :P )</h2>
         <div id="fileCards"></div>
+        <h2>Other Extension Galleries</h2>
+        <div id="otherGalleries"></div>
     </div>
     <script>
         // Function to fetch data from GitHub API
@@ -107,8 +109,44 @@
             });
         }
 
-        // Call the function to generate profile cards
+        // Function to generate other extension gallery links
+        function generateOtherGalleries() {
+            const galleries = [
+                { name: "PenguinMod", url: "https://extensions.penguinmod.com/" },
+                { name: "Callum's Gallery", url: "https://gallery.callumjt.dev/" },
+                { name: "Surv's Gallery", url: "https://surv.is-a.dev/survs-gallery/" },
+                { name: "Oeil de Lynx", url: "https://oeildelynx.top7box.com/extensions/en/" },
+                { name: "Sharkpool's Extensions", url: "https://sharkpools-extensions.vercel.app/" },
+                { name: "Ruby Team Gallery", url: "https://rubyteam.tech/gallery" },
+                { name: "TurboWarp Extensions", url: "https://extensions.turbowarp.org/" },
+                { name: "LDSJVG Webwave", url: "https://ldsjvg.webwave.dev/webpage_20" },
+                { name: "LBGS Extensions", url: "https://lbgs-extensions.vercel.app/" }
+            ];
+            
+            const otherGalleriesContainer = document.getElementById("otherGalleries");
+
+            galleries.forEach(gallery => {
+                const galleryLink = document.createElement("a");
+                galleryLink.href = gallery.url;
+                galleryLink.target = "_blank";
+                galleryLink.rel = "noopener noreferrer";
+                galleryLink.classList.add("gallery-link");
+
+                const galleryCard = document.createElement("div");
+                galleryCard.classList.add("gallery-card");
+
+                const galleryHeading = document.createElement("h2");
+                galleryHeading.textContent = gallery.name;
+
+                galleryCard.appendChild(galleryHeading);
+                galleryLink.appendChild(galleryCard);
+                otherGalleriesContainer.appendChild(galleryLink);
+            });
+        }
+
+        // Call the functions to generate profile cards and other galleries
         generateProfileCards();
+        generateOtherGalleries();
     </script>
 </body>
 </html>
