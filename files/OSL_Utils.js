@@ -1,3 +1,4 @@
+
 function tokenise(CODE) {
   try {
     let letter = 0;
@@ -30,6 +31,61 @@ function tokenise(CODE) {
   }
 }
 
+function randomString(length) {
+  let result = '';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
+
+function compileCloseBrackets(OSL) {
+  let out = [];
+  let regExp = /.\(([^()]+[ .][^()]+|[\d]+)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
+  let temp = {}
+  let variables = {}
+
+  for (let line of OSL) {
+    temp = {}
+    line = line.replace(/"[^"]+"/gi, (match) => {
+      let name = randomString(12); // Generate a random identifier
+      temp[name] = match
+      return name
+    })
+    while (regExp.test(line)) {
+      line = line.replace(regExp, (match, p1) => {
+        let name = randomString(12); // Generate a random identifier
+        for (let key in temp) {
+          p1 = p1.replace(key, temp[key])
+        }
+        p1 = p1.trim()
+        if (variables[p1]) {
+          name = variables[p1];
+        } else {
+          out.push(`${name} = ${p1}`);
+          variables[p1] = name;
+        }
+        if (match.startsWith(" ") || match.startsWith("(")) {
+          if (match.startsWith("((")) {
+            return `(${name}`;
+          } else {
+            return ` ${name}`;
+          }
+        } else {
+          return `${match[0] + "(" + name})`;
+        }
+      });
+    }
+    for (let key in temp) {
+      line = line.replace(key, temp[key])
+    }
+    out.push(line);
+  }
+  return out;
+}
 
 (function (Scratch) {
   "use strict";
@@ -42,16 +98,6 @@ function tokenise(CODE) {
     } else {
       return str;
     }
-  }
-
-  function randomstring(length) {
-    let result = '';
-    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
   }
 
 
@@ -98,8 +144,8 @@ function tokenise(CODE) {
               out.push(`tooltip ${spl[1]}`)
               break;
           }
-          OSL[i] = OSL[i].split(":")[0].trim()
         }
+        OSL[i] = OSL[i].split(":")[0].trim()
       }
       out.push(OSL[i])
     }
@@ -119,14 +165,15 @@ function tokenise(CODE) {
 
   function compileBrackets(OSL) {
     let out = [];
-    let regExp = /\(([^()]*)\)/im;  // Regular expression to match innermost parentheses
+    let regExp = /(?<= )\(([^("')]*)\)/im;  // Regular expression to match innermost parentheses
 
     for (let line of OSL) {
+      line = tokenise(line)
       while (regExp.test(line)) {
         line = line.replace(regExp, (match, p1) => {
-          let name = randomstring(12);
+          let name = randomString(12); // Generate a random identifier
           out.push(`${name} = ${p1.trim()}`);
-          return name;
+          return " " + name;
         });
       }
       out.push(line);
@@ -141,13 +188,12 @@ function tokenise(CODE) {
       i++
       let line = OSL[i]
       if (line) {
-        let temp = line.split(" ")
-        if (temp[temp.length - 1] === "(" && ((temp[0] === ")" && depth > 0) || ["if", "loop", "each", "for", "while", "until"].includes(temp[0]))) {
+        if (line.endsWith("(") && ((line[0] === ")" && depth > 0) || (line.startsWith("if") || line.startsWith("loop") || line.startsWith("while") || line.startsWith("until")))) {
           depth += 1
         }
         if (find_else === 1 && line === ") else (") {
           depth -= 1
-        } else if (temp[0] === ")") {
+        } else if (line.startsWith(")")) {
           depth -= 1
         }
       }
@@ -195,6 +241,8 @@ function tokenise(CODE) {
                 joined = OSL[i].join(" ")
                 if (joined == "true") {
                   OSL[i] = ``
+                } else if (joined == "false") {
+                  OSL[i] = `jt ${repl + 1}`
                 } else {
                   OSL[i] = `jn ${joined} ${repl + 1}`
                 }
@@ -260,13 +308,16 @@ function tokenise(CODE) {
           line = ["hitboxes_shown", "="]
           line.push(line[1] == "show" ? "true" : "false")
         } else if (line[0] === "icon") {
-          if (line[1].indexOf(" ") === -1 && line[1][0] == "\"") {
-            console.log(destring(line[1]) + ".icn")
-            line[1] = '"' + (ICONS[destring(line[1]) + ".icn"] ?? "") + '"'
+          if (line[1][0] === "\"") {
+            if (line[1].indexOf(" ") === -1) {
+              line[1] = '"' + (ICONS[destring(line[1]) + ".icn"] ?? "") + '"'
+            }
           }
         }
         out.push(line.join(" "))
-      }
+      } else (
+        out.push("")
+      )
     }
     return out
   }
@@ -455,7 +506,7 @@ function tokenise(CODE) {
           arguments: {
             CODE: {
               type: Scratch.ArgumentType.STRING,
-              defaultValue: '["log 10 + ( 10 + 3 )","text \\\"hello\\\" 10 : c#fff"]'
+              defaultValue: '["log \\\"hello\\\".left(10)","log 10 + ( 10 + 3 )","text \\\"hello\\\" 10 : c#fff"]'
             },
             PASS: {
               type: Scratch.ArgumentType.STRING,
@@ -485,28 +536,73 @@ function tokenise(CODE) {
             },
           },
         },
+          "---",
         {
-          opcode: 'setlist',
-          blockType: Scratch.BlockType.COMMAND,
-          text: 'Set List to OSL Tokenise [CODE]',
+          opcode: 'compileModifiers',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Compile Modifiers [CODE]',
           arguments: {
             CODE: {
               type: Scratch.ArgumentType.STRING,
-              defaultValue: 'log "hello"'
+              defaultValue: '["left(10)","right(10)","up(10)","down(10)"]'
             },
           },
         },
         {
-          opcode: 'selectlist',
-          blockType: Scratch.BlockType.COMMAND,
-          text: 'Select List [Name]',
+          opcode: 'compileStringConcat',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Compile String Concat [CODE]',
           arguments: {
-            Name: {
+            CODE: {
               type: Scratch.ArgumentType.STRING,
-              defaultValue: 'List Name'
+              defaultValue: '["hello","world"]'
             },
           },
         },
+        {
+          opcode: 'compileJumps',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Compile Jumps [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: '["if 10 > 5","if 10 < 5","if 10 == 5"]'
+            },
+          },
+        },
+        {
+          opcode: 'compileOther',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Compile Other [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: '["log 10","text 10 : c#fff","text 10 : c#fff"]'
+            },
+          },
+        },
+        {
+          opcode: 'compileCloseBrackets',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Compile Close Brackets [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: '["log \\"wow\\".left(1 + 1)"]'
+            },
+          },
+        },
+        {
+          opcode: 'cleanOSL',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Clean OSL [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: '["log 10","text 10 : c#fff","text 10 : c#fff"]'
+            },
+          },
+        }
         ],
       };
     }
@@ -517,11 +613,21 @@ function tokenise(CODE) {
       return JSON.stringify(CODE.match(this.regex) || []);
     }
 
-    getMethodInputs({
-      CODE
-    }) {
-      const methodName = CODE.split('(')[0].trim();
-      const argsString = CODE.match(/\(([^)]+)\)/)[1];
+    getMethodInputs({ CODE }) {
+      let depth = 1;
+      let out = "";
+      for (letter of CODE) {
+        if (letter === "(") {
+          depth += 1
+        } else if (letter === ")") {
+          depth -= 1
+        }
+        out += letter
+        if (depth === 0) {
+          break;
+        }
+      }
+      const argsString = out
       const args = [];
       let currentArg = '';
       let inQuotes = false;
@@ -561,6 +667,30 @@ function tokenise(CODE) {
 
     tokenise({ CODE }) {
       return JSON.stringify(tokenise(CODE));
+    }
+
+    compileModifiers({ CODE }) {
+      return JSON.stringify(compileModifiers(JSON.parse(CODE)));
+    }
+
+    compileStringConcat({ CODE }) {
+      return JSON.stringify(compileStringConcat(JSON.parse(CODE)));
+    }
+
+    compileJumps({ CODE }) {
+      return JSON.stringify(compileJumps(JSON.parse(CODE)));
+    }
+
+    compileOther({ CODE }) {
+      return JSON.stringify(compileOther(JSON.parse(CODE)));
+    }
+
+    compileCloseBrackets({ CODE }) {
+      return JSON.stringify(compileCloseBrackets(JSON.parse(CODE)));
+    }
+
+    cleanOSL({ CODE }) {
+      return JSON.stringify(JSON.parse(CODE).join("\n").replace(/\n+/gi, "\n").replace(/\n +/gm, "\n").replace(/\n\/[^\n]+/gm, "").trim().split("\n"));
     }
 
     ScratchcompileOSL({ CODE, PASS }) {
