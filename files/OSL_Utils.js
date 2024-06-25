@@ -46,7 +46,6 @@ function compileCloseBrackets(OSL) {
   let out = [];
   let regExp = /.\(([^()]+[ .][^()]+|[\d]+)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
   let temp = {}
-  let variables = {}
 
   for (let line of OSL) {
     temp = {}
@@ -61,13 +60,7 @@ function compileCloseBrackets(OSL) {
         for (let key in temp) {
           p1 = p1.replace(key, temp[key])
         }
-        p1 = p1.trim()
-        if (variables[p1]) {
-          name = variables[p1];
-        } else {
-          out.push(`${name} = ${p1}`);
-          variables[p1] = name;
-        }
+        out.push(`${name} = ${p1.trim()}`);
         if (match.startsWith(" ") || match.startsWith("(")) {
           if (match.startsWith("((")) {
             return `(${name}`;
