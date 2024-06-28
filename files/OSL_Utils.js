@@ -41,45 +41,6 @@ function randomString(length) {
   return result;
 }
 
-
-function compileCloseBrackets(OSL) {
-  let out = [];
-  let regExp = /.\(([^()]+[ .][^()]+|[\d]+)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
-  let temp = {}
-
-  for (let line of OSL) {
-    temp = {}
-    line = line.replace(/"[^"]+"/gi, (match) => {
-      let name = randomString(12); // Generate a random identifier
-      temp[name] = match
-      return name
-    })
-    while (regExp.test(line)) {
-      line = line.replace(regExp, (match, p1) => {
-        let name = randomString(12); // Generate a random identifier
-        for (let key in temp) {
-          p1 = p1.replace(key, temp[key])
-        }
-        out.push(`${name} = ${p1.trim()}`);
-        if (match.startsWith(" ") || match.startsWith("(")) {
-          if (match.startsWith("((")) {
-            return `(${name}`;
-          } else {
-            return ` ${name}`;
-          }
-        } else {
-          return `${match[0] + "(" + name})`;
-        }
-      });
-    }
-    for (let key in temp) {
-      line = line.replace(key, temp[key])
-    }
-    out.push(line);
-  }
-  return out;
-}
-
 (function (Scratch) {
   "use strict";
 
@@ -158,7 +119,7 @@ function compileCloseBrackets(OSL) {
 
   function extractQuotes(OSL) {
     let quotes = {}
-    let regExp = /"(?:[^\\"]|\\")+"/g
+    let regExp = /"(?:[^\\"]*|\\"?)*"/g
     OSL = OSL.replace(regExp, (match) => {
       let name = randomString(32);
       quotes[name] = match;
@@ -171,43 +132,56 @@ function compileCloseBrackets(OSL) {
     for (let key in quotes) {
         OSL = OSL.replace(key, quotes[key])
     }
-    console.log(OSL)
     return OSL
-  }
-  
-  function replaceLine(line,regExp,out) {
-    while (regExp.test(line)) {
-      line = line.replace(regExp, (match, p1) => {
-        let name = randomString(12); // Generate a random identifier
-        p1 = replaceLine(p1.trim(),regExp,out);
-        out = p1[1]
-        p1 = p1[0]
-        out.push(`${name} = ${p1.trim()}`);
-        if (match.startsWith(" ") || match.startsWith("(")) {
-          if (match.startsWith("((")) {
-            return `(${name}`;
-          } else {
-            return ` ${name}`;
-          }
-        } else {
-          return `${match[0] + "(" + name})`;
-        }
-      });
-    }
-    return [line,out]
   }
   
   function compileCloseBrackets(OSL) {
     let out = [];
-    let regExp = /.\(([^()]*[ .].*)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
-  
+    let methods = {}
+    let regExp = /.\(([^()]+)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
     for (let line of OSL) {
-      line = replaceLine(line.trim(),regExp,out);
-      out = line[1]
-      line = line[0]
+      while (regExp.test(line)) {
+        line = line.replace(regExp, (match, p1) => {
+          let name = randomString(12); // Generate a random identifier
+  
+          if (match.startsWith(" ") || match.startsWith("(")) {
+            out.push(`${name} = ${p1.trim()}`);
+  
+            if (match.startsWith("((")) {
+              return `(${name}`;
+            } else {
+              return ` ${name}`;
+            }
+          } else {
+            let temp = randomString(32)
+            methods[temp] = name
+            if (p1.trim().indexOf(",") !== -1) {
+              let inputs = p1.trim().split(",")
+              name = randomString(12)
+              methods[temp] = `${name}`
+              out.push(`${name} = ${inputs[0].trim()}`);
+              for (let i = 1; i < inputs.length; i++) {
+                name = randomString(12)
+                methods[temp] += `,${name}`
+                out.push(`${name} = ${inputs[i].trim()}`);
+              }
+              
+            } else {
+              out.push(`${name} = ${p1.trim()}`);
+              methods[temp] = name
+            }
+            return `${match[0] + temp}`;
+          }
+        });
+      }
       out.push(line);
     }
-    return out;
+    out = out.join("\n")
+    console.log(out)
+    for (let key in methods) {
+      out = out.replace(key, `(${methods[key]})`)
+    }
+    return out.split("\n");
   }
 
   function findMyBrackets(OSL, i, find_else) {
