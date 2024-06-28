@@ -156,22 +156,57 @@ function compileCloseBrackets(OSL) {
     return out
   }
 
-  function compileBrackets(OSL) {
+  function extractQuotes(OSL) {
+    let quotes = {}
+    let regExp = /"(?:[^\\"]|\\")+"/g
+    OSL = OSL.replace(regExp, (match) => {
+      let name = randomString(32);
+      quotes[name] = match;
+      return name
+    })
+    return [OSL,quotes]
+  }
+  
+  function insertQuotes(OSL, quotes) {
+    for (let key in quotes) {
+        OSL = OSL.replace(key, quotes[key])
+    }
+    console.log(OSL)
+    return OSL
+  }
+  
+  function replaceLine(line,regExp,out) {
+    while (regExp.test(line)) {
+      line = line.replace(regExp, (match, p1) => {
+        let name = randomString(12); // Generate a random identifier
+        p1 = replaceLine(p1.trim(),regExp,out);
+        out = p1[1]
+        p1 = p1[0]
+        out.push(`${name} = ${p1.trim()}`);
+        if (match.startsWith(" ") || match.startsWith("(")) {
+          if (match.startsWith("((")) {
+            return `(${name}`;
+          } else {
+            return ` ${name}`;
+          }
+        } else {
+          return `${match[0] + "(" + name})`;
+        }
+      });
+    }
+    return [line,out]
+  }
+  
+  function compileCloseBrackets(OSL) {
     let out = [];
-    let regExp = /(?<= )\(([^("')]*)\)/im;  // Regular expression to match innermost parentheses
-
+    let regExp = /.\(([^()]*[ .].*)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
+  
     for (let line of OSL) {
-      line = tokenise(line)
-      while (regExp.test(line)) {
-        line = line.replace(regExp, (match, p1) => {
-          let name = randomString(12); // Generate a random identifier
-          out.push(`${name} = ${p1.trim()}`);
-          return " " + name;
-        });
-      }
+      line = replaceLine(line.trim(),regExp,out);
+      out = line[1]
+      line = line[0]
       out.push(line);
     }
-
     return out;
   }
 
@@ -595,6 +630,33 @@ function compileCloseBrackets(OSL) {
               defaultValue: '["log 10","text 10 : c#fff","text 10 : c#fff"]'
             },
           },
+        },
+        "---",
+        {
+          opcode: 'extractQuotes',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Extract Quotes From [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'log "hello test"'
+            },
+          },
+        },
+        {
+          opcode: 'insertQuotes',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Insert Quotes From [QUOTES] Into [CODE]',
+          arguments: {
+            QUOTES: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: '{}'
+            },
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: ''
+            },
+          },
         }
         ],
       };
@@ -684,6 +746,14 @@ function compileCloseBrackets(OSL) {
 
     cleanOSL({ CODE }) {
       return JSON.stringify(JSON.parse(CODE).join("\n").replace(/\n+/gi, "\n").replace(/\n +/gm, "\n").replace(/\n\/[^\n]+/gm, "").trim().split("\n"));
+    }
+
+    extractQuotes({ CODE }) {
+      return JSON.stringify(extractQuotes(CODE));
+    }
+
+    insertQuotes({ QUOTES, CODE }) {
+      return insertQuotes(CODE, JSON.parse(QUOTES));
     }
 
     ScratchcompileOSL({ CODE, PASS }) {
