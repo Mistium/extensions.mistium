@@ -130,10 +130,13 @@ function randomString(length) {
   
   function insertQuotes(OSL, quotes) {
     for (let key in quotes) {
-        OSL = OSL.replace(key, quotes[key])
+        // Create a regular expression for the current key, with global replacement
+        let regex = new RegExp(key, 'g');
+        OSL = OSL.replace(regex, quotes[key]);
     }
-    return OSL
+    return OSL;
   }
+
   
   function compileCloseBrackets(OSL) {
     let out = [];
@@ -177,7 +180,6 @@ function randomString(length) {
       out.push(line);
     }
     out = out.join("\n")
-    console.log(out)
     for (let key in methods) {
       out = out.replace(key, `(${methods[key]})`)
     }
