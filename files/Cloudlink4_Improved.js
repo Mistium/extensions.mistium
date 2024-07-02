@@ -1873,7 +1873,7 @@
         return Scratch.fetch(args.url, {
           method: args.method,
           headers: JSON.parse(args.headers),
-          body: JSON.parse(args.data)
+          body: args.data
         })
           .then(response => response.text())
           .catch(error => {
