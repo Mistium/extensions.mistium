@@ -31,6 +31,7 @@ function tokenise(CODE) {
   }
 }
 
+
 function randomString(length) {
   let result = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -130,13 +131,10 @@ function randomString(length) {
   
   function insertQuotes(OSL, quotes) {
     for (let key in quotes) {
-        // Create a regular expression for the current key, with global replacement
-        let regex = new RegExp(key, 'g');
-        OSL = OSL.replace(regex, quotes[key]);
+        OSL = OSL.replace(key, quotes[key])
     }
-    return OSL;
+    return OSL
   }
-
   
   function compileCloseBrackets(OSL) {
     let out = [];
@@ -504,6 +502,17 @@ function randomString(length) {
           },
         },
         {
+          opcode: 'tokeniseraw',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Tokenise OSL Raw [CODE]',
+          arguments: {
+            CODE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "log \"hello\""
+            },
+          },
+        },
+        {
           opcode: 'ScratchcompileOSL',
           blockType: Scratch.BlockType.REPORTER,
           text: 'Compile OSL [CODE] [PASS]',
@@ -698,6 +707,10 @@ function randomString(length) {
 
     tokenise({ CODE }) {
       return JSON.stringify(tokenise(CODE));
+    }
+
+    tokeniseraw({ CODE }) {
+      return tokenise(CODE);
     }
 
     compileModifiers({ CODE }) {
