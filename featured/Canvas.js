@@ -18,7 +18,7 @@ class CanvasExtension {
         {
           opcode: 'createCanvas',
           blockType: Scratch.BlockType.COMMAND,
-          text: 'create canvas [CANVAS_ID] at x: [X] y: [Y] width: [WIDTH] height: [HEIGHT]',
+          text: 'create canvas [CANVAS_ID] at x: [X] y: [Y] width: [WIDTH] height: [HEIGHT] background colour: [COLOUR]',
           arguments: {
             CANVAS_ID: {
               type: Scratch.ArgumentType.STRING,
@@ -39,6 +39,10 @@ class CanvasExtension {
             HEIGHT: {
               type: Scratch.ArgumentType.NUMBER,
               defaultValue: 100
+            },
+            COLOUR: {
+              type: Scratch.ArgumentType.COLOR,
+              defaultValue: '#ffffff'
             }
           }
         },
@@ -442,12 +446,13 @@ class CanvasExtension {
   }
 
   createCanvas(args) {
-    const { CANVAS_ID, X, Y, WIDTH, HEIGHT } = args;
+    const { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR } = args;
     const canvas = document.createElement('canvas');
     canvas.id = CANVAS_ID;
     canvas.style.position = 'absolute';
     canvas.style.left = `${X}px`;
     canvas.style.top = `${Y}px`;
+    canvas.style.backgroundColor = COLOUR;
     canvas.width = WIDTH;
     canvas.height = HEIGHT;
     vm.renderer.addOverlay(canvas);
