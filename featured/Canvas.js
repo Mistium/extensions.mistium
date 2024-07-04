@@ -1,3 +1,8 @@
+// Name: Mistium's Canvases
+// Author: Mistium
+// Description: Create and manipulate canvases with this extension
+
+
 class CanvasExtension {
   constructor(runtime) {
     this.runtime = runtime;
