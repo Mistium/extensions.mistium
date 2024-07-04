@@ -9,6 +9,7 @@ class CanvasExtension {
     return {
       id: 'MistiumCanvas',
       name: "Mist's Canvases",
+      color1: '#4A893D',
       blocks: [
         {
           opcode: 'createCanvas',
@@ -294,6 +295,25 @@ class CanvasExtension {
           }
         },
         {
+          opcode: 'setPixelIndex',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'set pixel at I: [INDEX] on [CANVAS_ID] to colour: [COLOUR]',
+          arguments: {
+            CANVAS_ID: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'canvas1'
+            },
+            INDEX: {
+              type: Scratch.ArgumentType.NUMBER,
+              defaultValue: 0
+            },
+            COLOUR: {
+              type: Scratch.ArgumentType.COLOR,
+              defaultValue: '#ffffff'
+            }
+          }
+        },
+        {
           opcode: 'getPixel',
           blockType: Scratch.BlockType.REPORTER,
           text: 'get pixel at x: [X] y: [Y] on [CANVAS_ID]',
@@ -324,25 +344,6 @@ class CanvasExtension {
             INDEX: {
               type: Scratch.ArgumentType.NUMBER,
               defaultValue: 0
-            }
-          }
-        },
-        {
-          opcode: 'setPixelIndex',
-          blockType: Scratch.BlockType.COMMAND,
-          text: 'set pixel at I: [INDEX] on [CANVAS_ID] to colour: [COLOUR]',
-          arguments: {
-            CANVAS_ID: {
-              type: Scratch.ArgumentType.STRING,
-              defaultValue: 'canvas1'
-            },
-            INDEX: {
-              type: Scratch.ArgumentType.NUMBER,
-              defaultValue: 0
-            },
-            COLOUR: {
-              type: Scratch.ArgumentType.COLOR,
-              defaultValue: '#ffffff'
             }
           }
         },
