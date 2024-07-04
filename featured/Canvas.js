@@ -2,7 +2,6 @@
 // Author: Mistium
 // Description: Create and manipulate canvases with this extension
 
-
 class CanvasExtension {
   constructor(runtime) {
     this.runtime = runtime;
@@ -277,6 +276,63 @@ class CanvasExtension {
           }
         },
         {
+          opcode: 'getWidth',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'get width of [CANVAS_ID]',
+          arguments: {
+            CANVAS_ID: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'canvas1'
+            }
+          }
+        },
+        {
+          opcode: 'getHeight',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'get height of [CANVAS_ID]',
+          arguments: {
+            CANVAS_ID: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'canvas1'
+            }
+          }
+        },
+        {
+          opcode: 'getCanvasLayer',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'get layer of [CANVAS_ID]',
+          arguments: {
+            CANVAS_ID: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'canvas1'
+            }
+          }
+        },
+        {
+          opcode: 'getCanvasX',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'get x of [CANVAS_ID]',
+          arguments: {
+            CANVAS_ID: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'canvas1'
+            }
+          }
+        },
+        {
+          opcode: 'getCanvasY',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'get y of [CANVAS_ID]',
+          arguments: {
+            CANVAS_ID: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'canvas1'
+            }
+          }
+        },
+
+        "---",
+        {
           opcode: 'setPixel',
           blockType: Scratch.BlockType.COMMAND,
           text: 'set pixel at x: [X] y: [Y] on [CANVAS_ID] to colour: [COLOUR]',
@@ -379,7 +435,7 @@ class CanvasExtension {
         },
         TYPE: {
           acceptReporters: true,
-          items: ['dataURI']
+          items: ['dataURI','array']
         }
       }
     };
@@ -501,7 +557,55 @@ class CanvasExtension {
     }
   }
 
+  getWidth(args) {
+    const { CANVAS_ID } = args;
+    const canvas = this.canvases[CANVAS_ID];
+    if (canvas) {
+      return canvas.width;
+    } else {
+      console.log(`Canvas ${CANVAS_ID} not found`);
+    }
+  }
 
+  getHeight(args) {
+    const { CANVAS_ID } = args;
+    const canvas = this.canvases[CANVAS_ID];
+    if (canvas) {
+      return canvas.height;
+    } else {
+      console.log(`Canvas ${CANVAS_ID} not found`);
+    }
+  }
+
+  getCanvasLayer(args) {
+    const { CANVAS_ID } = args;
+    const canvas = this.canvases[CANVAS_ID];
+    if (canvas) {
+      return canvas.style.zIndex;
+    } else {
+      console.log(`Canvas ${CANVAS_ID} not found`);
+    }
+  }
+
+  getCanvasX(args) {
+    const { CANVAS_ID } = args;
+    const canvas = this.canvases[CANVAS_ID];
+    if (canvas) {
+      return parseInt(canvas.style.left);
+    } else {
+      console.log(`Canvas ${CANVAS_ID} not found`);
+    }
+  }
+
+  getCanvasY(args) {
+    const { CANVAS_ID } = args;
+    const canvas = this.canvases[CANVAS_ID];
+    if (canvas) {
+      return parseInt(canvas.style.top);
+    } else {
+      console.log(`Canvas ${CANVAS_ID} not found`);
+    }
+  }
 
   getCanvasAs(args) {
     const { CANVAS_ID, TYPE } = args;
@@ -510,6 +614,9 @@ class CanvasExtension {
       const ctx = canvas.getContext('2d');
       if (TYPE === 'dataURI') {
         return canvas.toDataURL();
+      } else if (TYPE === 'array') {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        return imageData.data;
       }
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
