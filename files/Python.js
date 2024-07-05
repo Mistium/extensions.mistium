@@ -43,25 +43,9 @@
             },
           },
           {
-            opcode: 'runPy',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Run Python [CODE]',
-            arguments: {
-              CODE: { type: Scratch.ArgumentType.STRING, defaultValue: '' }
-            },
-          },
-          {
             opcode: 'evalPyAsync',
             blockType: Scratch.BlockType.REPORTER,
             text: 'Eval Python Async [CODE]',
-            arguments: {
-              CODE: { type: Scratch.ArgumentType.STRING, defaultValue: '' }
-            }
-          },
-          {
-            opcode: 'evalPy',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'Eval Python [CODE]',
             arguments: {
               CODE: { type: Scratch.ArgumentType.STRING, defaultValue: '' }
             }
@@ -105,16 +89,7 @@
         console.error("Error:", error);
       }
     }
-
-    runPy({ CODE }) {
-      try {
-        this.redirectOutput(() => pyodide.runPython(CODE));
-        return this.output;
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    }
-
+    
     async evalPyAsync({ CODE }) {
       try {
         return await pyodide.runPythonAsync(CODE);
@@ -122,14 +97,7 @@
         console.error("Error:", error);
       }
     }
-
-    evalPy({ CODE }) {
-      try {
-        return pyodide.runPython(CODE)
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    }
+    
     resetvars() {
       try {
         pyodide.globals = {};
