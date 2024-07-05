@@ -17,7 +17,6 @@
 
   class Python {
     constructor() {
-      alert("Python Will Not Work When Offline! It will not be able to download the package from the internet.");
       this.output = '';
       if (navigator.onLine) {
         setupPyodide();
@@ -32,7 +31,7 @@
         blocks: [
           {
             blockType: Scratch.BlockType.LABEL,
-            text: 'Python Extension Must Be Online To Load Pyodide',
+            text: 'Python Will Not Work When Offline! It will not be able to download the package from the internet.',
           },
           {
             opcode: 'runPyAsync',
