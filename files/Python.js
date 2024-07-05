@@ -9,7 +9,7 @@
   async function setupPyodide() {
     if (typeof pyodide === 'undefined') {
       const languagePluginLoader = import('https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js');
-      const pyodideUrl = 'https://cdn.jsdelivr.net/pyodide/v0.18.1/full/';
+      const pyodideUrl = 'https://cdn.jsdelivr.net/pyodide/v0.25.1/full/';
       await languagePluginLoader;
       pyodide = await loadPyodide({ indexURL: pyodideUrl });
     }
