@@ -30,8 +30,9 @@
         color1: '#b58707',
         blocks: [
           {
-            blockType: Scratch.BlockType.LABEL,
-            text: 'Python Will Not Work When Offline! It will not be able to download the package from the internet.',
+            func: 'popup',
+            blockType: Scratch.BlockType.BUTTON,
+            text: 'OFFLINE WARNING',
           },
           {
             opcode: 'runPyAsync',
@@ -92,6 +93,10 @@
       };
     }
 
+    popup() {
+      alert("Python Will Not Work When Offline! It will not be able to download the package from the internet.")
+    }
+    
     async runPyAsync({ CODE }) {
       try {
         await this.redirectOutput(async () => await pyodide.runPythonAsync(CODE));
