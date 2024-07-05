@@ -233,6 +233,7 @@
             arguments: {
               A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
             },
+            allowDropAnywhere: true,
           },
           {
             opcode: 'patchreporter2',
@@ -243,6 +244,7 @@
               A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
               B: { type: Scratch.ArgumentType.STRING, defaultValue: '1' },
             },
+            allowDropAnywhere: true,
           },
           {
             opcode: 'patchreporter3',
@@ -254,6 +256,16 @@
               B: { type: Scratch.ArgumentType.STRING, defaultValue: '""' },
               C: { type: Scratch.ArgumentType.STRING, defaultValue: ';' },
             },
+            allowDropAnywhere: true,
+          },
+          {
+            opcode: 'patchboolean',
+            func: 'err',
+            text: 'Patch [A]',
+            blockType: Scratch.BlockType.BOOLEAN,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+            },
           },
           {
             opcode: 'patchcommand',
@@ -262,6 +274,27 @@
             blockType: Scratch.BlockType.COMMAND,
             arguments: {
               A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+            },
+          },
+          {
+            opcode: 'patchcommand2',
+            func: 'err',
+            text: 'Patch [A][B]',
+            blockType: Scratch.BlockType.COMMAND,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'apple' },
+              B: { type: Scratch.ArgumentType.STRING, defaultValue: '1' },
+            },
+          },
+          {
+            opcode: 'patchcommand3',
+            func: 'err',
+            text: 'Patch [A][B][C]',
+            blockType: Scratch.BlockType.COMMAND,
+            arguments: {
+              A: { type: Scratch.ArgumentType.STRING, defaultValue: 'return' },
+              B: { type: Scratch.ArgumentType.STRING, defaultValue: '""' },
+              C: { type: Scratch.ArgumentType.STRING, defaultValue: ';' },
             },
           },
           "---",
@@ -336,12 +369,12 @@
   const TYPE_UNKNOWN = 4;
   const TYPE_NUMBER_NAN = 5;
   // prettier-ignore
-  class TypedInput{constructor(t,s){if("number"!=typeof s)throw Error("type is invalid");this.source=t,this.type=s}asNumber(){return this.type===TYPE_NUMBER?this.source:this.type===TYPE_NUMBER_NAN?`(${this.source} || 0)`:`(+${this.source} || 0)`}asNumberOrNaN(){return this.type===TYPE_NUMBER||this.type===TYPE_NUMBER_NAN?this.source:`(+${this.source})`}asString(){return this.type===TYPE_STRING?this.source:`("" + ${this.source})`}asBoolean(){return this.type===TYPE_BOOLEAN?this.source:`toBoolean(${this.source})`}asColor(){return this.asUnknown()}asUnknown(){return this.source}asSafe(){return this.asUnknown()}isAlwaysNumber(){return this.type===TYPE_NUMBER}isAlwaysNumberOrNaN(){return this.type===TYPE_NUMBER||this.type===TYPE_NUMBER_NAN}isNeverNumber(){return!1}}
+  class TypedInput { constructor(t, s) { if ("number" != typeof s) throw Error("type is invalid"); this.source = t, this.type = s } asNumber() { return this.type === TYPE_NUMBER ? this.source : this.type === TYPE_NUMBER_NAN ? `(${this.source} || 0)` : `(+${this.source} || 0)` } asNumberOrNaN() { return this.type === TYPE_NUMBER || this.type === TYPE_NUMBER_NAN ? this.source : `(+${this.source})` } asString() { return this.type === TYPE_STRING ? this.source : `("" + ${this.source})` } asBoolean() { return this.type === TYPE_BOOLEAN ? this.source : `toBoolean(${this.source})` } asColor() { return this.asUnknown() } asUnknown() { return this.source } asSafe() { return this.asUnknown() } isAlwaysNumber() { return this.type === TYPE_NUMBER } isAlwaysNumberOrNaN() { return this.type === TYPE_NUMBER || this.type === TYPE_NUMBER_NAN } isNeverNumber() { return !1 } }
   // prettier-ignore
-  class ConstantInput{constructor(t,s){this.constantValue=t,this.safe=s}asNumber(){let t=+this.constantValue;return t?t.toString():Object.is(t,-0)?"-0":"0"}asNumberOrNaN(){return this.asNumber()}asString(){return`"${sanitize(""+this.constantValue)}"`}asBoolean(){return Cast.toBoolean(this.constantValue).toString()}asColor(){if(/^#[0-9a-f]{6,8}$/i.test(this.constantValue)){let t=this.constantValue.substr(1);return Number.parseInt(t,16).toString()}return this.asUnknown()}asUnknown(){if("number"==typeof this.constantValue)return this.constantValue;let t=+this.constantValue;return t.toString()===this.constantValue?this.constantValue:this.asString()}asSafe(){return this.safe?this.asUnknown():this.asString()}isAlwaysNumber(){let t=+this.constantValue;return!Number.isNaN(t)&&(0!==t||""!==this.constantValue.toString().trim())}isAlwaysNumberOrNaN(){return this.isAlwaysNumber()}isNeverNumber(){return Number.isNaN(+this.constantValue)}}
+  class ConstantInput { constructor(t, s) { this.constantValue = t, this.safe = s } asNumber() { let t = +this.constantValue; return t ? t.toString() : Object.is(t, -0) ? "-0" : "0" } asNumberOrNaN() { return this.asNumber() } asString() { return `"${sanitize("" + this.constantValue)}"` } asBoolean() { return Cast.toBoolean(this.constantValue).toString() } asColor() { if (/^#[0-9a-f]{6,8}$/i.test(this.constantValue)) { let t = this.constantValue.substr(1); return Number.parseInt(t, 16).toString() } return this.asUnknown() } asUnknown() { if ("number" == typeof this.constantValue) return this.constantValue; let t = +this.constantValue; return t.toString() === this.constantValue ? this.constantValue : this.asString() } asSafe() { return this.safe ? this.asUnknown() : this.asString() } isAlwaysNumber() { let t = +this.constantValue; return !Number.isNaN(t) && (0 !== t || "" !== this.constantValue.toString().trim()) } isAlwaysNumberOrNaN() { return this.isAlwaysNumber() } isNeverNumber() { return Number.isNaN(+this.constantValue) } }
   // prettier-ignore
-  class VariableInput{constructor(t){this.source=t,this.type=TYPE_UNKNOWN,this._value=null}setInput(t){if(t instanceof VariableInput){if(t._value)t=t._value;else{this.type=TYPE_UNKNOWN,this._value=null;return}}this._value=t,t instanceof TypedInput?this.type=t.type:this.type=TYPE_UNKNOWN}asNumber(){return this.type===TYPE_NUMBER?this.source:this.type===TYPE_NUMBER_NAN?`(${this.source} || 0)`:`(+${this.source} || 0)`}asNumberOrNaN(){return this.type===TYPE_NUMBER||this.type===TYPE_NUMBER_NAN?this.source:`(+${this.source})`}asString(){return this.type===TYPE_STRING?this.source:`("" + ${this.source})`}asBoolean(){return this.type===TYPE_BOOLEAN?this.source:`toBoolean(${this.source})`}asColor(){return this.asUnknown()}asUnknown(){return this.source}asSafe(){return this.asUnknown()}isAlwaysNumber(){return!!this._value&&this._value.isAlwaysNumber()}isAlwaysNumberOrNaN(){return!!this._value&&this._value.isAlwaysNumberOrNaN()}isNeverNumber(){return!!this._value&&this._value.isNeverNumber()}}
-  
+  class VariableInput { constructor(t) { this.source = t, this.type = TYPE_UNKNOWN, this._value = null } setInput(t) { if (t instanceof VariableInput) { if (t._value) t = t._value; else { this.type = TYPE_UNKNOWN, this._value = null; return } } this._value = t, t instanceof TypedInput ? this.type = t.type : this.type = TYPE_UNKNOWN } asNumber() { return this.type === TYPE_NUMBER ? this.source : this.type === TYPE_NUMBER_NAN ? `(${this.source} || 0)` : `(+${this.source} || 0)` } asNumberOrNaN() { return this.type === TYPE_NUMBER || this.type === TYPE_NUMBER_NAN ? this.source : `(+${this.source})` } asString() { return this.type === TYPE_STRING ? this.source : `("" + ${this.source})` } asBoolean() { return this.type === TYPE_BOOLEAN ? this.source : `toBoolean(${this.source})` } asColor() { return this.asUnknown() } asUnknown() { return this.source } asSafe() { return this.asUnknown() } isAlwaysNumber() { return !!this._value && this._value.isAlwaysNumber() } isAlwaysNumberOrNaN() { return !!this._value && this._value.isAlwaysNumberOrNaN() } isNeverNumber() { return !!this._value && this._value.isNeverNumber() } }
+
 
   const PATCHES_ID = 'mistsutils';
   const cst_patch = (obj, functions) => {
@@ -357,7 +390,7 @@
         };
       } else {
         obj[name] = function (...args) {
-          return functions[name].call(this, () => {}, ...args);
+          return functions[name].call(this, () => { }, ...args);
         };
       }
     }
@@ -376,7 +409,7 @@
 
   function descendTillSource(input, san) {
     let des = this.descendInput(input),
-    src = false;
+      src = false;
     if (input.kind === 'constant' && input?.value) return san(input.value);
     if (des.constantValue?.value) return san(des.constantValue.value);
     if (des?.source) return des.source;
@@ -509,8 +542,22 @@
           const C_patch3 = descendTillSource.call(this, node.C, fakeSanitise);
           this.source += `\nvm.runtime.visualReport("${block.id}", ${A_patch3}${B_patch3}${C_patch3});\n`;
           return;
+        case 'mistsutils.patchboolean':
+          this.source += `\nvm.runtime.visualReport("${block.id}", !!${descendTillSource.call(this, node.A, fakeSanitise)});\n`;
+          return;
         case 'mistsutils.patchcommand':
           this.source += `\n${descendTillSource.call(this, node.A, fakeSanitise)};\n`;
+          return;
+        case 'mistsutils.patchcommand2':
+          const A_patchc2 = descendTillSource.call(this, node.A, fakeSanitise);
+          const B_patchc2 = descendTillSource.call(this, node.B, fakeSanitise);
+          this.source += `\n${A_patchc2}${B_patchc2};\n`;
+          return;
+        case 'mistsutils.patchcommand3':
+          const A_patchc3 = descendTillSource.call(this, node.A, fakeSanitise);
+          const B_patchc3 = descendTillSource.call(this, node.B, fakeSanitise);
+          const C_patchc3 = descendTillSource.call(this, node.C, fakeSanitise);
+          this.source += `\n${A_patchc3}${B_patchc3}${C_patchc3};\n`;
           return;
         default:
           return originalFn(node);
@@ -613,8 +660,19 @@
           const B_patch3 = descendTillSource.call(this, node.B, fakeSanitise);
           const C_patch3 = descendTillSource.call(this, node.C, fakeSanitise);
           return new TypedInput(`${A_patch3}${B_patch3}${C_patch3}`, TYPE_UNKNOWN);
+        case 'mistsutils.patchboolean':
+          return new TypedInput(`!!${descendTillSource.call(this, node.A, fakeSanitise)}`, TYPE_BOOLEAN);
         case 'mistsutils.patchcommand':
           return new TypedInput(`${descendTillSource.call(this, node.A, fakeSanitise)}`, TYPE_UNKNOWN);
+        case 'mistsutils.patchcommand2':
+          const A_patchc2 = descendTillSource.call(this, node.A, fakeSanitise);
+          const B_patchc2 = descendTillSource.call(this, node.B, fakeSanitise);
+          return new TypedInput(`${A_patchc2}${B_patchc2}`, TYPE_UNKNOWN);
+        case 'mistsutils.patchcommand3':
+          const A_patchc3 = descendTillSource.call(this, node.A, fakeSanitise);
+          const B_patchc3 = descendTillSource.call(this, node.B, fakeSanitise);
+          const C_patchc3 = descendTillSource.call(this, node.C, fakeSanitise);
+          return new TypedInput(`${A_patchc3}${B_patchc3}${C_patchc3}`, TYPE_UNKNOWN);
         default:
           return originalFn(node);
       }
@@ -801,11 +859,32 @@
             B: this.descendInputOfBlock(block, 'B'),
             C: this.descendInputOfBlock(block, 'C'),
           };
+        case 'mistsutils_patchboolean':
+          return {
+            block,
+            kind: 'mistsutils.patchboolean',
+            A: this.descendInputOfBlock(block, 'A'),
+          };
         case 'mistsutils_patchcommand':
           return {
             block,
             kind: 'mistsutils.patchcommand',
             A: this.descendInputOfBlock(block, 'A'),
+          };
+        case 'mistsutils_patchcommand2':
+          return {
+            block,
+            kind: 'mistsutils.patchcommand2',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_patchcommand3':
+          return {
+            block,
+            kind: 'mistsutils.patchcommand3',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+            C: this.descendInputOfBlock(block, 'C'),
           };
         default:
           return originalFn(block);
@@ -973,10 +1052,28 @@
             B: this.descendInputOfBlock(block, 'B'),
             C: this.descendInputOfBlock(block, 'C'),
           };
+        case 'mistsutils_patchboolean':
+          return {
+            kind: 'mistsutils.patchboolean',
+            A: this.descendInputOfBlock(block, 'A'),
+          };
         case 'mistsutils_patchcommand':
           return {
             kind: 'mistsutils.patchcommand',
             A: this.descendInputOfBlock(block, 'A'),
+          };
+        case 'mistsutils_patchcommand2':
+          return {
+            kind: 'mistsutils.patchcommand2',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+          };
+        case 'mistsutils_patchcommand3':
+          return {
+            kind: 'mistsutils.patchcommand3',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
+            C: this.descendInputOfBlock(block, 'C'),
           };
         default:
           return originalFn(block);
