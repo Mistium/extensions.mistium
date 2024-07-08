@@ -25,19 +25,34 @@ class JSONExtension {
                             defaultValue: 'newValue'
                         }
                     }
+                },
+                {
+                    opcode: 'getPathFromJson',
+                    blockType: Scratch.BlockType.REPORTER,
+                    text: 'get path [PATH] of JSON [JSON]',
+                    arguments: {
+                        PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'path.to.value'
+                        },
+                        JSON: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: '{"key": "value"}'
+                        }
+                    }
                 }
             ]
         };
     }
 
     setPathToValue(args) {
-        const path = args.PATH.split('.');
+        const path = this.parsePath(args.PATH);
         let jsonObject;
         try {
             jsonObject = JSON.parse(args.JSON);
         } catch (e) {
             console.error('Invalid JSON');
-            return;
+            return '';
         }
 
         let value;
@@ -50,16 +65,54 @@ class JSONExtension {
         try {
             let obj = jsonObject;
             for (let i = 0; i < path.length - 1; i++) {
-                if (!obj[path[i]]) {
-                    obj[path[i]] = {};
+                const part = path[i];
+                if (typeof obj[part] === 'undefined') {
+                    obj[part] = typeof path[i + 1] === 'number' ? [] : {};
                 }
-                obj = obj[path[i]];
+                obj = obj[part];
             }
             obj[path[path.length - 1]] = value;
         } catch (e) {
-            //ignore
+            // ignore
         }
         return JSON.stringify(jsonObject);
+    }
+
+    getPathFromJson(args) {
+        const path = this.parsePath(args.PATH);
+        let jsonObject;
+        try {
+            jsonObject = JSON.parse(args.JSON);
+        } catch (e) {
+            console.error('Invalid JSON');
+            return '';
+        }
+
+        let obj = jsonObject;
+        try {
+            for (let i = 0; i < path.length; i++) {
+                obj = obj[path[i]];
+            }
+        } catch (e) {
+            console.error('Invalid path');
+            return '';
+        }
+
+        if (typeof obj === 'object') {
+            return JSON.stringify(obj);
+        } else {
+            return obj.toString();
+        }
+    }
+
+    parsePath(path) {
+        return path.split('.').map(part => {
+            if (part.includes('[')) {
+                const [prop, index] = part.split(/[[\]]/).filter(Boolean);
+                return [prop, Number(index)];
+            }
+            return part;
+        }).flat();
     }
 }
 
