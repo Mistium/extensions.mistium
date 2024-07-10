@@ -546,18 +546,18 @@
           this.source += `\nvm.runtime.visualReport("${block.id}", !!${descendTillSource.call(this, node.A, fakeSanitise)});\n`;
           return;
         case 'mistsutils.patchcommand':
-          this.source += `\n${descendTillSource.call(this, node.A, fakeSanitise)};\n`;
+          this.source += `\n${descendTillSource.call(this, node.A, fakeSanitise)}\n`;
           return;
         case 'mistsutils.patchcommand2':
           const A_patchc2 = descendTillSource.call(this, node.A, fakeSanitise);
           const B_patchc2 = descendTillSource.call(this, node.B, fakeSanitise);
-          this.source += `\n${A_patchc2}${B_patchc2};\n`;
+          this.source += `\n${A_patchc2}${B_patchc2}\n`;
           return;
         case 'mistsutils.patchcommand3':
           const A_patchc3 = descendTillSource.call(this, node.A, fakeSanitise);
           const B_patchc3 = descendTillSource.call(this, node.B, fakeSanitise);
           const C_patchc3 = descendTillSource.call(this, node.C, fakeSanitise);
-          this.source += `\n${A_patchc3}${B_patchc3}${C_patchc3};\n`;
+          this.source += `\n${A_patchc3}${B_patchc3}${C_patchc3}\n`;
           return;
         default:
           return originalFn(node);
