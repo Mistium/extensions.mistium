@@ -139,7 +139,7 @@ function randomString(length) {
   function compileCloseBrackets(OSL) {
     let out = [];
     let methods = {}
-    let regExp = /.\(([^()]+)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
+    let regExp = /.\(([^()]*)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
     for (let line of OSL) {
       while (regExp.test(line)) {
         line = line.replace(regExp, (match, p1) => {
@@ -155,6 +155,14 @@ function randomString(length) {
             }
           } else {
             let temp = randomString(32)
+            if (p1.trim() === "") {
+              methods[temp] = ""
+              return `${match[0] + temp}`;
+            }
+            if (!Number.isNaN(Number.parseInt(p1.trim())) || (p1.trim().indexOf(" ") + p1.trim().indexOf(".") === -2)) {
+              methods[temp] = p1.trim()
+              return `${match[0] + temp}`;
+            }
             methods[temp] = name
             if (p1.trim().indexOf(",") !== -1) {
               let inputs = p1.trim().split(",")
@@ -166,7 +174,6 @@ function randomString(length) {
                 methods[temp] += `,${name}`
                 out.push(`${name} = ${inputs[i].trim()}`);
               }
-              
             } else {
               out.push(`${name} = ${p1.trim()}`);
               methods[temp] = name
