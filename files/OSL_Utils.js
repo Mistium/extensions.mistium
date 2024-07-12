@@ -159,7 +159,7 @@ function randomString(length) {
               methods[temp] = ""
               return `${match[0] + temp}`;
             }
-            if (!Number.isNaN(Number.parseInt(p1.trim())) || (p1.trim().indexOf(" ") + p1.trim().indexOf(".") === -2)) {
+            if ((!Number.isNaN(Number.parseInt(p1.trim())) || p1.trim().indexOf(".") === -1) && p1.trim().indexOf(" ") == -1) {
               methods[temp] = p1.trim()
               return `${match[0] + temp}`;
             }
