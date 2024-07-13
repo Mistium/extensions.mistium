@@ -195,6 +195,7 @@ function compileCloseBrackets(OSL) {
       out.push(line);
     }
     out = out.join("\n");
+    let key_reg;
     for (let key in methods) {
       key_reg = new RegExp(key, "g")
       out = out.replace(key_reg, `(${methods[key]})`)
