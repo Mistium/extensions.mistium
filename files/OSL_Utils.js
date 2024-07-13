@@ -136,7 +136,17 @@ function randomString(length) {
     return OSL
   }
   
-  function compileCloseBrackets(OSL) {
+  function randomString(length) {
+  let result = '';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
+function compileCloseBrackets(OSL) {
     let out = [];
     let methods = {}
     let regExp = /.\(([^()]*)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
@@ -159,7 +169,7 @@ function randomString(length) {
               methods[temp] = ""
               return `${match[0] + temp}`;
             }
-            if ((!Number.isNaN(Number.parseInt(p1.trim())) || p1.trim().indexOf(".") === -1) && p1.trim().indexOf(" ") == -1) {
+            if (!Number.isNaN(Number.parseInt(p1.trim())) && (p1.trim().indexOf(" ") === -1) && (p1.trim().indexOf(".") === -1)) {
               methods[temp] = p1.trim()
               return `${match[0] + temp}`;
             }
@@ -184,9 +194,10 @@ function randomString(length) {
       }
       out.push(line);
     }
-    out = out.join("\n")
+    out = out.join("\n");
     for (let key in methods) {
-      out = out.replace(key, `(${methods[key]})`)
+      key_reg = new RegExp(key, "g")
+      out = out.replace(key_reg, `(${methods[key]})`)
     }
     return out.split("\n");
   }
