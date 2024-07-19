@@ -15,7 +15,7 @@
         return {
           id: 'tables',
           name: 'tables',
-          blocks: [{"opcode":"newTable","blockType": Scratch.BlockType.REPORTER,"returns":"STRING","text":"new table","code":"([[]])","func":"err"},{"opcode":"addRow","blockType": Scratch.BlockType.COMMAND,"returns":"STRING","text":"add row to [A]","code":"(${pflxreeSGzKq}.push(new Array(${pflxreeSGzKq}[0].length).fill(\"\")))","arguments":{"A":{"type":"string","gen_id":"pflxreeSGzKq","defaultValue":"table"}},"func":"err"},{"opcode":"addColumn","blockType": Scratch.BlockType.COMMAND,"returns":"STRING","text":"add column to [A]","code":"${GRaZTQfwuUJn}.map(column => (column.push(\"\"), column))","arguments":{"A":{"type":"string","gen_id":"GRaZTQfwuUJn","defaultValue":"table"}},"func":"err"},{"opcode":"setCell","blockType": Scratch.BlockType.COMMAND,"returns":"STRING","text":"set cell [X],[Y] in [A] to [B]","code":"(${QffFgUSkgRte}[${ajCnhZestbsM}][${fpyYIXGnuWUs}] = ${VAfarQlEMpoz})","arguments":{"A":{"type":"string","gen_id":"QffFgUSkgRte","defaultValue":"table"},"X":{"type":"string","gen_id":"ajCnhZestbsM","defaultValue":"0"},"Y":{"type":"string","gen_id":"fpyYIXGnuWUs","defaultValue":"0"},"B":{"type":"string","gen_id":"VAfarQlEMpoz","defaultValue":"value"}},"func":"err"},{"opcode":"getCell","blockType": Scratch.BlockType.REPORTER,"returns":"STRING","text":"cell [X],[Y] in [A]","code":"(${XUSXpIhWBdcK}[${GMQYCicwBiiT}][${GkZexqliIIyV}])","arguments":{"A":{"type":"string","gen_id":"XUSXpIhWBdcK","defaultValue":"table"},"X":{"type":"string","gen_id":"GMQYCicwBiiT","defaultValue":"0"},"Y":{"type":"string","gen_id":"GkZexqliIIyV","defaultValue":"0"}},"func":"err"},{"opcode":"deleteRow","blockType": Scratch.BlockType.COMMAND,"returns":"STRING","text":"delete row [X] in [A]","code":"(${bdLnZDFRrUGu}.splice(${aXjhhtgOuUUR}, 1))","arguments":{"A":{"type":"string","gen_id":"bdLnZDFRrUGu","defaultValue":"table"},"X":{"type":"string","gen_id":"aXjhhtgOuUUR","defaultValue":"0"}},"func":"err"},{"opcode":"deleteColumn","blockType": Scratch.BlockType.COMMAND,"returns":"STRING","text":"delete column [X] in [A]","code":"(${VNlrQaAFmeQR}.map(column => (column.splice(${UzHFsNWJLSwo}, 1), column)))","arguments":{"A":{"type":"string","gen_id":"VNlrQaAFmeQR","defaultValue":"table"},"X":{"type":"string","gen_id":"UzHFsNWJLSwo","defaultValue":"0"}},"func":"err"}],
+          blocks: [{"opcode":"newTable","blockType": Scratch.BlockType.REPORTER,"returns":"STRING","text":"new table","code":"([[]])","func":"err"},{"opcode":"addRow","blockType": Scratch.BlockType.COMMAND,"text":"add row to [A]","code":"(${fgouMfsWgqLf}.push(new Array(${fgouMfsWgqLf}[0].length).fill(\"\")))","arguments":{"A":{"type":"string","gen_id":"fgouMfsWgqLf","defaultValue":"table"}},"func":"err"},{"opcode":"addColumn","blockType": Scratch.BlockType.COMMAND,"text":"add column to [A]","code":"${EteGjdfPKpSh}.map(column => (column.push(\"\"), column))","arguments":{"A":{"type":"string","gen_id":"EteGjdfPKpSh","defaultValue":"table"}},"func":"err"},{"opcode":"setCell","blockType": Scratch.BlockType.COMMAND,"text":"set cell [X],[Y] in [A] to [B]","code":"(${HpCOfjhjpRFa}[${eCgMDixvXjRs}][${BCGxZEcbLkUO}] = ${OeaSJUlDHJfr})","arguments":{"A":{"type":"string","gen_id":"HpCOfjhjpRFa","defaultValue":"table"},"X":{"type":"string","gen_id":"eCgMDixvXjRs","defaultValue":"0"},"Y":{"type":"string","gen_id":"BCGxZEcbLkUO","defaultValue":"0"},"B":{"type":"string","gen_id":"OeaSJUlDHJfr","defaultValue":"value"}},"func":"err"},{"opcode":"getCell","blockType": Scratch.BlockType.REPORTER,"returns":"STRING","text":"cell [X],[Y] in [A]","code":"(${ySOpLGjADhjx}[${aAXXabcrGxpx}][${yXfAwidEzlRY}])","arguments":{"A":{"type":"string","gen_id":"ySOpLGjADhjx","defaultValue":"table"},"X":{"type":"string","gen_id":"aAXXabcrGxpx","defaultValue":"0"},"Y":{"type":"string","gen_id":"yXfAwidEzlRY","defaultValue":"0"}},"func":"err"},{"opcode":"deleteRow","blockType": Scratch.BlockType.COMMAND,"text":"delete row [X] in [A]","code":"(${IjOpMwnBrmSs}.splice(${CnBRSGSIpNQd}, 1))","arguments":{"A":{"type":"string","gen_id":"IjOpMwnBrmSs","defaultValue":"table"},"X":{"type":"string","gen_id":"CnBRSGSIpNQd","defaultValue":"0"}},"func":"err"},{"opcode":"deleteColumn","blockType": Scratch.BlockType.COMMAND,"text":"delete column [X] in [A]","code":"(${UIsUejspkoSu}.map(column => (column.splice(${rjGjXtxZdjOu}, 1), column)))","arguments":{"A":{"type":"string","gen_id":"UIsUejspkoSu","defaultValue":"table"},"X":{"type":"string","gen_id":"rjGjXtxZdjOu","defaultValue":"0"}},"func":"err"}],
         };
       }
       err(args, util, blockJSON) {
@@ -224,35 +224,35 @@
 this.source += `\nvm.runtime.visualReport("${block.id}", ([[]]));\n`;
 return;
 case 'tables.addRow': 
-const pflxreeSGzKq = descendTillSource.call(this, node.A, caseSanitize);
-this.source += `\nvm.runtime.visualReport("${block.id}", (${pflxreeSGzKq}.push(new Array(${pflxreeSGzKq}[0].length).fill(""))));\n`;
+const fgouMfsWgqLf = descendTillSource.call(this, node.A, caseSanitize);
+this.source += `\n(${fgouMfsWgqLf}.push(new Array(${fgouMfsWgqLf}[0].length).fill("")));\n`;
 return;
 case 'tables.addColumn': 
-const GRaZTQfwuUJn = descendTillSource.call(this, node.A, caseSanitize);
-this.source += `\nvm.runtime.visualReport("${block.id}", ${GRaZTQfwuUJn}.map(column => (column.push(""), column)));\n`;
+const EteGjdfPKpSh = descendTillSource.call(this, node.A, caseSanitize);
+this.source += `\n${EteGjdfPKpSh}.map(column => (column.push(""), column));\n`;
 return;
 case 'tables.setCell': 
-const QffFgUSkgRte = descendTillSource.call(this, node.A, caseSanitize);
-const ajCnhZestbsM = descendTillSource.call(this, node.X, caseSanitize);
-const fpyYIXGnuWUs = descendTillSource.call(this, node.Y, caseSanitize);
-const VAfarQlEMpoz = descendTillSource.call(this, node.B, caseSanitize);
-this.source += `\nvm.runtime.visualReport("${block.id}", (${QffFgUSkgRte}[${ajCnhZestbsM}][${fpyYIXGnuWUs}] = ${VAfarQlEMpoz}));\n`;
+const HpCOfjhjpRFa = descendTillSource.call(this, node.A, caseSanitize);
+const eCgMDixvXjRs = descendTillSource.call(this, node.X, caseSanitize);
+const BCGxZEcbLkUO = descendTillSource.call(this, node.Y, caseSanitize);
+const OeaSJUlDHJfr = descendTillSource.call(this, node.B, caseSanitize);
+this.source += `\n(${HpCOfjhjpRFa}[${eCgMDixvXjRs}][${BCGxZEcbLkUO}] = ${OeaSJUlDHJfr});\n`;
 return;
 case 'tables.getCell': 
-const XUSXpIhWBdcK = descendTillSource.call(this, node.A, caseSanitize);
-const GMQYCicwBiiT = descendTillSource.call(this, node.X, caseSanitize);
-const GkZexqliIIyV = descendTillSource.call(this, node.Y, caseSanitize);
-this.source += `\nvm.runtime.visualReport("${block.id}", (${XUSXpIhWBdcK}[${GMQYCicwBiiT}][${GkZexqliIIyV}]));\n`;
+const ySOpLGjADhjx = descendTillSource.call(this, node.A, caseSanitize);
+const aAXXabcrGxpx = descendTillSource.call(this, node.X, caseSanitize);
+const yXfAwidEzlRY = descendTillSource.call(this, node.Y, caseSanitize);
+this.source += `\nvm.runtime.visualReport("${block.id}", (${ySOpLGjADhjx}[${aAXXabcrGxpx}][${yXfAwidEzlRY}]));\n`;
 return;
 case 'tables.deleteRow': 
-const bdLnZDFRrUGu = descendTillSource.call(this, node.A, caseSanitize);
-const aXjhhtgOuUUR = descendTillSource.call(this, node.X, caseSanitize);
-this.source += `\nvm.runtime.visualReport("${block.id}", (${bdLnZDFRrUGu}.splice(${aXjhhtgOuUUR}, 1)));\n`;
+const IjOpMwnBrmSs = descendTillSource.call(this, node.A, caseSanitize);
+const CnBRSGSIpNQd = descendTillSource.call(this, node.X, caseSanitize);
+this.source += `\n(${IjOpMwnBrmSs}.splice(${CnBRSGSIpNQd}, 1));\n`;
 return;
 case 'tables.deleteColumn': 
-const VNlrQaAFmeQR = descendTillSource.call(this, node.A, caseSanitize);
-const UzHFsNWJLSwo = descendTillSource.call(this, node.X, caseSanitize);
-this.source += `\nvm.runtime.visualReport("${block.id}", (${VNlrQaAFmeQR}.map(column => (column.splice(${UzHFsNWJLSwo}, 1), column))));\n`;
+const UIsUejspkoSu = descendTillSource.call(this, node.A, caseSanitize);
+const rjGjXtxZdjOu = descendTillSource.call(this, node.X, caseSanitize);
+this.source += `\n(${UIsUejspkoSu}.map(column => (column.splice(${rjGjXtxZdjOu}, 1), column)));\n`;
 return;
           default:
             return originalFn.call(this, node);
@@ -264,30 +264,30 @@ return;
           case 'tables.newTable': 
 return new TypedInput(`([[]])`, TYPE_STRING);
 case 'tables.addRow': 
-const pflxreeSGzKq = descendTillSource.call(this, node.A, caseSanitize);
-return new TypedInput(`(${pflxreeSGzKq}.push(new Array(${pflxreeSGzKq}[0].length).fill("")))`, TYPE_STRING);
+const fgouMfsWgqLf = descendTillSource.call(this, node.A, caseSanitize);
+return new TypedInput(`(${fgouMfsWgqLf}.push(new Array(${fgouMfsWgqLf}[0].length).fill("")))`, TYPE_UNKNOWN);
 case 'tables.addColumn': 
-const GRaZTQfwuUJn = descendTillSource.call(this, node.A, caseSanitize);
-return new TypedInput(`${GRaZTQfwuUJn}.map(column => (column.push(""), column))`, TYPE_STRING);
+const EteGjdfPKpSh = descendTillSource.call(this, node.A, caseSanitize);
+return new TypedInput(`${EteGjdfPKpSh}.map(column => (column.push(""), column))`, TYPE_UNKNOWN);
 case 'tables.setCell': 
-const QffFgUSkgRte = descendTillSource.call(this, node.A, caseSanitize);
-const ajCnhZestbsM = descendTillSource.call(this, node.X, caseSanitize);
-const fpyYIXGnuWUs = descendTillSource.call(this, node.Y, caseSanitize);
-const VAfarQlEMpoz = descendTillSource.call(this, node.B, caseSanitize);
-return new TypedInput(`(${QffFgUSkgRte}[${ajCnhZestbsM}][${fpyYIXGnuWUs}] = ${VAfarQlEMpoz})`, TYPE_STRING);
+const HpCOfjhjpRFa = descendTillSource.call(this, node.A, caseSanitize);
+const eCgMDixvXjRs = descendTillSource.call(this, node.X, caseSanitize);
+const BCGxZEcbLkUO = descendTillSource.call(this, node.Y, caseSanitize);
+const OeaSJUlDHJfr = descendTillSource.call(this, node.B, caseSanitize);
+return new TypedInput(`(${HpCOfjhjpRFa}[${eCgMDixvXjRs}][${BCGxZEcbLkUO}] = ${OeaSJUlDHJfr})`, TYPE_UNKNOWN);
 case 'tables.getCell': 
-const XUSXpIhWBdcK = descendTillSource.call(this, node.A, caseSanitize);
-const GMQYCicwBiiT = descendTillSource.call(this, node.X, caseSanitize);
-const GkZexqliIIyV = descendTillSource.call(this, node.Y, caseSanitize);
-return new TypedInput(`(${XUSXpIhWBdcK}[${GMQYCicwBiiT}][${GkZexqliIIyV}])`, TYPE_STRING);
+const ySOpLGjADhjx = descendTillSource.call(this, node.A, caseSanitize);
+const aAXXabcrGxpx = descendTillSource.call(this, node.X, caseSanitize);
+const yXfAwidEzlRY = descendTillSource.call(this, node.Y, caseSanitize);
+return new TypedInput(`(${ySOpLGjADhjx}[${aAXXabcrGxpx}][${yXfAwidEzlRY}])`, TYPE_STRING);
 case 'tables.deleteRow': 
-const bdLnZDFRrUGu = descendTillSource.call(this, node.A, caseSanitize);
-const aXjhhtgOuUUR = descendTillSource.call(this, node.X, caseSanitize);
-return new TypedInput(`(${bdLnZDFRrUGu}.splice(${aXjhhtgOuUUR}, 1))`, TYPE_STRING);
+const IjOpMwnBrmSs = descendTillSource.call(this, node.A, caseSanitize);
+const CnBRSGSIpNQd = descendTillSource.call(this, node.X, caseSanitize);
+return new TypedInput(`(${IjOpMwnBrmSs}.splice(${CnBRSGSIpNQd}, 1))`, TYPE_UNKNOWN);
 case 'tables.deleteColumn': 
-const VNlrQaAFmeQR = descendTillSource.call(this, node.A, caseSanitize);
-const UzHFsNWJLSwo = descendTillSource.call(this, node.X, caseSanitize);
-return new TypedInput(`(${VNlrQaAFmeQR}.map(column => (column.splice(${UzHFsNWJLSwo}, 1), column)))`, TYPE_STRING);
+const UIsUejspkoSu = descendTillSource.call(this, node.A, caseSanitize);
+const rjGjXtxZdjOu = descendTillSource.call(this, node.X, caseSanitize);
+return new TypedInput(`(${UIsUejspkoSu}.map(column => (column.splice(${rjGjXtxZdjOu}, 1), column)))`, TYPE_UNKNOWN);
           default:
             return originalFn(node);
         }
