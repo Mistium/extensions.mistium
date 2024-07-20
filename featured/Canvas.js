@@ -9,6 +9,7 @@ class CanvasExtension {
     console.log('CanvasExtension initialized');
   }
 
+
   getInfo() {
     return {
       id: 'MistiumCanvas',
@@ -42,7 +43,7 @@ class CanvasExtension {
             },
             COLOUR: {
               type: Scratch.ArgumentType.COLOR,
-              defaultValue: '#ffffff'
+              defaultValue: '#000000'
             }
           }
         },
@@ -450,8 +451,10 @@ class CanvasExtension {
     const canvas = document.createElement('canvas');
     canvas.id = CANVAS_ID;
     canvas.style.position = 'absolute';
-    canvas.style.left = `${X}px`;
-    canvas.style.top = `${Y}px`;
+    canvas.x = X;
+    canvas.y = Y;
+    canvas.style.left = `${(vm.runtime.stageWidth / 2 + X) - (WIDTH / 2)}px`;
+    canvas.style.top = `${(vm.runtime.stageHeight / 2 - Y) - (HEIGHT / 2)}px`;
     canvas.style.backgroundColor = COLOUR;
     canvas.width = WIDTH;
     canvas.height = HEIGHT;
@@ -474,8 +477,10 @@ class CanvasExtension {
     const { CANVAS_ID, X, Y } = args;
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
-      canvas.style.left = `${X}px`;
-      canvas.style.top = `${Y}px`;
+      canvas.x = X;
+      canvas.y = Y;
+      canvas.style.left = `${(vm.runtime.stageWidth / 2 + X) - (canvas.width / 2)}px`;
+      canvas.style.top = `${(vm.runtime.stageHeight / 2 - Y) - (canvas.height / 2)}px`;
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
     }
@@ -487,6 +492,8 @@ class CanvasExtension {
     if (canvas) {
       canvas.width = WIDTH;
       canvas.height = HEIGHT;
+      canvas.style.left = `${(vm.runtime.stageWidth / 2 + canvas.x) - (WIDTH / 2)}px`;
+      canvas.style.top = `${(vm.runtime.stageHeight / 2 - canvas.y) - (HEIGHT / 2)}px`;
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
     }
@@ -595,10 +602,13 @@ class CanvasExtension {
   getCanvasX(args) {
     const { CANVAS_ID } = args;
     const canvas = this.canvases[CANVAS_ID];
+    // convert the x of the canvas to scratch coordinates
     if (canvas) {
-      return parseInt(canvas.style.left);
+      const stageWidth = vm.runtime.stageWidth;
+      return parseInt(canvas.style.left) - stageWidth / 2
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
+      return 0;
     }
   }
 
@@ -606,9 +616,11 @@ class CanvasExtension {
     const { CANVAS_ID } = args;
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
-      return parseInt(canvas.style.top);
+      const stageHeight = vm.runtime.stageHeight;
+      return stageHeight / 2 - parseInt(canvas.style.top);
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
+      return 0;
     }
   }
 
