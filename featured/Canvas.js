@@ -2,6 +2,22 @@
 // Author: Mistium
 // Description: Create and manipulate canvases with this extension
 
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+  ctx.stroke();
+}
+
 class CanvasExtension {
   constructor(runtime) {
     this.runtime = runtime;
@@ -187,7 +203,7 @@ class CanvasExtension {
         {
           opcode: 'drawRectangle',
           blockType: Scratch.BlockType.COMMAND,
-          text: 'draw rectangle on [CANVAS_ID] at x: [X] y: [Y] width: [WIDTH] height: [HEIGHT] with colour: [COLOUR] and fill: [FILL]',
+          text: 'draw rectangle on [CANVAS_ID] at x: [X] y: [Y] width: [WIDTH] height: [HEIGHT] with colour: [COLOUR] and rounding: [ROUNDING] and fill: [FILL]',
           arguments: {
             CANVAS_ID: {
               type: Scratch.ArgumentType.STRING,
@@ -212,6 +228,10 @@ class CanvasExtension {
             COLOUR: {
               type: Scratch.ArgumentType.COLOR,
               defaultValue: '#ffffff'
+            },
+            ROUNDING: {
+              type: Scratch.ArgumentType.NUMBER,
+              defaultValue: 0
             },
             FILL: {
               menu: 'FILL',
@@ -581,22 +601,46 @@ class CanvasExtension {
   }
 
   drawRectangle(args) {
-    const { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR, FILL } = args;
+    const { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR, ROUNDING, FILL } = args;
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
-      let translatedX1 = (canvas.width  / 2) + X - (WIDTH  / 2);
-      let translatedY1 = (canvas.height / 2) - Y - (HEIGHT / 2);
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = COLOUR;
-      if (FILL === 'yes') {
-        ctx.fillRect(translatedX1, translatedY1, WIDTH, HEIGHT);
+      ctx.strokeStyle = COLOUR;
+  
+      // Convert Scratch coordinates to canvas coordinates
+      const translatedX = (canvas.width / 2) + X - (WIDTH / 2);
+      const translatedY = (canvas.height / 2) - Y - (HEIGHT / 2);
+  
+      ctx.beginPath();
+      if (ROUNDING > 0) {
+        // Rounded rectangle
+        const radius = Math.min(ROUNDING, WIDTH / 2, HEIGHT / 2);
+        ctx.moveTo(translatedX + radius, translatedY);
+        ctx.lineTo(translatedX + WIDTH - radius, translatedY);
+        ctx.quadraticCurveTo(translatedX + WIDTH, translatedY, translatedX + WIDTH, translatedY + radius);
+        ctx.lineTo(translatedX + WIDTH, translatedY + HEIGHT - radius);
+        ctx.quadraticCurveTo(translatedX + WIDTH, translatedY + HEIGHT, translatedX + WIDTH - radius, translatedY + HEIGHT);
+        ctx.lineTo(translatedX + radius, translatedY + HEIGHT);
+        ctx.quadraticCurveTo(translatedX, translatedY + HEIGHT, translatedX, translatedY + HEIGHT - radius);
+        ctx.lineTo(translatedX, translatedY + radius);
+        ctx.quadraticCurveTo(translatedX, translatedY, translatedX + radius, translatedY);
       } else {
-        ctx.strokeRect(translatedX1, translatedY1, WIDTH, HEIGHT);
+        // Regular rectangle
+        ctx.rect(translatedX, translatedY, WIDTH, HEIGHT);
+      }
+      ctx.closePath();
+  
+      if (FILL === 'yes') {
+        ctx.fill();
+      } else {
+        ctx.stroke();
       }
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
     }
   }
+  
 
   setPixel(args) {
     const { CANVAS_ID, X, Y, COLOUR } = args;
@@ -648,7 +692,7 @@ class CanvasExtension {
     // convert the x of the canvas to scratch coordinates
     if (canvas) {
       const stageWidth = vm.runtime.stageWidth;
-      return parseInt(canvas.style.left) - stageWidth / 2
+      return (parseInt(canvas.style.left) + canvas.width / 2) - stageWidth / 2
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
       return 0;
@@ -660,7 +704,7 @@ class CanvasExtension {
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       const stageHeight = vm.runtime.stageHeight;
-      return stageHeight / 2 - parseInt(canvas.style.top);
+      return stageHeight / 2 - (parseInt(canvas.style.top) + canvas.height / 2);
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
       return 0;
