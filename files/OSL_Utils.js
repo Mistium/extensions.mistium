@@ -136,17 +136,28 @@ function randomString(length) {
     return OSL
   }
   
-  function randomString(length) {
-  let result = '';
-  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  function compileArrays(OSL) {
+    let out = [];
+    let regexExp = /\[([^\[\]]+)\]/gm
+    for (let line of OSL) {
+      while (regexExp.test(line)) {
+        line = line.replace(regexExp, (match, p1) => {
+          let items = p1.match(/[^,]+/gm)
+          let name = randomString(12)
+          let output = ""
+          for (let i = 0; i < items.length; i++) {
+            output += `.append(${items[i].trim()})`
+          }
+          out.push(`${name} = []${output}`);
+          return name;
+        });
+      }
+      out.push(line);
+    }
+    return out;
   }
-  return result;
-}
-
-function compileCloseBrackets(OSL) {
+  
+  function compileCloseBrackets(OSL) {
     let out = [];
     let methods = {}
     let regExp = /.\(([^()]*)\)/;  // Regular expression to match innermost parentheses containing spaces or non-alphanumeric characters
@@ -169,10 +180,11 @@ function compileCloseBrackets(OSL) {
               methods[temp] = ""
               return `${match[0] + temp}`;
             }
-            if (!Number.isNaN(Number.parseInt(p1.trim())) && (p1.trim().indexOf(" ") === -1) && (p1.trim().indexOf(".") === -1)) {
+            if ((p1.trim().indexOf(" ") === -1) && (p1.trim().indexOf(".") === -1 || !isNaN(p1))) {
               methods[temp] = p1.trim()
               return `${match[0] + temp}`;
             }
+  
             methods[temp] = name
             if (p1.trim().indexOf(",") !== -1) {
               let inputs = p1.trim().split(",")
@@ -749,7 +761,7 @@ function compileCloseBrackets(OSL) {
     }
 
     compileCloseBrackets({ CODE }) {
-      return JSON.stringify(compileCloseBrackets(JSON.parse(CODE)));
+      return JSON.stringify(compileCloseBrackets(compileArrays(compileCloseBrackets(JSON.parse(CODE)))));
     }
 
     cleanOSL({ CODE }) {
