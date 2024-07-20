@@ -448,6 +448,9 @@ class CanvasExtension {
 
   createCanvas(args) {
     const { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR } = args;
+    if (this.canvases[CANVAS_ID]) {
+      delete this.canvases[CANVAS_ID]
+    }
     const canvas = document.createElement('canvas');
     canvas.id = CANVAS_ID;
     canvas.style.position = 'absolute';
