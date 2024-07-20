@@ -97,6 +97,25 @@ class CanvasExtension {
           }
         },
         {
+          opcode: 'setCanvasStyle',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'set property [PROPERTY] to [VALUE] in canvas [CANVAS_ID]',
+          arguments: {
+            CANVAS_ID: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'canvas1'
+            },
+            PROPERTY: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'borderRadius'
+            },
+            VALUE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: '10px'
+            }
+          }
+        },
+        {
           opcode: 'setCanvasLayer',
           blockType: Scratch.BlockType.COMMAND,
           text: 'set canvas [CANVAS_ID] layer to [LAYER]',
@@ -497,6 +516,16 @@ class CanvasExtension {
       canvas.height = HEIGHT;
       canvas.style.left = `${(vm.runtime.stageWidth / 2 + canvas.x) - (WIDTH / 2)}px`;
       canvas.style.top = `${(vm.runtime.stageHeight / 2 - canvas.y) - (HEIGHT / 2)}px`;
+    } else {
+      console.log(`Canvas ${CANVAS_ID} not found`);
+    }
+  }
+  
+  setCanvasStyle(args) {
+    const { CANVAS_ID, PROPERTY, VALUE } = args;
+    const canvas = this.canvases[CANVAS_ID];
+    if (canvas) {
+      canvas.style[PROPERTY] = VALUE;
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
     }
