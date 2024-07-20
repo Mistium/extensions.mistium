@@ -52,7 +52,7 @@ body {
   background-color: rgba(0, 0, 0, 0.7);
   padding: 20px;
   margin: 10px;
-  max-width: 500px;
+  width: 500px;
   display: inline-block;
   vertical-align: top;
   transition: 0.2s;
