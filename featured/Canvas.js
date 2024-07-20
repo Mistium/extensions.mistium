@@ -442,7 +442,7 @@ class CanvasExtension {
               type: Scratch.ArgumentType.STRING,
               defaultValue: 'canvas1'
             },
-            TYPE:{
+            TYPE: {
               menu: 'TYPE',
             }
           }
@@ -459,7 +459,7 @@ class CanvasExtension {
         },
         TYPE: {
           acceptReporters: true,
-          items: ['dataURI','array']
+          items: ['dataURI', 'array']
         }
       }
     };
@@ -468,6 +468,7 @@ class CanvasExtension {
   createCanvas(args) {
     const { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR } = args;
     if (this.canvases[CANVAS_ID]) {
+      this.canvases[CANVAS_ID].remove();
       delete this.canvases[CANVAS_ID]
     }
     const canvas = document.createElement('canvas');
@@ -520,7 +521,7 @@ class CanvasExtension {
       console.log(`Canvas ${CANVAS_ID} not found`);
     }
   }
-  
+
   setCanvasStyle(args) {
     const { CANVAS_ID, PROPERTY, VALUE } = args;
     const canvas = this.canvases[CANVAS_ID];
@@ -556,12 +557,18 @@ class CanvasExtension {
     const { CANVAS_ID, X1, Y1, X2, Y2, X3, Y3, COLOUR, FILL } = args;
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
+      let translatedX1 = (canvas.width  / 2) + X1;
+      let translatedY1 = (canvas.height / 2) - Y1;
+      let translatedX2 = (canvas.width  / 2) + X2;
+      let translatedY2 = (canvas.height / 2) - Y2;
+      let translatedX3 = (canvas.width  / 2) + X3;
+      let translatedY3 = (canvas.height / 2) - Y3;
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = COLOUR;
       ctx.beginPath();
-      ctx.moveTo(X1, Y1);
-      ctx.lineTo(X2, Y2);
-      ctx.lineTo(X3, Y3);
+      ctx.moveTo(translatedX1, translatedY1);
+      ctx.lineTo(translatedX2, translatedY2);
+      ctx.lineTo(translatedX3, translatedY3);
       ctx.closePath();
       if (FILL === 'yes') {
         ctx.fill();
@@ -577,12 +584,14 @@ class CanvasExtension {
     const { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR, FILL } = args;
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
+      let translatedX1 = (canvas.width  / 2) + X - (WIDTH  / 2);
+      let translatedY1 = (canvas.height / 2) - Y - (HEIGHT / 2);
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = COLOUR;
       if (FILL === 'yes') {
-        ctx.fillRect(X, Y, WIDTH, HEIGHT);
+        ctx.fillRect(translatedX1, translatedY1, WIDTH, HEIGHT);
       } else {
-        ctx.strokeRect(X, Y, WIDTH, HEIGHT);
+        ctx.strokeRect(translatedX1, translatedY1, WIDTH, HEIGHT);
       }
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
@@ -593,9 +602,11 @@ class CanvasExtension {
     const { CANVAS_ID, X, Y, COLOUR } = args;
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
+      let translatedX1 = (canvas.width  / 2) + X;
+      let translatedY1 = (canvas.height / 2) - Y;
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = COLOUR;
-      ctx.fillRect(X, Y, 1, 1);
+      ctx.fillRect(translatedX1, translatedY1, 1, 1);
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
     }
@@ -688,8 +699,10 @@ class CanvasExtension {
     const { CANVAS_ID, X, Y } = args;
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
+      let translatedX1 = (canvas.width  / 2) + X;
+      let translatedY1 = (canvas.height / 2) - Y;
       const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(X, Y, 1, 1);
+      const imageData = ctx.getImageData(translatedX1, translatedY1, 1, 1);
       return imageData.data;
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
@@ -725,8 +738,10 @@ class CanvasExtension {
     const { CANVAS_ID, X, Y, COLOUR } = args;
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
+      let translatedX1 = (canvas.width  / 2) + X;
+      let translatedY1 = (canvas.height / 2) - Y;
       const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(X, Y, 1, 1);
+      const imageData = ctx.getImageData(translatedX1, translatedY1, 1, 1);
       imageData.data.set(COLOUR);
       ctx.putImageData(imageData, X, Y);
     } else {
@@ -738,13 +753,17 @@ class CanvasExtension {
     const { CANVAS_ID, X1, Y1, X2, Y2, COLOUR, LINEWIDTH, LINECAP } = args;
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
+      let translatedX1 = (canvas.width  / 2) + X1;
+      let translatedY1 = (canvas.height / 2) - Y1;
+      let translatedX2 = (canvas.width  / 2) + X2;
+      let translatedY2 = (canvas.height / 2) - Y2;
       const ctx = canvas.getContext('2d');
       ctx.lineWidth = LINEWIDTH;
       ctx.strokeStyle = COLOUR;
       ctx.lineCap = LINECAP;
       ctx.beginPath();
-      ctx.moveTo(X1, Y1);
-      ctx.lineTo(X2, Y2);
+      ctx.moveTo(translatedX1, translatedY1);
+      ctx.lineTo(translatedX2, translatedY2);
       ctx.stroke()
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
@@ -759,12 +778,17 @@ class CanvasExtension {
       const img = new Image();
       img.src = URL;
       img.onload = () => {
-        ctx.drawImage(img, X, Y, WIDTH, HEIGHT);
+        // Center the image based on canvas dimensions and specified X, Y
+        const translatedX1 = (canvas.width  / 2) + X - (WIDTH  / 2);
+        const translatedY1 = (canvas.height / 2) - Y - (HEIGHT / 2);
+        ctx.drawImage(img, translatedX1, translatedY1, WIDTH, HEIGHT);
+      }
+      img.onerror = (err) => {
+        console.log(`Error loading image: ${err}`);
       }
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
     }
   }
 }
-
 Scratch.extensions.register(new CanvasExtension());
