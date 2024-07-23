@@ -106,6 +106,10 @@ class VirtualFileSystem {
     return JSON.stringify(this.vfs)
   }
 
+  importfiles(args) {
+    this.vfs = JSON.parse(args.FILES)
+  }
+
   getInfo() {
       return {
           id: 'vfs',
@@ -185,6 +189,11 @@ class VirtualFileSystem {
                 opcode: 'getallfiles',
                 blockType: Scratch.BlockType.REPORTER,
                 text: 'get all files',
+              },
+              {
+                opcode: 'importfiles',
+                blockType: Scratch.BlockType.COMMAND,
+                text: 'import files [FILES]',
               }
           ]
       };
