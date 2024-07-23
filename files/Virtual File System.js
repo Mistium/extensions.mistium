@@ -194,6 +194,12 @@ class VirtualFileSystem {
                 opcode: 'importfiles',
                 blockType: Scratch.BlockType.COMMAND,
                 text: 'import files [FILES]',
+                arguments: {
+                    FILES: {
+                        type: Scratch.ArgumentType.STRING,
+                        defaultValue: '{}'
+                    }
+                }
               }
           ]
       };
