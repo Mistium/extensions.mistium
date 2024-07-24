@@ -7,7 +7,6 @@
 // If a copy of the MPL was not distributed with this file,
 // Then you can obtain one at https://mozilla.org/MPL/2.0/
 
-
 (function (Scratch) {
   function sendMessage(serverID, MESSAGE) {
     const ws = serverID;
@@ -15,12 +14,14 @@
       ws.send(MESSAGE);
     }
   }
+
   class WebSocketServer {
     constructor(runtime) {
       this.runtime = runtime;
       this.wsServers = {};
       this.messageQueue = {};
       this.connectedServers = {};
+      this.lastFrom = ""
     }
 
     getInfo() {
@@ -183,6 +184,16 @@
                 defaultValue: '1',
               }
             }
+          },
+          {
+            opcode: 'recievedMessage',
+            blockType: Scratch.BlockType.HAT,
+            text: 'When I receive message',
+          },
+          {
+            opcode: 'recievedFrom'
+            blockType: Scratch.BlockType.String,
+            text: 'Recieved Last Message From'
           }
         ]
       };
@@ -212,6 +223,8 @@
           this.messageQueue[serverId] = [];
         }
         this.messageQueue[serverId].push(event.data);
+        this.runtime.startHats('webSocketPlus_recievedMessage');
+        this.lastFrom = serverId
       };
       ws.onerror = (error) => {
         console.error(`WebSocket error on ${serverId}:`, error);
@@ -222,8 +235,12 @@
       };
     }
 
+    recievedFrom() {
+        return this.lastFrom;
+    }
+    
     send({ MESSAGE, ID }) {
-      sendMessage(this.wsServers[ID], MESSAGE)
+      sendMessage(this.wsServers[ID], MESSAGE);
     }
 
     getNextMessage({ ID }) {
@@ -286,8 +303,8 @@
           }
         },
         "listener": "handshake_cfg"
-      }
-      sendMessage(this.wsServers[ID], JSON.stringify(msg))
+      };
+      sendMessage(this.wsServers[ID], JSON.stringify(msg));
     }
 
     setusername({ USERNAME, ID }) {
@@ -295,8 +312,8 @@
         "cmd": "setid",
         "val": USERNAME,
         "listener": "username_cfg"
-      }
-      sendMessage(this.wsServers[ID], JSON.stringify(msg))
+      };
+      sendMessage(this.wsServers[ID], JSON.stringify(msg));
     }
 
     linkrooms({ ROOMS, ID }) {
@@ -304,17 +321,17 @@
         "cmd": "link",
         "val": ROOMS,
         "listener": "link"
-      }
-      sendMessage(this.wsServers[ID], JSON.stringify(msg))
+      };
+      sendMessage(this.wsServers[ID], JSON.stringify(msg));
     }
 
-    sendMessageCloudlink(ID, MESSAGE, TO) {
+    sendMessageCloudlink({ ID, MESSAGE, TO }) {
       let msg = {
-        "cmd":"pmsg",
-        "val":MESSAGE,
+        "cmd": "pmsg",
+        "val": MESSAGE,
         "id": TO
-      }
-      sendMessage(this.wsServers[ID], JSON.stringify(msg))
+      };
+      sendMessage(this.wsServers[ID], JSON.stringify(msg));
     }
   }
 
