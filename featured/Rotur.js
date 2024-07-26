@@ -16,7 +16,7 @@ class RoturExtension {
     return {
       id: 'roturEXT',
       name: 'RoturV1',
-      color1: '#FF8C1A',
+      color1: '#403041',
       blocks: [
         {
           opcode: 'connectToServer',
