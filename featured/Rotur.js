@@ -4,24 +4,18 @@ class RoturExtension {
     this.ws = null;
     this.client = {};
     this.packets = {};
-    this.my_client = {
-      "system": "rotur.js",
-      "version": "v2"
-    };
-    this.username = "test";
-    this.designation = "rtr";
   }
 
   getInfo() {
     return {
       id: 'roturEXT',
       name: 'RoturV1',
-      color1: '#403041',
+      color1: '#FF8C1A',
       blocks: [
         {
           opcode: 'connectToServer',
           blockType: Scratch.BlockType.COMMAND,
-          text: 'connect to server as [DESIGNATION] - [USERNAME]',
+          text: 'connect to server as [DESIGNATION] - [USERNAME] with system: [SYSTEM] and version: [VERSION]',
           arguments: {
             DESIGNATION: {
               type: Scratch.ArgumentType.STRING,
@@ -30,6 +24,14 @@ class RoturExtension {
             USERNAME: {
               type: Scratch.ArgumentType.STRING,
               defaultValue: 'test'
+            },
+            SYSTEM: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'rotur.js'
+            },
+            VERSION: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'v2'
             }
           }
         },
@@ -146,7 +148,13 @@ class RoturExtension {
     };
   }
 
-  connectToServer() {
+  connectToServer(args) {
+    this.username = args.USERNAME;
+    this.designation = args.DESIGNATION;
+    this.my_client = {
+      "system": args.SYSTEM,
+      "version": args.VERSION
+    }
     this.ws = new WebSocket("wss://rotur.mistium.com");
     this.ws.onopen = () => {
       console.log("Connected!");
