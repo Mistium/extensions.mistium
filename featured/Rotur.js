@@ -4,6 +4,7 @@ class RoturExtension {
     this.ws = null;
     this.client = {};
     this.packets = {};
+    this.is_connected = false;
   }
 
   getInfo() {
@@ -212,9 +213,14 @@ class RoturExtension {
         }
         if (packet.listener == "link_cfg") {
           this.client.room = packet.val;
+          this.is_connected = true;
         }
       };
     };
+    this.ws.onclose = () => {
+      console.log("Disconnected!");
+      this.is_connected = false;
+    }
   }
 
   sendHandshake() {
@@ -234,7 +240,7 @@ class RoturExtension {
   }
 
   connected() {
-    return this.ws.readyState == WebSocket.OPEN;
+    return this.is_connected;
   }
 
   numberOfPacketsOnTarget(args) {
@@ -308,7 +314,9 @@ class RoturExtension {
   }
 
   disconnect() {
-    this.ws.close();
+    try {
+      this.ws.close();
+    } catch (e) {}
   }
 }
 
