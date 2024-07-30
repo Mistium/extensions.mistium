@@ -10,7 +10,7 @@ class RoturExtension {
   getInfo() {
     return {
       id: 'roturEXT',
-      name: 'RoturV1',
+      name: 'RoturV2',
       color1: '#403041',
       blocks: [
         {
