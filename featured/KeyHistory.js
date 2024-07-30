@@ -9,57 +9,56 @@
 (function (Scratch) {
   "use strict";
 
-
   class KeyHistoryExtension {
     constructor() {
       this.keyHistory = [];
       this.pasted = false;
       this.max_key_history = 100; // Adjust the maximum number of keys to keep in history
-      this.keybinds = ["Ctrl", "Shift", "Alt"]
-      this.pause = false
+      this.keybinds = ["Ctrl", "Shift", "Alt"];
+      this.pause = false;
     }
 
     getInfo() {
       return {
-        id: 'keyhistoryextension',
-        name: 'Key History',
-        color1: '#36644E',
+        id: "keyhistoryextension",
+        name: "Key History",
+        color1: "#36644E",
         blocks: [
           {
-            opcode: 'getRecentKeys',
+            opcode: "getRecentKeys",
             blockType: Scratch.BlockType.REPORTER,
-            text: 'Get recent keys',
+            text: "Get recent keys",
           },
           {
-            opcode: 'deleteFirstKey',
+            opcode: "deleteFirstKey",
             blockType: Scratch.BlockType.COMMAND,
-            text: 'Delete the first key from history',
+            text: "Delete the first key from history",
           },
           {
-            opcode: 'deleteAllKeys',
+            opcode: "deleteAllKeys",
             blockType: Scratch.BlockType.COMMAND,
-            text: 'Delete all keys from history',
+            text: "Delete all keys from history",
           },
           {
-            opcode: 'AddKey',
+            opcode: "AddKey",
             blockType: Scratch.BlockType.COMMAND,
-            text: 'Add [KEY] to key history',
+            text: "Add [KEY] to key history",
             arguments: {
               KEY: {
                 type: Scratch.ArgumentType.STRING,
-                defaultValue: " "
+                defaultValue: " ",
               },
             },
           },
           {
-            opcode: 'enableKeyHistory',
+            opcode: "enableKeyHistory",
             blockType: Scratch.BlockType.COMMAND,
-            text: 'Enable key history',
+            text: "Enable key history",
           },
           {
-            opcode: 'disableKeyHistory',
+            opcode: "disableKeyHistory",
             blockType: Scratch.BlockType.COMMAND,
-            text: 'Disable key history',
+            text: "Disable key history",
           },
         ],
       };
@@ -82,7 +81,7 @@
     AddKey({ KEY }) {
       this.addKeyToHistory(KEY);
     }
-    
+
     onKeyDown(event) {
       // Check if Command (Cmd) or Control (Ctrl) keys are pressed
       if (event.metaKey || event.ctrlKey) {
@@ -102,15 +101,15 @@
     }
 
     onPaste(event) {
-      const pastedText = event.clipboardData.getData('text/plain');
-      if (pastedText.trim() !== '') {
+      const pastedText = event.clipboardData.getData("text/plain");
+      if (pastedText.trim() !== "") {
         if (this.pasted == false) {
           this.pasted = true;
           this.addKeyToHistory(pastedText);
         }
         setTimeout(() => {
           this.pasted = false;
-        }, 10)
+        }, 10);
       }
     }
 
@@ -123,17 +122,17 @@
       if (this.keyHistory.length >= this.max_key_history) {
         this.keyHistory.pop(); // Remove the last element
       }
-      
+
       // Add the key to the end of the array
       this.keyHistory.push(key);
     }
 
     enableKeyHistory() {
-      this.pause = false
+      this.pause = false;
     }
 
     disableKeyHistory() {
-      this.pause = true
+      this.pause = true;
     }
   }
 
@@ -144,9 +143,8 @@
   Scratch.extensions.register(extension);
 
   // Listen for keydown events and call the onKeyDown method
-  document.addEventListener('keydown', (event) => extension.onKeyDown(event));
+  document.addEventListener("keydown", (event) => extension.onKeyDown(event));
 
   // Listen for paste events and call the onPaste method
-  document.addEventListener('paste', (event) => extension.onPaste(event));
-
+  document.addEventListener("paste", (event) => extension.onPaste(event));
 })(Scratch);
