@@ -1,8 +1,8 @@
-  extension = {
-    id: "mistsutils",
-    color1: "#2DA4A0",
-    name: "Mists Utils",
-  };
+extension = {
+  id: "mistsutils",
+  color1: "#2DA4A0",
+  name: "Mists Utils",
+};
 
 blocks = [
   {
@@ -244,9 +244,9 @@ blocks = [
     text: "Patch [A]",
     blockType: "REPORTER",
     code: "[A]",
-    sanitise: false,
+    returns: "STRING",
     arguments: {
-      A: { type: "STRING", defaultValue: "apple" },
+      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
     },
     allowDropAnywhere: true,
   },
@@ -256,10 +256,10 @@ blocks = [
     text: "Patch [A][B]",
     blockType: "REPORTER",
     code: "[A][B]",
-    sanitise: false,
+    returns: "STRING",
     arguments: {
-      A: { type: "STRING", defaultValue: "apple" },
-      B: { type: "STRING", defaultValue: "1" },
+      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
+      B: { type: "STRING", as: "RAW", defaultValue: "1" },
     },
     allowDropAnywhere: true,
   },
@@ -269,11 +269,11 @@ blocks = [
     text: "Patch [A][B][C]",
     blockType: "REPORTER",
     code: "[A][B][C]",
-    sanitise: false,
+    returns: "STRING",
     arguments: {
-      A: { type: "STRING", defaultValue: "return" },
-      B: { type: "STRING", defaultValue: '""' },
-      C: { type: "STRING", defaultValue: ";" },
+      A: { type: "STRING", as: "RAW", defaultValue: "return" },
+      B: { type: "STRING", as: "RAW", defaultValue: '""' },
+      C: { type: "STRING", as: "RAW", defaultValue: ";" },
     },
     allowDropAnywhere: true,
   },
@@ -283,9 +283,9 @@ blocks = [
     text: "Patch [A]",
     blockType: "BOOLEAN",
     code: "[A]",
-    sanitise: false,
+    returns: "BOOLEAN",
     arguments: {
-      A: { type: "STRING", defaultValue: "apple" },
+      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
     },
   },
   {
@@ -294,9 +294,8 @@ blocks = [
     text: "Patch [A]",
     blockType: "COMMAND",
     code: "[A]",
-    sanitise: false,
     arguments: {
-      A: { type: "STRING", defaultValue: "apple" },
+      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
     },
   },
   {
@@ -305,10 +304,9 @@ blocks = [
     text: "Patch [A][B]",
     blockType: "COMMAND",
     code: "[A][B]",
-    sanitise: false,
     arguments: {
-      A: { type: "STRING", defaultValue: "apple" },
-      B: { type: "STRING", defaultValue: "1" },
+      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
+      B: { type: "STRING", as: "RAW", defaultValue: "1" },
     },
   },
   {
@@ -317,11 +315,10 @@ blocks = [
     text: "Patch [A][B][C]",
     blockType: "COMMAND",
     code: "[A][B][C]",
-    sanitise: false,
     arguments: {
-      A: { type: "STRING", defaultValue: "return" },
-      B: { type: "STRING", defaultValue: '""' },
-      C: { type: "STRING", defaultValue: ";" },
+      A: { type: "STRING", as: "RAW", defaultValue: "return" },
+      B: { type: "STRING", as: "RAW", defaultValue: '""' },
+      C: { type: "STRING", as: "RAW", defaultValue: ";" },
     },
   },
   "---",
@@ -331,7 +328,6 @@ blocks = [
     text: "true",
     blockType: "BOOLEAN",
     code: true,
-    sanitise: false,
     returns: "BOOLEAN",
     disableMonitor: true,
   },
@@ -341,7 +337,6 @@ blocks = [
     text: "false",
     blockType: "BOOLEAN",
     code: false,
-    sanitise: false,
     returns: "BOOLEAN",
     disableMonitor: true,
   },
@@ -351,7 +346,6 @@ blocks = [
     text: "performance.now()",
     blockType: "REPORTER",
     code: "performance.now()",
-    sanitise: false,
     returns: "NUMBER",
     disableMonitor: true,
   },
