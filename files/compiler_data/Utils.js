@@ -34,12 +34,12 @@ blocks = [
     func: "err",
     text: "[A] [C] [B]",
     blockType: "BOOLEAN",
-    code: '(""+([A])) [B] (""+([C]))',
+    code: '((""+([A])) [C] (""+([B])))',
     returns: "BOOLEAN",
     arguments: {
       A: { type: "NUMBER", defaultValue: 3 },
       B: { type: "NUMBER", defaultValue: 4 },
-      C: { type: "STRING", defaultValue: "<" },
+      C: { type: "STRING", as: "RAW", defaultValue: "<" },
     },
   },
   {
