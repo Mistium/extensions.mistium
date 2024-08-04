@@ -69,18 +69,16 @@
             "func": "err",
             "text": "[A] !== [B]",
             "blockType": Scratch.BlockType.BOOLEAN,
-            "code": "((\"\"+(${VoBKsoJTGLHC})) !== (\"\"+(${lcMFPyFkALcI})))",
+            "code": "((\"\"+(${BpbrqUadncSy})) !== (\"\"+(${xcJUGikkSlhs})))",
             "returns": "BOOLEAN",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "VoBKsoJTGLHC"
+                "gen_id": "BpbrqUadncSy"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "lcMFPyFkALcI"
+                "gen_id": "xcJUGikkSlhs"
               }
             }
           },
@@ -88,19 +86,17 @@
             "opcode": "equals",
             "func": "err",
             "text": "[A] === [B]",
-            "code": "((\"\"+(${ypytryIebucd})) === (\"\"+(${zPtHurUdQGEe})))",
+            "code": "((\"\"+(${rOhBYXGkYYZi})) === (\"\"+(${FDNcFkQvRvST})))",
             "blockType": Scratch.BlockType.BOOLEAN,
             "returns": "BOOLEAN",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "ypytryIebucd"
+                "gen_id": "rOhBYXGkYYZi"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "zPtHurUdQGEe"
+                "gen_id": "FDNcFkQvRvST"
               }
             }
           },
@@ -109,23 +105,21 @@
             "func": "err",
             "text": "[A] [C] [B]",
             "blockType": Scratch.BlockType.BOOLEAN,
-            "code": "(\"\"+(${fNBwTtePwCUM})) ${RraYzPVSbOLW} (\"\"+(${NfPkEnUBoBQj}))",
+            "code": "((\"\"+(${EasMoVMZuWbC})) ${FvhIzHDUYWlJ} (\"\"+(${VfTHvBWhpNzv})))",
             "returns": "BOOLEAN",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 3,
-                "gen_id": "fNBwTtePwCUM"
+                "gen_id": "EasMoVMZuWbC"
               },
               "B": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 4,
-                "gen_id": "RraYzPVSbOLW"
+                "gen_id": "VfTHvBWhpNzv"
               },
               "C": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "<",
-                "gen_id": "NfPkEnUBoBQj"
+                "as": "RAW",
+                "gen_id": "FvhIzHDUYWlJ"
               }
             }
           },
@@ -134,18 +128,16 @@
             "func": "err",
             "text": "[A] ^ [B]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "Math.pow(${NPOhgNgtpQLf}, ${SHZYPMTGKYyI})",
+            "code": "Math.pow(${SKtyeIvYqBie}, ${FLIRwgigBdKD})",
             "returns": "NUMBER",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 3,
-                "gen_id": "NPOhgNgtpQLf"
+                "gen_id": "SKtyeIvYqBie"
               },
               "B": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 4,
-                "gen_id": "SHZYPMTGKYyI"
+                "gen_id": "FLIRwgigBdKD"
               }
             }
           },
@@ -155,23 +147,20 @@
             "func": "err",
             "text": "clamp [A] between [B] and [C]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "Math.min(Math.max(${phpHfstPNceD}, ${vDxIBGDSiggr}), ${MBwvjyXdHpFb})",
+            "code": "Math.min(Math.max(${vpeNcXWAQBdZ}, ${HGJiQJKbROdG}), ${gajGxFxIpmiD})",
             "returns": "NUMBER",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 100,
-                "gen_id": "phpHfstPNceD"
+                "gen_id": "vpeNcXWAQBdZ"
               },
               "B": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 1,
-                "gen_id": "vDxIBGDSiggr"
+                "gen_id": "HGJiQJKbROdG"
               },
               "C": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 50,
-                "gen_id": "MBwvjyXdHpFb"
+                "gen_id": "gajGxFxIpmiD"
               }
             }
           },
@@ -180,23 +169,20 @@
             "func": "err",
             "text": "letters [A] to [B] of [C]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "(\"\"+(${dxGRLhKjZkrs})).substring(${ipcRpVqdsSBO}, ${kmKJQBuugKEM})",
+            "code": "(\"\"+(${yykUNXZktdgC})).substring(${OxsPKlpQtwXG}, ${NXLeXSrdmKUr})",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 2,
-                "gen_id": "ipcRpVqdsSBO"
+                "gen_id": "OxsPKlpQtwXG"
               },
               "B": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 4,
-                "gen_id": "kmKJQBuugKEM"
+                "gen_id": "NXLeXSrdmKUr"
               },
               "C": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "dxGRLhKjZkrs"
+                "gen_id": "yykUNXZktdgC"
               }
             }
           },
@@ -206,18 +192,16 @@
             "func": "err",
             "text": "[A] starts with [B]",
             "blockType": Scratch.BlockType.BOOLEAN,
-            "code": "(\"\"+(${GUVhpksGtimw})).startsWith(\"\"+(${KjImirYQBsQf}))",
+            "code": "(\"\"+(${VMAkcAxsfzce})).startsWith(\"\"+(${uNYaQAusrgxm}))",
             "returns": "BOOLEAN",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "GUVhpksGtimw"
+                "gen_id": "VMAkcAxsfzce"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "app",
-                "gen_id": "KjImirYQBsQf"
+                "gen_id": "uNYaQAusrgxm"
               }
             }
           },
@@ -226,18 +210,16 @@
             "func": "err",
             "text": "[A] ends with [B]",
             "blockType": Scratch.BlockType.BOOLEAN,
-            "code": "(\"\"+(${SQzLVHXMSzNZ})).endsWith(\"\"+(${fQJrBOnLphng}))",
+            "code": "(\"\"+(${cDFqATRWeWeV})).endsWith(\"\"+(${EErWYavLDaLF}))",
             "returns": "BOOLEAN",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "SQzLVHXMSzNZ"
+                "gen_id": "cDFqATRWeWeV"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "app",
-                "gen_id": "fQJrBOnLphng"
+                "gen_id": "EErWYavLDaLF"
               }
             }
           },
@@ -246,13 +228,12 @@
             "func": "err",
             "text": "Unicode Of [A]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "(\"\"+(${TjrnfywWZnJy})).charCodeAt(0)",
+            "code": "(\"\"+(${qsJDgalAWJWr})).charCodeAt(0)",
             "returns": "NUMBER",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "A",
-                "gen_id": "TjrnfywWZnJy"
+                "gen_id": "qsJDgalAWJWr"
               }
             }
           },
@@ -261,23 +242,20 @@
             "func": "err",
             "text": "replace [C] in [A] with [B]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "(\"\"+(${NydQVJutnCTA})).replace(\"\"+(${lnaNGdRQJenf}), \"\"+(${BYXpKIGdQGAL}))",
+            "code": "(\"\"+(${gKLDfNbOBrcO})).replace(\"\"+(${kFlvjCqvfTCu}), \"\"+(${uDzmTlSTXgnL}))",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "NydQVJutnCTA"
+                "gen_id": "gKLDfNbOBrcO"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "l",
-                "gen_id": "BYXpKIGdQGAL"
+                "gen_id": "uDzmTlSTXgnL"
               },
               "C": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "p",
-                "gen_id": "lnaNGdRQJenf"
+                "gen_id": "kFlvjCqvfTCu"
               }
             },
             "hideFromPalette": true
@@ -288,18 +266,16 @@
             "func": "err",
             "text": "split [A] by [B] (stringify)",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "JSON.stringify((\"\"+(${ILVPVcerFKMA})).split(\"\"+(${JuWwedzHFfxG})))",
+            "code": "JSON.stringify((\"\"+(${ssPphKidhYrq})).split(\"\"+(${lTRsRKTEddUW})))",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "ILVPVcerFKMA"
+                "gen_id": "ssPphKidhYrq"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "l",
-                "gen_id": "JuWwedzHFfxG"
+                "gen_id": "lTRsRKTEddUW"
               }
             }
           },
@@ -308,18 +284,16 @@
             "func": "err",
             "text": "split [A] by [B] (array)",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "(\"\"+(${DacigUXbWAhV})).split(\"\"+(${CROHFMbOdLad}))",
+            "code": "(\"\"+(${gjqImXXfJqvC})).split(\"\"+(${tzIKNnpJYPrf}))",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "DacigUXbWAhV"
+                "gen_id": "gjqImXXfJqvC"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "l",
-                "gen_id": "CROHFMbOdLad"
+                "gen_id": "tzIKNnpJYPrf"
               }
             }
           },
@@ -328,13 +302,12 @@
             "func": "err",
             "text": "[A].length",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "((${tqXxLzFYDlMW}).length)",
+            "code": "((${vDOiXJlGjNIo}).length)",
             "returns": "NUMBER",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "tqXxLzFYDlMW"
+                "gen_id": "vDOiXJlGjNIo"
               }
             }
           },
@@ -343,23 +316,20 @@
             "func": "err",
             "text": "item [C] of [A] split by [B]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "(\"\"+(${fMqULEznRRFq})).split(\"\"+(${JSoPMXJnxbrn}))[${ymKLMdsgyxIc}]",
+            "code": "(\"\"+(${DJUPrPOAYvLq})).split(\"\"+(${TKnOlXkiFNuc}))[${SwlrMVjqrobP}]",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "fMqULEznRRFq"
+                "gen_id": "DJUPrPOAYvLq"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "l",
-                "gen_id": "JSoPMXJnxbrn"
+                "gen_id": "TKnOlXkiFNuc"
               },
               "C": {
                 "type": Scratch.ArgumentType.NUMBER,
-                "defaultValue": 1,
-                "gen_id": "ymKLMdsgyxIc"
+                "gen_id": "SwlrMVjqrobP"
               }
             }
           },
@@ -367,18 +337,16 @@
             "opcode": "jsondelete",
             "func": "err",
             "text": "Delete Item [B] of [A]",
-            "code": "delete ${vZVdnpRcqZOr}[${FBuvJdKIBbit}]",
+            "code": "delete ${HUwWDKBKgKUr}[${clCLnuGwKwtz}]",
             "blockType": Scratch.BlockType.COMMAND,
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "",
-                "gen_id": "vZVdnpRcqZOr"
+                "gen_id": "HUwWDKBKgKUr"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "0",
-                "gen_id": "FBuvJdKIBbit"
+                "gen_id": "clCLnuGwKwtz"
               }
             }
           },
@@ -387,22 +355,19 @@
             "func": "err",
             "text": "Set [B] to [C] in [A]",
             "blockType": Scratch.BlockType.COMMAND,
-            "code": "${lkBdviDJEEtE}[${sGVYsFZXWdVR}] = ${PFMUJzVnSVRR}",
+            "code": "${xTmhWgLyxmFS}[${rCbkIQCxYHDu}] = ${bCjCAOsDOrec}",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "",
-                "gen_id": "lkBdviDJEEtE"
+                "gen_id": "xTmhWgLyxmFS"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "0",
-                "gen_id": "sGVYsFZXWdVR"
+                "gen_id": "rCbkIQCxYHDu"
               },
               "C": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "\"hello world\"",
-                "gen_id": "PFMUJzVnSVRR"
+                "gen_id": "bCjCAOsDOrec"
               }
             }
           },
@@ -411,18 +376,16 @@
             "func": "err",
             "text": "[A] item [B]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "(${EjjIWIjRbtAh})[${qqCsKemLxZCA}]",
+            "code": "(${kbneuKzwQHdl})[${psdKSCUGuwsT}]",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "apple",
-                "gen_id": "EjjIWIjRbtAh"
+                "gen_id": "kbneuKzwQHdl"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "1",
-                "gen_id": "qqCsKemLxZCA"
+                "gen_id": "psdKSCUGuwsT"
               }
             }
           },
@@ -431,13 +394,12 @@
             "func": "err",
             "text": "JSON.parse [A]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "JSON.parse(${XbemjimGJQSv})",
+            "code": "JSON.parse(${xZOIdhuUPlmq})",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "{\"a\": 1}",
-                "gen_id": "XbemjimGJQSv"
+                "gen_id": "xZOIdhuUPlmq"
               }
             }
           },
@@ -446,13 +408,12 @@
             "func": "err",
             "text": "JSON.stringify [A]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "JSON.stringify(${TIqNwyKUWKGD})",
+            "code": "JSON.stringify(${dmdDosYXFZII})",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "",
-                "gen_id": "TIqNwyKUWKGD"
+                "gen_id": "dmdDosYXFZII"
               }
             }
           },
@@ -462,14 +423,13 @@
             "func": "err",
             "text": "Patch [A]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "${JcdULlsAictO}",
+            "code": "${AfVfUEYCQVIu}",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
-                "gen_id": "JcdULlsAictO"
+                "gen_id": "AfVfUEYCQVIu"
               }
             },
             "allowDropAnywhere": true
@@ -479,20 +439,18 @@
             "func": "err",
             "text": "Patch [A][B]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "${QYbwsysCwZOT}${kFINerOvjJmI}",
+            "code": "${fbnRfPoDEAUn}${oyaRHqPgFXAU}",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
-                "gen_id": "QYbwsysCwZOT"
+                "gen_id": "fbnRfPoDEAUn"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "1",
-                "gen_id": "kFINerOvjJmI"
+                "gen_id": "oyaRHqPgFXAU"
               }
             },
             "allowDropAnywhere": true
@@ -502,26 +460,23 @@
             "func": "err",
             "text": "Patch [A][B][C]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "${DgGgWgUHcaft}${GyTyypwBnnUP}${ExqoVMmmuTXI}",
+            "code": "${xKAQPGPjYnaJ}${seLoSPEYQMrA}${GPKUseXGhwJZ}",
             "returns": "STRING",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "return",
-                "gen_id": "DgGgWgUHcaft"
+                "gen_id": "xKAQPGPjYnaJ"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "\"\"",
-                "gen_id": "GyTyypwBnnUP"
+                "gen_id": "seLoSPEYQMrA"
               },
               "C": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": ";",
-                "gen_id": "ExqoVMmmuTXI"
+                "gen_id": "GPKUseXGhwJZ"
               }
             },
             "allowDropAnywhere": true
@@ -531,14 +486,13 @@
             "func": "err",
             "text": "Patch [A]",
             "blockType": Scratch.BlockType.BOOLEAN,
-            "code": "${OgyxIvKJcDhM}",
+            "code": "${nKqEHbcgJiUT}",
             "returns": "BOOLEAN",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
-                "gen_id": "OgyxIvKJcDhM"
+                "gen_id": "nKqEHbcgJiUT"
               }
             }
           },
@@ -547,13 +501,12 @@
             "func": "err",
             "text": "Patch [A]",
             "blockType": Scratch.BlockType.COMMAND,
-            "code": "${KUkcjAyPofoN}",
+            "code": "${fyjqpeJbVGer}",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
-                "gen_id": "KUkcjAyPofoN"
+                "gen_id": "fyjqpeJbVGer"
               }
             }
           },
@@ -562,19 +515,17 @@
             "func": "err",
             "text": "Patch [A][B]",
             "blockType": Scratch.BlockType.COMMAND,
-            "code": "${imPSszgRbDhH}${NGnSxKTrxsBr}",
+            "code": "${OIFYGnzVJWYH}${lddiHdftUTCJ}",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
-                "gen_id": "imPSszgRbDhH"
+                "gen_id": "OIFYGnzVJWYH"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "1",
-                "gen_id": "NGnSxKTrxsBr"
+                "gen_id": "lddiHdftUTCJ"
               }
             }
           },
@@ -583,25 +534,22 @@
             "func": "err",
             "text": "Patch [A][B][C]",
             "blockType": Scratch.BlockType.COMMAND,
-            "code": "${xzOhkHFUEAqX}${IcMPyRMvaiYs}${gfFuSoLHIHML}",
+            "code": "${AhXXSwuTwvkJ}${HlRNNCeZdEfx}${VKVoFLQdoFhv}",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "return",
-                "gen_id": "xzOhkHFUEAqX"
+                "gen_id": "AhXXSwuTwvkJ"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "\"\"",
-                "gen_id": "IcMPyRMvaiYs"
+                "gen_id": "HlRNNCeZdEfx"
               },
               "C": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": ";",
-                "gen_id": "gfFuSoLHIHML"
+                "gen_id": "VKVoFLQdoFhv"
               }
             }
           },
@@ -690,139 +638,139 @@
       const block = node.block;
       switch (node.kind) {
         case 'mistsutils.notequals':
-          const VoBKsoJTGLHC = this.descendInput(node?.A).asString();
-          const lcMFPyFkALcI = this.descendInput(node?.B).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", ((""+(${VoBKsoJTGLHC})) !== (""+(${lcMFPyFkALcI}))));\n`;
+          const BpbrqUadncSy = this.descendInput(node?.A).asString();
+          const xcJUGikkSlhs = this.descendInput(node?.B).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((""+(${BpbrqUadncSy})) !== (""+(${xcJUGikkSlhs}))));\n`;
           return;
         case 'mistsutils.equals':
-          const ypytryIebucd = this.descendInput(node?.A).asString();
-          const zPtHurUdQGEe = this.descendInput(node?.B).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", ((""+(${ypytryIebucd})) === (""+(${zPtHurUdQGEe}))));\n`;
+          const rOhBYXGkYYZi = this.descendInput(node?.A).asString();
+          const FDNcFkQvRvST = this.descendInput(node?.B).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((""+(${rOhBYXGkYYZi})) === (""+(${FDNcFkQvRvST}))));\n`;
           return;
         case 'mistsutils.compare':
-          const fNBwTtePwCUM = this.descendInput(node?.A).asNumber();
-          const RraYzPVSbOLW = this.descendInput(node?.B).asNumber();
-          const NfPkEnUBoBQj = this.descendInput(node?.C).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${fNBwTtePwCUM})) ${RraYzPVSbOLW} (""+(${NfPkEnUBoBQj})));\n`;
+          const EasMoVMZuWbC = this.descendInput(node?.A).asNumber();
+          const VfTHvBWhpNzv = this.descendInput(node?.B).asNumber();
+          const FvhIzHDUYWlJ = this.descendInput(node?.C).asRaw();
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((""+(${EasMoVMZuWbC})) ${FvhIzHDUYWlJ} (""+(${VfTHvBWhpNzv}))));\n`;
           return;
         case 'mistsutils.power':
-          const NPOhgNgtpQLf = this.descendInput(node?.A).asNumber();
-          const SHZYPMTGKYyI = this.descendInput(node?.B).asNumber();
-          this.source += `\nvm.runtime.visualReport("${block.id}", Math.pow(${NPOhgNgtpQLf}, ${SHZYPMTGKYyI}));\n`;
+          const SKtyeIvYqBie = this.descendInput(node?.A).asNumber();
+          const FLIRwgigBdKD = this.descendInput(node?.B).asNumber();
+          this.source += `\nvm.runtime.visualReport("${block.id}", Math.pow(${SKtyeIvYqBie}, ${FLIRwgigBdKD}));\n`;
           return;
 
         case 'mistsutils.clamp':
-          const phpHfstPNceD = this.descendInput(node?.A).asNumber();
-          const vDxIBGDSiggr = this.descendInput(node?.B).asNumber();
-          const MBwvjyXdHpFb = this.descendInput(node?.C).asNumber();
-          this.source += `\nvm.runtime.visualReport("${block.id}", Math.min(Math.max(${phpHfstPNceD}, ${vDxIBGDSiggr}), ${MBwvjyXdHpFb}));\n`;
+          const vpeNcXWAQBdZ = this.descendInput(node?.A).asNumber();
+          const HGJiQJKbROdG = this.descendInput(node?.B).asNumber();
+          const gajGxFxIpmiD = this.descendInput(node?.C).asNumber();
+          this.source += `\nvm.runtime.visualReport("${block.id}", Math.min(Math.max(${vpeNcXWAQBdZ}, ${HGJiQJKbROdG}), ${gajGxFxIpmiD}));\n`;
           return;
         case 'mistsutils.letters':
-          const ipcRpVqdsSBO = this.descendInput(node?.A).asNumber();
-          const kmKJQBuugKEM = this.descendInput(node?.B).asNumber();
-          const dxGRLhKjZkrs = this.descendInput(node?.C).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${dxGRLhKjZkrs})).substring(${ipcRpVqdsSBO}, ${kmKJQBuugKEM}));\n`;
+          const OxsPKlpQtwXG = this.descendInput(node?.A).asNumber();
+          const NXLeXSrdmKUr = this.descendInput(node?.B).asNumber();
+          const yykUNXZktdgC = this.descendInput(node?.C).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${yykUNXZktdgC})).substring(${OxsPKlpQtwXG}, ${NXLeXSrdmKUr}));\n`;
           return;
 
         case 'mistsutils.starts':
-          const GUVhpksGtimw = this.descendInput(node?.A).asString();
-          const KjImirYQBsQf = this.descendInput(node?.B).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${GUVhpksGtimw})).startsWith(""+(${KjImirYQBsQf})));\n`;
+          const VMAkcAxsfzce = this.descendInput(node?.A).asString();
+          const uNYaQAusrgxm = this.descendInput(node?.B).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${VMAkcAxsfzce})).startsWith(""+(${uNYaQAusrgxm})));\n`;
           return;
         case 'mistsutils.ends':
-          const SQzLVHXMSzNZ = this.descendInput(node?.A).asString();
-          const fQJrBOnLphng = this.descendInput(node?.B).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${SQzLVHXMSzNZ})).endsWith(""+(${fQJrBOnLphng})));\n`;
+          const cDFqATRWeWeV = this.descendInput(node?.A).asString();
+          const EErWYavLDaLF = this.descendInput(node?.B).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${cDFqATRWeWeV})).endsWith(""+(${EErWYavLDaLF})));\n`;
           return;
         case 'mistsutils.toUnicode':
-          const TjrnfywWZnJy = this.descendInput(node?.A).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${TjrnfywWZnJy})).charCodeAt(0));\n`;
+          const qsJDgalAWJWr = this.descendInput(node?.A).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${qsJDgalAWJWr})).charCodeAt(0));\n`;
           return;
         case 'mistsutils.replace':
-          const NydQVJutnCTA = this.descendInput(node?.A).asString();
-          const BYXpKIGdQGAL = this.descendInput(node?.B).asString();
-          const lnaNGdRQJenf = this.descendInput(node?.C).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${NydQVJutnCTA})).replace(""+(${lnaNGdRQJenf}), ""+(${BYXpKIGdQGAL})));\n`;
+          const gKLDfNbOBrcO = this.descendInput(node?.A).asString();
+          const uDzmTlSTXgnL = this.descendInput(node?.B).asString();
+          const kFlvjCqvfTCu = this.descendInput(node?.C).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${gKLDfNbOBrcO})).replace(""+(${kFlvjCqvfTCu}), ""+(${uDzmTlSTXgnL})));\n`;
           return;
 
         case 'mistsutils.split':
-          const ILVPVcerFKMA = this.descendInput(node?.A).asString();
-          const JuWwedzHFfxG = this.descendInput(node?.B).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify((""+(${ILVPVcerFKMA})).split(""+(${JuWwedzHFfxG}))));\n`;
+          const ssPphKidhYrq = this.descendInput(node?.A).asString();
+          const lTRsRKTEddUW = this.descendInput(node?.B).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify((""+(${ssPphKidhYrq})).split(""+(${lTRsRKTEddUW}))));\n`;
           return;
         case 'mistsutils.splitarray':
-          const DacigUXbWAhV = this.descendInput(node?.A).asString();
-          const CROHFMbOdLad = this.descendInput(node?.B).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${DacigUXbWAhV})).split(""+(${CROHFMbOdLad})));\n`;
+          const gjqImXXfJqvC = this.descendInput(node?.A).asString();
+          const tzIKNnpJYPrf = this.descendInput(node?.B).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${gjqImXXfJqvC})).split(""+(${tzIKNnpJYPrf})));\n`;
           return;
         case 'mistsutils.length':
-          const tqXxLzFYDlMW = this.descendInput(node?.A).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", ((${tqXxLzFYDlMW}).length));\n`;
+          const vDOiXJlGjNIo = this.descendInput(node?.A).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", ((${vDOiXJlGjNIo}).length));\n`;
           return;
         case 'mistsutils.item':
-          const fMqULEznRRFq = this.descendInput(node?.A).asString();
-          const JSoPMXJnxbrn = this.descendInput(node?.B).asString();
-          const ymKLMdsgyxIc = this.descendInput(node?.C).asNumber();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${fMqULEznRRFq})).split(""+(${JSoPMXJnxbrn}))[${ymKLMdsgyxIc}]);\n`;
+          const DJUPrPOAYvLq = this.descendInput(node?.A).asString();
+          const TKnOlXkiFNuc = this.descendInput(node?.B).asString();
+          const SwlrMVjqrobP = this.descendInput(node?.C).asNumber();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (""+(${DJUPrPOAYvLq})).split(""+(${TKnOlXkiFNuc}))[${SwlrMVjqrobP}]);\n`;
           return;
         case 'mistsutils.jsondelete':
-          const vZVdnpRcqZOr = this.descendInput(node?.A).asString();
-          const FBuvJdKIBbit = this.descendInput(node?.B).asString();
-          this.source += `\ndelete ${vZVdnpRcqZOr}[${FBuvJdKIBbit}];\n`;
+          const HUwWDKBKgKUr = this.descendInput(node?.A).asString();
+          const clCLnuGwKwtz = this.descendInput(node?.B).asString();
+          this.source += `\ndelete ${HUwWDKBKgKUr}[${clCLnuGwKwtz}];\n`;
           return;
         case 'mistsutils.jsonset':
-          const lkBdviDJEEtE = this.descendInput(node?.A).asString();
-          const sGVYsFZXWdVR = this.descendInput(node?.B).asString();
-          const PFMUJzVnSVRR = this.descendInput(node?.C).asString();
-          this.source += `\n${lkBdviDJEEtE}[${sGVYsFZXWdVR}] = ${PFMUJzVnSVRR};\n`;
+          const xTmhWgLyxmFS = this.descendInput(node?.A).asString();
+          const rCbkIQCxYHDu = this.descendInput(node?.B).asString();
+          const bCjCAOsDOrec = this.descendInput(node?.C).asString();
+          this.source += `\n${xTmhWgLyxmFS}[${rCbkIQCxYHDu}] = ${bCjCAOsDOrec};\n`;
           return;
         case 'mistsutils.squarebrackets':
-          const EjjIWIjRbtAh = this.descendInput(node?.A).asString();
-          const qqCsKemLxZCA = this.descendInput(node?.B).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (${EjjIWIjRbtAh})[${qqCsKemLxZCA}]);\n`;
+          const kbneuKzwQHdl = this.descendInput(node?.A).asString();
+          const psdKSCUGuwsT = this.descendInput(node?.B).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${kbneuKzwQHdl})[${psdKSCUGuwsT}]);\n`;
           return;
         case 'mistsutils.jsonparse':
-          const XbemjimGJQSv = this.descendInput(node?.A).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.parse(${XbemjimGJQSv}));\n`;
+          const xZOIdhuUPlmq = this.descendInput(node?.A).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.parse(${xZOIdhuUPlmq}));\n`;
           return;
         case 'mistsutils.jsonstringify':
-          const TIqNwyKUWKGD = this.descendInput(node?.A).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify(${TIqNwyKUWKGD}));\n`;
+          const dmdDosYXFZII = this.descendInput(node?.A).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify(${dmdDosYXFZII}));\n`;
           return;
 
         case 'mistsutils.patchreporter':
-          const JcdULlsAictO = this.descendInput(node?.A).asRaw();
-          this.source += `\nvm.runtime.visualReport("${block.id}", ${JcdULlsAictO});\n`;
+          const AfVfUEYCQVIu = this.descendInput(node?.A).asRaw();
+          this.source += `\nvm.runtime.visualReport("${block.id}", ${AfVfUEYCQVIu});\n`;
           return;
         case 'mistsutils.patchreporter2':
-          const QYbwsysCwZOT = this.descendInput(node?.A).asRaw();
-          const kFINerOvjJmI = this.descendInput(node?.B).asRaw();
-          this.source += `\nvm.runtime.visualReport("${block.id}", ${QYbwsysCwZOT}${kFINerOvjJmI});\n`;
+          const fbnRfPoDEAUn = this.descendInput(node?.A).asRaw();
+          const oyaRHqPgFXAU = this.descendInput(node?.B).asRaw();
+          this.source += `\nvm.runtime.visualReport("${block.id}", ${fbnRfPoDEAUn}${oyaRHqPgFXAU});\n`;
           return;
         case 'mistsutils.patchreporter3':
-          const DgGgWgUHcaft = this.descendInput(node?.A).asRaw();
-          const GyTyypwBnnUP = this.descendInput(node?.B).asRaw();
-          const ExqoVMmmuTXI = this.descendInput(node?.C).asRaw();
-          this.source += `\nvm.runtime.visualReport("${block.id}", ${DgGgWgUHcaft}${GyTyypwBnnUP}${ExqoVMmmuTXI});\n`;
+          const xKAQPGPjYnaJ = this.descendInput(node?.A).asRaw();
+          const seLoSPEYQMrA = this.descendInput(node?.B).asRaw();
+          const GPKUseXGhwJZ = this.descendInput(node?.C).asRaw();
+          this.source += `\nvm.runtime.visualReport("${block.id}", ${xKAQPGPjYnaJ}${seLoSPEYQMrA}${GPKUseXGhwJZ});\n`;
           return;
         case 'mistsutils.patchboolean':
-          const OgyxIvKJcDhM = this.descendInput(node?.A).asRaw();
-          this.source += `\nvm.runtime.visualReport("${block.id}", ${OgyxIvKJcDhM});\n`;
+          const nKqEHbcgJiUT = this.descendInput(node?.A).asRaw();
+          this.source += `\nvm.runtime.visualReport("${block.id}", ${nKqEHbcgJiUT});\n`;
           return;
         case 'mistsutils.patchcommand':
-          const KUkcjAyPofoN = this.descendInput(node?.A).asRaw();
-          this.source += `\n${KUkcjAyPofoN};\n`;
+          const fyjqpeJbVGer = this.descendInput(node?.A).asRaw();
+          this.source += `\n${fyjqpeJbVGer};\n`;
           return;
         case 'mistsutils.patchcommand2':
-          const imPSszgRbDhH = this.descendInput(node?.A).asRaw();
-          const NGnSxKTrxsBr = this.descendInput(node?.B).asRaw();
-          this.source += `\n${imPSszgRbDhH}${NGnSxKTrxsBr};\n`;
+          const OIFYGnzVJWYH = this.descendInput(node?.A).asRaw();
+          const lddiHdftUTCJ = this.descendInput(node?.B).asRaw();
+          this.source += `\n${OIFYGnzVJWYH}${lddiHdftUTCJ};\n`;
           return;
         case 'mistsutils.patchcommand3':
-          const xzOhkHFUEAqX = this.descendInput(node?.A).asRaw();
-          const IcMPyRMvaiYs = this.descendInput(node?.B).asRaw();
-          const gfFuSoLHIHML = this.descendInput(node?.C).asRaw();
-          this.source += `\n${xzOhkHFUEAqX}${IcMPyRMvaiYs}${gfFuSoLHIHML};\n`;
+          const AhXXSwuTwvkJ = this.descendInput(node?.A).asRaw();
+          const HlRNNCeZdEfx = this.descendInput(node?.B).asRaw();
+          const VKVoFLQdoFhv = this.descendInput(node?.C).asRaw();
+          this.source += `\n${AhXXSwuTwvkJ}${HlRNNCeZdEfx}${VKVoFLQdoFhv};\n`;
           return;
 
         case 'mistsutils.true':
@@ -848,114 +796,114 @@
     descendInput(fn, node, ...args) {
       switch (node.kind) {
         case 'mistsutils.notequals':
-          const VoBKsoJTGLHC = this.descendInput(node?.A).asString();
-          const lcMFPyFkALcI = this.descendInput(node?.B).asString();
-          return new TypedInput(`((""+(${VoBKsoJTGLHC})) !== (""+(${lcMFPyFkALcI})))`, TYPE_BOOLEAN);
+          const BpbrqUadncSy = this.descendInput(node?.A).asString();
+          const xcJUGikkSlhs = this.descendInput(node?.B).asString();
+          return new TypedInput(`((""+(${BpbrqUadncSy})) !== (""+(${xcJUGikkSlhs})))`, TYPE_BOOLEAN);
         case 'mistsutils.equals':
-          const ypytryIebucd = this.descendInput(node?.A).asString();
-          const zPtHurUdQGEe = this.descendInput(node?.B).asString();
-          return new TypedInput(`((""+(${ypytryIebucd})) === (""+(${zPtHurUdQGEe})))`, TYPE_BOOLEAN);
+          const rOhBYXGkYYZi = this.descendInput(node?.A).asString();
+          const FDNcFkQvRvST = this.descendInput(node?.B).asString();
+          return new TypedInput(`((""+(${rOhBYXGkYYZi})) === (""+(${FDNcFkQvRvST})))`, TYPE_BOOLEAN);
         case 'mistsutils.compare':
-          const fNBwTtePwCUM = this.descendInput(node?.A).asNumber();
-          const RraYzPVSbOLW = this.descendInput(node?.B).asNumber();
-          const NfPkEnUBoBQj = this.descendInput(node?.C).asString();
-          return new TypedInput(`(""+(${fNBwTtePwCUM})) ${RraYzPVSbOLW} (""+(${NfPkEnUBoBQj}))`, TYPE_BOOLEAN);
+          const EasMoVMZuWbC = this.descendInput(node?.A).asNumber();
+          const VfTHvBWhpNzv = this.descendInput(node?.B).asNumber();
+          const FvhIzHDUYWlJ = this.descendInput(node?.C).asRaw();
+          return new TypedInput(`((""+(${EasMoVMZuWbC})) ${FvhIzHDUYWlJ} (""+(${VfTHvBWhpNzv})))`, TYPE_BOOLEAN);
         case 'mistsutils.power':
-          const NPOhgNgtpQLf = this.descendInput(node?.A).asNumber();
-          const SHZYPMTGKYyI = this.descendInput(node?.B).asNumber();
-          return new TypedInput(`Math.pow(${NPOhgNgtpQLf}, ${SHZYPMTGKYyI})`, TYPE_NUMBER);
+          const SKtyeIvYqBie = this.descendInput(node?.A).asNumber();
+          const FLIRwgigBdKD = this.descendInput(node?.B).asNumber();
+          return new TypedInput(`Math.pow(${SKtyeIvYqBie}, ${FLIRwgigBdKD})`, TYPE_NUMBER);
 
         case 'mistsutils.clamp':
-          const phpHfstPNceD = this.descendInput(node?.A).asNumber();
-          const vDxIBGDSiggr = this.descendInput(node?.B).asNumber();
-          const MBwvjyXdHpFb = this.descendInput(node?.C).asNumber();
-          return new TypedInput(`Math.min(Math.max(${phpHfstPNceD}, ${vDxIBGDSiggr}), ${MBwvjyXdHpFb})`, TYPE_NUMBER);
+          const vpeNcXWAQBdZ = this.descendInput(node?.A).asNumber();
+          const HGJiQJKbROdG = this.descendInput(node?.B).asNumber();
+          const gajGxFxIpmiD = this.descendInput(node?.C).asNumber();
+          return new TypedInput(`Math.min(Math.max(${vpeNcXWAQBdZ}, ${HGJiQJKbROdG}), ${gajGxFxIpmiD})`, TYPE_NUMBER);
         case 'mistsutils.letters':
-          const ipcRpVqdsSBO = this.descendInput(node?.A).asNumber();
-          const kmKJQBuugKEM = this.descendInput(node?.B).asNumber();
-          const dxGRLhKjZkrs = this.descendInput(node?.C).asString();
-          return new TypedInput(`(""+(${dxGRLhKjZkrs})).substring(${ipcRpVqdsSBO}, ${kmKJQBuugKEM})`, TYPE_STRING);
+          const OxsPKlpQtwXG = this.descendInput(node?.A).asNumber();
+          const NXLeXSrdmKUr = this.descendInput(node?.B).asNumber();
+          const yykUNXZktdgC = this.descendInput(node?.C).asString();
+          return new TypedInput(`(""+(${yykUNXZktdgC})).substring(${OxsPKlpQtwXG}, ${NXLeXSrdmKUr})`, TYPE_STRING);
 
         case 'mistsutils.starts':
-          const GUVhpksGtimw = this.descendInput(node?.A).asString();
-          const KjImirYQBsQf = this.descendInput(node?.B).asString();
-          return new TypedInput(`(""+(${GUVhpksGtimw})).startsWith(""+(${KjImirYQBsQf}))`, TYPE_BOOLEAN);
+          const VMAkcAxsfzce = this.descendInput(node?.A).asString();
+          const uNYaQAusrgxm = this.descendInput(node?.B).asString();
+          return new TypedInput(`(""+(${VMAkcAxsfzce})).startsWith(""+(${uNYaQAusrgxm}))`, TYPE_BOOLEAN);
         case 'mistsutils.ends':
-          const SQzLVHXMSzNZ = this.descendInput(node?.A).asString();
-          const fQJrBOnLphng = this.descendInput(node?.B).asString();
-          return new TypedInput(`(""+(${SQzLVHXMSzNZ})).endsWith(""+(${fQJrBOnLphng}))`, TYPE_BOOLEAN);
+          const cDFqATRWeWeV = this.descendInput(node?.A).asString();
+          const EErWYavLDaLF = this.descendInput(node?.B).asString();
+          return new TypedInput(`(""+(${cDFqATRWeWeV})).endsWith(""+(${EErWYavLDaLF}))`, TYPE_BOOLEAN);
         case 'mistsutils.toUnicode':
-          const TjrnfywWZnJy = this.descendInput(node?.A).asString();
-          return new TypedInput(`(""+(${TjrnfywWZnJy})).charCodeAt(0)`, TYPE_NUMBER);
+          const qsJDgalAWJWr = this.descendInput(node?.A).asString();
+          return new TypedInput(`(""+(${qsJDgalAWJWr})).charCodeAt(0)`, TYPE_NUMBER);
         case 'mistsutils.replace':
-          const NydQVJutnCTA = this.descendInput(node?.A).asString();
-          const BYXpKIGdQGAL = this.descendInput(node?.B).asString();
-          const lnaNGdRQJenf = this.descendInput(node?.C).asString();
-          return new TypedInput(`(""+(${NydQVJutnCTA})).replace(""+(${lnaNGdRQJenf}), ""+(${BYXpKIGdQGAL}))`, TYPE_STRING);
+          const gKLDfNbOBrcO = this.descendInput(node?.A).asString();
+          const uDzmTlSTXgnL = this.descendInput(node?.B).asString();
+          const kFlvjCqvfTCu = this.descendInput(node?.C).asString();
+          return new TypedInput(`(""+(${gKLDfNbOBrcO})).replace(""+(${kFlvjCqvfTCu}), ""+(${uDzmTlSTXgnL}))`, TYPE_STRING);
 
         case 'mistsutils.split':
-          const ILVPVcerFKMA = this.descendInput(node?.A).asString();
-          const JuWwedzHFfxG = this.descendInput(node?.B).asString();
-          return new TypedInput(`JSON.stringify((""+(${ILVPVcerFKMA})).split(""+(${JuWwedzHFfxG})))`, TYPE_STRING);
+          const ssPphKidhYrq = this.descendInput(node?.A).asString();
+          const lTRsRKTEddUW = this.descendInput(node?.B).asString();
+          return new TypedInput(`JSON.stringify((""+(${ssPphKidhYrq})).split(""+(${lTRsRKTEddUW})))`, TYPE_STRING);
         case 'mistsutils.splitarray':
-          const DacigUXbWAhV = this.descendInput(node?.A).asString();
-          const CROHFMbOdLad = this.descendInput(node?.B).asString();
-          return new TypedInput(`(""+(${DacigUXbWAhV})).split(""+(${CROHFMbOdLad}))`, TYPE_STRING);
+          const gjqImXXfJqvC = this.descendInput(node?.A).asString();
+          const tzIKNnpJYPrf = this.descendInput(node?.B).asString();
+          return new TypedInput(`(""+(${gjqImXXfJqvC})).split(""+(${tzIKNnpJYPrf}))`, TYPE_STRING);
         case 'mistsutils.length':
-          const tqXxLzFYDlMW = this.descendInput(node?.A).asString();
-          return new TypedInput(`((${tqXxLzFYDlMW}).length)`, TYPE_NUMBER);
+          const vDOiXJlGjNIo = this.descendInput(node?.A).asString();
+          return new TypedInput(`((${vDOiXJlGjNIo}).length)`, TYPE_NUMBER);
         case 'mistsutils.item':
-          const fMqULEznRRFq = this.descendInput(node?.A).asString();
-          const JSoPMXJnxbrn = this.descendInput(node?.B).asString();
-          const ymKLMdsgyxIc = this.descendInput(node?.C).asNumber();
-          return new TypedInput(`(""+(${fMqULEznRRFq})).split(""+(${JSoPMXJnxbrn}))[${ymKLMdsgyxIc}]`, TYPE_STRING);
+          const DJUPrPOAYvLq = this.descendInput(node?.A).asString();
+          const TKnOlXkiFNuc = this.descendInput(node?.B).asString();
+          const SwlrMVjqrobP = this.descendInput(node?.C).asNumber();
+          return new TypedInput(`(""+(${DJUPrPOAYvLq})).split(""+(${TKnOlXkiFNuc}))[${SwlrMVjqrobP}]`, TYPE_STRING);
         case 'mistsutils.jsondelete':
-          const vZVdnpRcqZOr = this.descendInput(node?.A).asString();
-          const FBuvJdKIBbit = this.descendInput(node?.B).asString();
-          return new TypedInput(`delete ${vZVdnpRcqZOr}[${FBuvJdKIBbit}]`, TYPE_UNKNOWN);
+          const HUwWDKBKgKUr = this.descendInput(node?.A).asString();
+          const clCLnuGwKwtz = this.descendInput(node?.B).asString();
+          return new TypedInput(`delete ${HUwWDKBKgKUr}[${clCLnuGwKwtz}]`, TYPE_UNKNOWN);
         case 'mistsutils.jsonset':
-          const lkBdviDJEEtE = this.descendInput(node?.A).asString();
-          const sGVYsFZXWdVR = this.descendInput(node?.B).asString();
-          const PFMUJzVnSVRR = this.descendInput(node?.C).asString();
-          return new TypedInput(`${lkBdviDJEEtE}[${sGVYsFZXWdVR}] = ${PFMUJzVnSVRR}`, TYPE_UNKNOWN);
+          const xTmhWgLyxmFS = this.descendInput(node?.A).asString();
+          const rCbkIQCxYHDu = this.descendInput(node?.B).asString();
+          const bCjCAOsDOrec = this.descendInput(node?.C).asString();
+          return new TypedInput(`${xTmhWgLyxmFS}[${rCbkIQCxYHDu}] = ${bCjCAOsDOrec}`, TYPE_UNKNOWN);
         case 'mistsutils.squarebrackets':
-          const EjjIWIjRbtAh = this.descendInput(node?.A).asString();
-          const qqCsKemLxZCA = this.descendInput(node?.B).asString();
-          return new TypedInput(`(${EjjIWIjRbtAh})[${qqCsKemLxZCA}]`, TYPE_STRING);
+          const kbneuKzwQHdl = this.descendInput(node?.A).asString();
+          const psdKSCUGuwsT = this.descendInput(node?.B).asString();
+          return new TypedInput(`(${kbneuKzwQHdl})[${psdKSCUGuwsT}]`, TYPE_STRING);
         case 'mistsutils.jsonparse':
-          const XbemjimGJQSv = this.descendInput(node?.A).asString();
-          return new TypedInput(`JSON.parse(${XbemjimGJQSv})`, TYPE_STRING);
+          const xZOIdhuUPlmq = this.descendInput(node?.A).asString();
+          return new TypedInput(`JSON.parse(${xZOIdhuUPlmq})`, TYPE_STRING);
         case 'mistsutils.jsonstringify':
-          const TIqNwyKUWKGD = this.descendInput(node?.A).asString();
-          return new TypedInput(`JSON.stringify(${TIqNwyKUWKGD})`, TYPE_STRING);
+          const dmdDosYXFZII = this.descendInput(node?.A).asString();
+          return new TypedInput(`JSON.stringify(${dmdDosYXFZII})`, TYPE_STRING);
 
         case 'mistsutils.patchreporter':
-          const JcdULlsAictO = this.descendInput(node?.A).asRaw();
-          return new TypedInput(`${JcdULlsAictO}`, TYPE_STRING);
+          const AfVfUEYCQVIu = this.descendInput(node?.A).asRaw();
+          return new TypedInput(`${AfVfUEYCQVIu}`, TYPE_STRING);
         case 'mistsutils.patchreporter2':
-          const QYbwsysCwZOT = this.descendInput(node?.A).asRaw();
-          const kFINerOvjJmI = this.descendInput(node?.B).asRaw();
-          return new TypedInput(`${QYbwsysCwZOT}${kFINerOvjJmI}`, TYPE_STRING);
+          const fbnRfPoDEAUn = this.descendInput(node?.A).asRaw();
+          const oyaRHqPgFXAU = this.descendInput(node?.B).asRaw();
+          return new TypedInput(`${fbnRfPoDEAUn}${oyaRHqPgFXAU}`, TYPE_STRING);
         case 'mistsutils.patchreporter3':
-          const DgGgWgUHcaft = this.descendInput(node?.A).asRaw();
-          const GyTyypwBnnUP = this.descendInput(node?.B).asRaw();
-          const ExqoVMmmuTXI = this.descendInput(node?.C).asRaw();
-          return new TypedInput(`${DgGgWgUHcaft}${GyTyypwBnnUP}${ExqoVMmmuTXI}`, TYPE_STRING);
+          const xKAQPGPjYnaJ = this.descendInput(node?.A).asRaw();
+          const seLoSPEYQMrA = this.descendInput(node?.B).asRaw();
+          const GPKUseXGhwJZ = this.descendInput(node?.C).asRaw();
+          return new TypedInput(`${xKAQPGPjYnaJ}${seLoSPEYQMrA}${GPKUseXGhwJZ}`, TYPE_STRING);
         case 'mistsutils.patchboolean':
-          const OgyxIvKJcDhM = this.descendInput(node?.A).asRaw();
-          return new TypedInput(`${OgyxIvKJcDhM}`, TYPE_BOOLEAN);
+          const nKqEHbcgJiUT = this.descendInput(node?.A).asRaw();
+          return new TypedInput(`${nKqEHbcgJiUT}`, TYPE_BOOLEAN);
         case 'mistsutils.patchcommand':
-          const KUkcjAyPofoN = this.descendInput(node?.A).asRaw();
-          return new TypedInput(`${KUkcjAyPofoN}`, TYPE_UNKNOWN);
+          const fyjqpeJbVGer = this.descendInput(node?.A).asRaw();
+          return new TypedInput(`${fyjqpeJbVGer}`, TYPE_UNKNOWN);
         case 'mistsutils.patchcommand2':
-          const imPSszgRbDhH = this.descendInput(node?.A).asRaw();
-          const NGnSxKTrxsBr = this.descendInput(node?.B).asRaw();
-          return new TypedInput(`${imPSszgRbDhH}${NGnSxKTrxsBr}`, TYPE_UNKNOWN);
+          const OIFYGnzVJWYH = this.descendInput(node?.A).asRaw();
+          const lddiHdftUTCJ = this.descendInput(node?.B).asRaw();
+          return new TypedInput(`${OIFYGnzVJWYH}${lddiHdftUTCJ}`, TYPE_UNKNOWN);
         case 'mistsutils.patchcommand3':
-          const xzOhkHFUEAqX = this.descendInput(node?.A).asRaw();
-          const IcMPyRMvaiYs = this.descendInput(node?.B).asRaw();
-          const gfFuSoLHIHML = this.descendInput(node?.C).asRaw();
-          return new TypedInput(`${xzOhkHFUEAqX}${IcMPyRMvaiYs}${gfFuSoLHIHML}`, TYPE_UNKNOWN);
+          const AhXXSwuTwvkJ = this.descendInput(node?.A).asRaw();
+          const HlRNNCeZdEfx = this.descendInput(node?.B).asRaw();
+          const VKVoFLQdoFhv = this.descendInput(node?.C).asRaw();
+          return new TypedInput(`${AhXXSwuTwvkJ}${HlRNNCeZdEfx}${VKVoFLQdoFhv}`, TYPE_UNKNOWN);
 
         case 'mistsutils.true':
           return new TypedInput(`true`, TYPE_BOOLEAN);
