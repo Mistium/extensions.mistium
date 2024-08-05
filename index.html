@@ -1,4 +1,29 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Extensions</title>
+    <meta content="Extensions" property="og:title" />
+    <meta content="A list of scratch extensions made by @mistium" property="og:description" />
+    <meta content="https://extensions.mistium.com" property="og:url" />
+    <meta content="#57cdac" data-react-helmet="true" name="theme-color" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="topbar"></div>
+    <div class="content">
+        <h1>Extensions</h1>
+        <h2>Featured</h2>
+        <div id="featuredCards"></div>
+        <h2>All ( Some may not work at all :P )</h2>
+        <div id="fileCards"></div>
+        <h2>Other Extension Galleries</h2>
+        <div id="otherGalleries"></div>
+    </div>
+    <script>
     document.addEventListener('DOMContentLoaded', () => {
         fetch('https://raw.githubusercontent.com/Mistium/Origin-OS/main/topbar.html')
             .then(response => response.text())
