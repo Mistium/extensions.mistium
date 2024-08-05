@@ -32,6 +32,18 @@
         <div id="otherGalleries"></div>
     </div>
     <script>
+        // Function to fetch versions data and cache it
+        async function fetchAndCacheVersions() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/Mistium/extensions.mistium/main/versions.json');
+                const versions = await response.json();
+                localStorage.setItem('extensionVersions', JSON.stringify(versions));
+                return versions;
+            } catch (error) {
+                console.error('Error fetching versions data:', error);
+            }
+        }
+
         // Function to fetch data from GitHub API
         async function fetchData() {
             try {
@@ -52,6 +64,9 @@
             const featuredCardsContainer = document.getElementById("featuredCards");
             const fileCardsContainer = document.getElementById("fileCards");
             const data = await fetchData();
+            const versions = await fetchAndCacheVersions();
+            const cachedVersions = JSON.parse(localStorage.getItem('extensionVersions')) || {};
+
             if (!data || !data.featured || !Array.isArray(data.featured) || !data.files || !Array.isArray(data.files)) return;
 
             data.featured.forEach(item => {
@@ -70,15 +85,27 @@
                     const platformHeading = document.createElement("h2");
                     platformHeading.textContent = itemName;
 
-                    const descriptionParagraph = document.createElement("p");
-
                     const profileImage = document.createElement("img");
                     profileImage.src = `https://raw.githubusercontent.com/Mistium/extensions.mistium/main/images/${itemName}.png`;
                     profileImage.alt = itemName;
                     profileImage.classList.add("profile-image");
 
+                    // Check if the extension is new or updated
+                    const versionTag = document.createElement("span");
+                    versionTag.classList.add("version-tag");
+                    if (!cachedVersions[itemName]) {
+                        versionTag.textContent = "New";
+                        versionTag.classList.add("new-tag");
+                    } else if (versions[itemName] !== cachedVersions[itemName]) {
+                        versionTag.textContent = "Updated";
+                        versionTag.classList.add("updated-tag");
+                    }
+
                     profileCard.appendChild(profileImage);
                     profileCard.appendChild(platformHeading);
+                    if (versionTag.textContent) {
+                        profileCard.appendChild(versionTag);
+                    }
 
                     profileCardLink.appendChild(profileCard);
                     featuredCardsContainer.appendChild(profileCardLink);
@@ -107,6 +134,9 @@
                     fileCardsContainer.appendChild(profileCardLink);
                 }
             });
+
+            // Update the cached versions to the latest versions
+            localStorage.setItem('extensionVersions', JSON.stringify(versions));
         }
 
         // Function to generate other extension gallery links
