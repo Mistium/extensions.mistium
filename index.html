@@ -93,11 +93,11 @@
                     // Check if the extension is new or updated
                     const versionTag = document.createElement("span");
                     versionTag.classList.add("version-tag");
-                    console.log(cachedVersion[itemName])
-                    if (!cachedVersions[itemName]) {
+                    console.log(versions)
+                    if (!versions[itemName + ".js"]) {
                         versionTag.textContent = "New";
                         versionTag.classList.add("new-tag");
-                    } else if (versions[itemName] !== cachedVersions[itemName]) {
+                    } else if (versions[itemName + ".js"] !== versions[itemName + ".js"]) {
                         versionTag.textContent = "Updated";
                         versionTag.classList.add("updated-tag");
                     }
