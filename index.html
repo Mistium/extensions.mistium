@@ -14,14 +14,6 @@
 </head>
 <body>
     <div id="topbar"></div>
-    <script>
-        fetch('https://raw.githubusercontent.com/Mistium/Origin-OS/main/topbar.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('topbar').innerHTML = html;
-            })
-            .catch(error => console.error('Error fetching topbar HTML:', error));
-    </script>
     <div class="content">
         <h1>Extensions</h1>
         <h2>Featured</h2>
@@ -32,6 +24,20 @@
         <div id="otherGalleries"></div>
     </div>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('https://raw.githubusercontent.com/Mistium/Origin-OS/main/topbar.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('topbar').innerHTML = html;
+                })
+                .catch(error => console.error('Error fetching topbar HTML:', error));
+
+            fetchAndCacheVersions().then(() => {
+                generateProfileCards();
+                generateOtherGalleries();
+            });
+        });
+
         // Function to fetch versions data and cache it
         async function fetchAndCacheVersions() {
             try {
@@ -41,6 +47,7 @@
                 return versions;
             } catch (error) {
                 console.error('Error fetching versions data:', error);
+                return {};
             }
         }
 
@@ -56,6 +63,7 @@
                 return { featured: featuredData, files: filesData };
             } catch (error) {
                 console.error('Error fetching data:', error);
+                return { featured: [], files: [] };
             }
         }
 
@@ -64,10 +72,12 @@
             const featuredCardsContainer = document.getElementById("featuredCards");
             const fileCardsContainer = document.getElementById("fileCards");
             const data = await fetchData();
+
+            let cachedVersions = {};
             try {
-                const cachedVersions = JSON.parse(localStorage.getItem('extensionVersions')) || {};
+                cachedVersions = JSON.parse(localStorage.getItem('extensionVersions')) || {};
             } catch(e) {
-                const cachedVarsions = {}
+                console.error('Error parsing cached versions:', e);
             }
             const versions = await fetchAndCacheVersions();
 
@@ -135,7 +145,7 @@
                     platformHeading.textContent = itemName;
 
                     profileCard.appendChild(platformHeading);
-                    
+
                     profileCardLink.appendChild(profileCard);
                     fileCardsContainer.appendChild(profileCardLink);
                 }
@@ -161,7 +171,7 @@
                 { name: "Dino Mod :P", url: "https://github.com/GabsTheCuriousKid/FirstExtension/tree/main/extensions" },
                 { name: "Pen Group", url: "https://pen-group.github.io/extensions" }
             ];
-            
+
             const otherGalleriesContainer = document.getElementById("otherGalleries");
 
             galleries.forEach(gallery => {
@@ -182,10 +192,6 @@
                 otherGalleriesContainer.appendChild(galleryLink);
             });
         }
-
-        // Call the functions to generate profile cards and other galleries
-        generateProfileCards();
-        generateOtherGalleries();
     </script>
 </body>
 </html>
