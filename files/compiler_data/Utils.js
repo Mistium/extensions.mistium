@@ -2,13 +2,34 @@ extension = {
   id: "mistsutils",
   color1: "#2DA4A0",
   name: "Mists Utils",
+  version: 5.4,
 };
 
+constructor = `console.log("Loaded Mist's utils! (v${extension.version})");
+  this.newUpdate = false;
+  this.openSite = function () {
+    Scratch.openWindow("https://extensions.mistium.com");
+  }
+  if (typeof window.scaffolding !== "object") {
+    // fetch the extension from github
+    // compare it to the current file
+    fetch("https://raw.githubusercontent.com/Mistium/extensions.mistium/main/featured/Mist's%20Utils.js")
+      .then((res) => res.text())
+      .then((text) => {
+        if (!(text.includes("${"version: " + extension.version},"))) { this.newUpdate = true; }
+      })
+  };`;
+
 blocks = [
+  {
+    blockType: "BUTTON",
+    text: "New Version Available!",
+    func: "openSite",
+    showIf: "this.newUpdate",
+  },
   "Comparisons",
   {
     opcode: "notequals",
-    func: "err",
     text: "[A] !== [B]",
     blockType: "BOOLEAN",
     code: '([A] !== [B])',
@@ -20,7 +41,6 @@ blocks = [
   },
   {
     opcode: "equals",
-    func: "err",
     text: "[A] === [B]",
     code: '([A] === [B])',
     blockType: "BOOLEAN",
@@ -32,7 +52,6 @@ blocks = [
   },
   {
     opcode: "greaterorequal",
-    func: "err",
     text: "[A] >= [B]",
     blockType: "BOOLEAN",
     code: '([A] >= [B])',
@@ -44,7 +63,6 @@ blocks = [
   },
   {
     opcode: "lessthanorequal",
-    func: "err",
     text: "[A] <= [B]",
     blockType: "BOOLEAN",
     code: '([A] <= [B])',
@@ -56,7 +74,6 @@ blocks = [
   },
   {
     opcode: "compare",
-    func: "err",
     text: "[A] [C] [B]",
     blockType: "BOOLEAN",
     code: '([A] [C] [B])',
@@ -70,7 +87,6 @@ blocks = [
   "Maths",
   {
     opcode: "power",
-    func: "err",
     text: "[A] ^ [B]",
     blockType: "REPORTER",
     code: "Math.pow([A], [B])",
@@ -82,7 +98,6 @@ blocks = [
   },
   {
     opcode: "round",
-    func: "err",
     text: "round [A] to the nearest [B]",
     blockType: "REPORTER",
     code: "Math.round(([A] / [B]) * [B])",
@@ -96,7 +111,6 @@ blocks = [
   },
   {
     opcode: "clamp",
-    func: "err",
     text: "clamp [A] between [B] and [C]",
     blockType: "REPORTER",
     code: "Math.min(Math.max([A], [B]), [C])",
@@ -109,7 +123,6 @@ blocks = [
   },
   {
     opcode: "min",
-    func: "err",
     text: "min of [A] and [B]",
     blockType: "REPORTER",
     code: "Math.min([A], [B])",
@@ -121,7 +134,6 @@ blocks = [
   },
   {
     opcode: "max",
-    func: "err",
     text: "max of [A] and [B]",
     blockType: "REPORTER",
     code: "Math.max([A], [B])",
@@ -133,7 +145,6 @@ blocks = [
   },
   {
     opcode: "interpolate",
-    func: "err",
     text: "smooth [B] to [C] by [A]",
     blockType: "REPORTER",
     code: "[B] + (([C] - [B]) / [A])",
@@ -146,11 +157,10 @@ blocks = [
   },
   "Strings",
   {
-    opcode: "?",
-    func: "err",
+    opcode: "ifthen",
     text: "if [A] then [B] else [C]",
     blockType: "REPORTER",
-    code: '([A] ? ([B] : [C]))',
+    code: '([A] ? [B] : [C])',
     returns: "STRING",
     arguments: {
       A: { type: "BOOLEAN", defaultValue: false },
@@ -160,7 +170,6 @@ blocks = [
   },
   {
     opcode: "letters",
-    func: "err",
     text: "letters [A] to [B] of [C]",
     blockType: "REPORTER",
     code: '([C]).substring([A], [B])',
@@ -173,7 +182,6 @@ blocks = [
   },
   {
     opcode: "starts",
-    func: "err",
     text: "[A] starts with [B]",
     blockType: "BOOLEAN",
     code: '([A]).startsWith([B])',
@@ -185,7 +193,6 @@ blocks = [
   },
   {
     opcode: "ends",
-    func: "err",
     text: "[A] ends with [B]",
     blockType: "BOOLEAN",
     code: '([A]).endsWith([B])',
@@ -197,8 +204,7 @@ blocks = [
   },
   {
     opcode: "toUnicode",
-    func: "err",
-    text: "Unicode Of [A]",
+    text: "unicode Of [A]",
     blockType: "REPORTER",
     code: '([A]).charCodeAt(0)',
     returns: "NUMBER",
@@ -208,7 +214,6 @@ blocks = [
   },
   {
     opcode: "replace",
-    func: "err",
     text: "replace [C] in [A] with [B]",
     blockType: "REPORTER",
     code: '([C] === "" ? [A] : ([A]).replace([C], [B]))',
@@ -221,7 +226,6 @@ blocks = [
   },
   {
     opcode: "replaceall",
-    func: "err",
     text: "replace all [C] in [A] with [B]",
     blockType: "REPORTER",
     code: '([C] === "" ? [A] : ([A]).replaceAll([C], [B]))',
@@ -234,7 +238,6 @@ blocks = [
   },
   {
     opcode: "alltextAfterString",
-    func: "err",
     text: "text after [B] in [A]",
     blockType: "REPORTER",
     code: '([A]).substring(([A]).indexOf(""+([B])) + 1, (([A]).length)',
@@ -246,7 +249,6 @@ blocks = [
   },
   {
     opcode: "alltextBeforeString",
-    func: "err",
     text: "text before [B] in [A]",
     blockType: "REPORTER",
     code: '([A]).split([B], 1)[0]',
@@ -259,7 +261,6 @@ blocks = [
   "JSON",
   {
     opcode: "split",
-    func: "err",
     text: "split [A] by [B] (stringify)",
     blockType: "REPORTER",
     code: 'JSON.stringify(([A]).split([B]))',
@@ -271,7 +272,6 @@ blocks = [
   },
   {
     opcode: "splitarray",
-    func: "err",
     text: "split [A] by [B] (array)",
     blockType: "REPORTER",
     code: '([A]).split([B])',
@@ -283,7 +283,6 @@ blocks = [
   },
   {
     opcode: "length",
-    func: "err",
     text: "[A].length",
     blockType: "REPORTER",
     code: "(([A]).length)",
@@ -294,7 +293,6 @@ blocks = [
   },
   {
     opcode: "item",
-    func: "err",
     text: "item [C] of [A] split by [B]",
     blockType: "REPORTER",
     code: '([A]).split([B])[[C]]',
@@ -307,8 +305,7 @@ blocks = [
   },
   {
     opcode: "jsondelete",
-    func: "err",
-    text: "Delete Item [B] of [A]",
+    text: "delete Item [B] of [A]",
     code: "delete [A][[B]]",
     blockType: "COMMAND",
     arguments: {
@@ -318,8 +315,7 @@ blocks = [
   },
   {
     opcode: "jsonset",
-    func: "err",
-    text: "Set [B] to [C] in [A]",
+    text: "set [B] to [C] in [A]",
     blockType: "COMMAND",
     code: "[A][[B]] = [C]",
     arguments: {
@@ -330,7 +326,6 @@ blocks = [
   },
   {
     opcode: "squarebrackets",
-    func: "err",
     text: "[A] item [B]",
     blockType: "REPORTER",
     code: "([A])[[B]]",
@@ -342,7 +337,6 @@ blocks = [
   },
   {
     opcode: "jsonparse",
-    func: "err",
     text: "JSON.parse [A]",
     blockType: "REPORTER",
     code: "JSON.parse([A])",
@@ -353,7 +347,6 @@ blocks = [
   },
   {
     opcode: "jsonstringify",
-    func: "err",
     text: "JSON.stringify [A]",
     blockType: "REPORTER",
     code: "JSON.stringify([A])",
@@ -362,10 +355,71 @@ blocks = [
       A: { type: "STRING", defaultValue: "" },
     },
   },
+  "Variables",
+  {
+    opcode: "getVariableIdByName",
+    text: "get Sprite Variable ID of [A]",
+    blockType: "REPORTER",
+    code: 'Object.values(vm.editingTarget.variables).filter(variable => variable.name === [A] && variable.type !== "list")[0]?.id ?? ""',
+    returns: "STRING",
+    arguments: {
+      A: { type: "STRING", defaultValue: "my variable" },
+    },
+  },
+  {
+    opcode: "getSpriteListIdByName",
+    text: "get Sprite List ID of [A]",
+    blockType: "REPORTER",
+    code: 'Object.values(vm.editingTarget.variables).filter(variable => variable.name === [A] && variable.type === "list")[0]?.id ?? ""',
+    returns: "STRING",
+    arguments: {
+      A: { type: "STRING", defaultValue: "my variable" },
+    },
+  },
+  "---",
+  {
+    opcode: "getStageVariableIdByName",
+    text: "get Stage Variable ID of [A]",
+    blockType: "REPORTER",
+    code: 'Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === [A] && variable.type !== "list")[0]?.id ?? ""',
+    returns: "STRING",
+    arguments: {
+      A: { type: "STRING", defaultValue: "my variable" },
+    },
+  },
+  {
+    opcode: "getStageListIdByName",
+    text: "get Stage List ID of [A]",
+    blockType: "REPORTER",
+    code: 'Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === [A] && variable.type === "list")[0]?.id ?? ""',
+    returns: "STRING",
+    arguments: {
+      A: { type: "STRING", defaultValue: "my variable" },
+    },
+  },
+  {
+    opcode: "setSpriteVariableById",
+    text: "set var/list in Sprite (id: [A] value: [B])",
+    blockType: "COMMAND",
+    code: 'vm.editingTarget.variables[[A]].value = [B]',
+    arguments: {
+      A: { type: "STRING", defaultValue: "variable id" },
+      B: { type: "STRING", defaultValue: "1" },
+    }
+  },
+  {
+    opcode: "setStageVariableById",
+    text: "set var/list in Stage (id: [A] value: [B])",
+    blockType: "COMMAND",
+    code: 'vm.runtime.getTargetForStage().variables[[A]].value = [B]',
+    arguments: {
+      A: { type: "STRING", defaultValue: "variable id" },
+      B: { type: "STRING", defaultValue: "1" },
+    }
+  },
   "Types",
   {
     opcode: "isnumber",
-    func: "err",
     text: "[A] is a number",
     blockType: "BOOLEAN",
     code: 'Number([A]) == [A]',
@@ -376,7 +430,6 @@ blocks = [
   },
   {
     opcode: "isstring",
-    func: "err",
     text: "[A] is a string",
     blockType: "BOOLEAN",
     code: 'String([A]) == [A]',
@@ -387,7 +440,6 @@ blocks = [
   },
   {
     opcode: "isboolean",
-    func: "err",
     text: "[A] is a boolean",
     blockType: "BOOLEAN",
     code: '[A] == "true" || [A] == "false"',
@@ -398,7 +450,6 @@ blocks = [
   },
   {
     opcode: "tostring",
-    func: "err",
     text: "to string [A]",
     blockType: "REPORTER",
     code: '[A]',
@@ -409,7 +460,6 @@ blocks = [
   },
   {
     opcode: "tonumber",
-    func: "err",
     text: "to number [A]",
     blockType: "REPORTER",
     code: 'isNaN(Number([A])) ? 0 : Number([A])',
@@ -420,7 +470,6 @@ blocks = [
   },
   {
     opcode: "toboolean",
-    func: "err",
     text: "to boolean [A]",
     blockType: "REPORTER",
     code: '[A] == "true" || [A] == "1" || [A] == "yes" ? "true" : "false"',
@@ -432,8 +481,7 @@ blocks = [
   "Injections",
   {
     opcode: "patchreporter",
-    func: "err",
-    text: "Patch [A]",
+    text: "patch [A]",
     blockType: "REPORTER",
     code: "[A]",
     returns: "STRING",
@@ -444,8 +492,7 @@ blocks = [
   },
   {
     opcode: "patchreporter2",
-    func: "err",
-    text: "Patch [A][B]",
+    text: "patch [A][B]",
     blockType: "REPORTER",
     code: "[A][B]",
     returns: "STRING",
@@ -457,8 +504,7 @@ blocks = [
   },
   {
     opcode: "patchreporter3",
-    func: "err",
-    text: "Patch [A][B][C]",
+    text: "patch [A][B][C]",
     blockType: "REPORTER",
     code: "[A][B][C]",
     returns: "STRING",
@@ -471,8 +517,7 @@ blocks = [
   },
   {
     opcode: "patchboolean",
-    func: "err",
-    text: "Patch [A]",
+    text: "patch [A]",
     blockType: "BOOLEAN",
     code: "[A]",
     returns: "BOOLEAN",
@@ -482,8 +527,7 @@ blocks = [
   },
   {
     opcode: "patchcommand",
-    func: "err",
-    text: "Patch [A]",
+    text: "patch [A]",
     blockType: "COMMAND",
     code: "[A]",
     arguments: {
@@ -492,8 +536,7 @@ blocks = [
   },
   {
     opcode: "patchcommand2",
-    func: "err",
-    text: "Patch [A][B]",
+    text: "patch [A][B]",
     blockType: "COMMAND",
     code: "[A][B]",
     arguments: {
@@ -503,8 +546,7 @@ blocks = [
   },
   {
     opcode: "patchcommand3",
-    func: "err",
-    text: "Patch [A][B][C]",
+    text: "patch [A][B][C]",
     blockType: "COMMAND",
     code: "[A][B][C]",
     arguments: {
@@ -516,7 +558,6 @@ blocks = [
   "Reporters",
   {
     opcode: "true",
-    func: "err",
     text: "true",
     blockType: "BOOLEAN",
     code: true,
@@ -525,7 +566,6 @@ blocks = [
   },
   {
     opcode: "false",
-    func: "err",
     text: "false",
     blockType: "BOOLEAN",
     code: false,
@@ -533,8 +573,15 @@ blocks = [
     disableMonitor: true,
   },
   {
+    opcode: "isPackaged",
+    text: "Is Packaged?",
+    blockType: "BOOLEAN",
+    code: "(typeof window.scaffolding === 'object')",
+    returns: "BOOLEAN",
+    disableMonitor: true,
+  },
+  {
     opcode: "performancenow",
-    func: "err",
     text: "performance.now()",
     blockType: "REPORTER",
     code: "performance.now()",
@@ -543,7 +590,6 @@ blocks = [
   },
   {
     opcode: "stagewidth",
-    func: "err",
     text: "Stage Width",
     blockType: "REPORTER",
     code: "Scratch.vm.runtime.stageWidth",
@@ -552,7 +598,6 @@ blocks = [
   },
   {
     opcode: "stageheight",
-    func: "err",
     text: "Stage Height",
     blockType: "REPORTER",
     code: "Scratch.vm.runtime.stageHeight",
@@ -561,7 +606,6 @@ blocks = [
   },
   {
     opcode: "newline",
-    func: "err",
     text: "New Line",
     blockType: "REPORTER",
     code: '"\\\\n"',
@@ -570,7 +614,6 @@ blocks = [
   },
   {
     opcode: "pi",
-    func: "err",
     text: "π",
     blockType: "REPORTER",
     code: "Math.PI",
@@ -579,7 +622,6 @@ blocks = [
   },
   {
     opcode: "e",
-    func: "err",
     text: "e",
     blockType: "REPORTER",
     code: "Math.E",
@@ -588,7 +630,6 @@ blocks = [
   },
   {
     opcode: "infinity",
-    func: "err",
     text: "∞",
     blockType: "REPORTER",
     code: "Infinity",
@@ -597,11 +638,10 @@ blocks = [
   },
   {
     opcode: "MaxInt",
-    func: "err",
     text: "Max Int",
     blockType: "REPORTER",
     code: "Number.MAX_SAFE_INTEGER",
     returns: "NUMBER",
     disableMonitor: true,
   }
-]
+];
