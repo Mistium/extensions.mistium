@@ -1,80 +1,26 @@
+/**!
+ * Mist's Utils
+ * @author mistium
+ * @version 5.5
+ * @copyright MIT & LGPLv3 License
+ * Basically half of this is 0znzw's code lmao
+ * Do not remove this comment
+ * Intended for originOS but can be used in other projects
+ */
+
 (function(Scratch) {
   'use strict';
-
   if (!Scratch.extensions.unsandboxed) {
     throw new Error("mistsutils needs to be run unsandboxed.");
   }
 
-  const {
-    vm,
-    BlockType,
-    ArgumentType
-  } = Scratch;
-  const {
-    runtime
-  } = vm;
-  const iwnafhwtb = vm.exports.i_will_not_ask_for_help_when_these_break();
-  const {
-    JSGenerator,
-    IRGenerator,
-    ScriptTreeGenerator
-  } = iwnafhwtb;
-  const {
-    TYPE_NUMBER,
-    TYPE_STRING,
-    TYPE_BOOLEAN,
-    TYPE_UNKNOWN,
-    TYPE_NUMBER_NAN,
-    TypedInput,
-    ConstantInput,
-    VariableInput,
-    Frame,
-    sanitize
-  } = JSGenerator.unstable_exports;
-  const JSGP = JSGenerator.prototype,
-    IRGP = IRGenerator.prototype,
-    STGP = ScriptTreeGenerator.prototype;
-
-  ConstantInput.prototype.asRaw = function() {
-    return this.constantValue;
-  };
-  TypedInput.prototype.asRaw = function() {
-    return this.asUnknown();
-  };
-  TypedInput.prototype.asSafe = function() {
-    return this.asUnknown();
-  };
-  VariableInput.prototype.asRaw = function() {
-    return this._value.asSafe();
-  };
-
   class mistsutils {
-
-    constructor() {
-      console.log("Loaded Mist's utils! (v5.4)");
-      this.newUpdate = false;
-      this.openSite = function() {
-        Scratch.openWindow("https://extensions.mistium.com");
-      }
-      if (typeof window.scaffolding !== "object") {
-        // fetch the extension from github
-        // compare it to the current file
-        fetch("https://raw.githubusercontent.com/Mistium/extensions.mistium/main/featured/Mist's%20Utils.js")
-          .then((res) => res.text())
-          .then((text) => {
-            if (!(text.includes("version: 5.4,"))) {
-              this.newUpdate = true;
-            }
-          })
-      };
-    }
-
     getInfo() {
       return {
         id: 'mistsutils',
         name: 'Mists Utils',
         color1: '#2DA4A0',
-        version: 5.4,
+        version: 5.5,
         blocks: [{
             "blockType": Scratch.BlockType.BUTTON,
             "text": "New Version Available!",
@@ -358,7 +304,7 @@
             "opcode": "letters",
             "text": "letters [A] to [B] of [C]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "(${letters_3}).substring(${letters_1}, ${letters_2})",
+            "code": "(${letters_3}).substring(Math.max(0,${letters_1}-1), Math.min(${letters_2}, ${letters_3}.length))",
             "returns": "STRING",
             "arguments": {
               "A": {
@@ -577,6 +523,7 @@
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
+                "as": "RAW",
                 "defaultValue": "apple",
                 "gen_id": "length_1"
               }
@@ -592,6 +539,7 @@
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
+                "as": "RAW",
                 "defaultValue": "apple",
                 "gen_id": "item_1"
               },
@@ -660,6 +608,7 @@
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
+                "as": "RAW",
                 "defaultValue": "apple",
                 "gen_id": "squarebrackets_1"
               },
@@ -697,109 +646,6 @@
                 "type": Scratch.ArgumentType.STRING,
                 "defaultValue": "",
                 "gen_id": "jsonstringify_1"
-              }
-            },
-            "func": "err"
-          },
-          {
-            "blockType": Scratch.BlockType.LABEL,
-            "text": "Variables"
-          },
-          {
-            "opcode": "getVariableIdByName",
-            "text": "get Sprite Variable ID of [A]",
-            "blockType": Scratch.BlockType.REPORTER,
-            "code": "Object.values(vm.editingTarget.variables).filter(variable => variable.name === ${getVariableIdByName_1} && variable.type !== \"list\")[0]?.id ?? \"\"",
-            "returns": "STRING",
-            "arguments": {
-              "A": {
-                "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "my variable",
-                "gen_id": "getVariableIdByName_1"
-              }
-            },
-            "func": "err"
-          },
-          {
-            "opcode": "getSpriteListIdByName",
-            "text": "get Sprite List ID of [A]",
-            "blockType": Scratch.BlockType.REPORTER,
-            "code": "Object.values(vm.editingTarget.variables).filter(variable => variable.name === ${getSpriteListIdByName_1} && variable.type === \"list\")[0]?.id ?? \"\"",
-            "returns": "STRING",
-            "arguments": {
-              "A": {
-                "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "my variable",
-                "gen_id": "getSpriteListIdByName_1"
-              }
-            },
-            "func": "err"
-          },
-          "---",
-          {
-            "opcode": "getStageVariableIdByName",
-            "text": "get Stage Variable ID of [A]",
-            "blockType": Scratch.BlockType.REPORTER,
-            "code": "Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === ${getStageVariableIdByName_1} && variable.type !== \"list\")[0]?.id ?? \"\"",
-            "returns": "STRING",
-            "arguments": {
-              "A": {
-                "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "my variable",
-                "gen_id": "getStageVariableIdByName_1"
-              }
-            },
-            "func": "err"
-          },
-          {
-            "opcode": "getStageListIdByName",
-            "text": "get Stage List ID of [A]",
-            "blockType": Scratch.BlockType.REPORTER,
-            "code": "Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === ${getStageListIdByName_1} && variable.type === \"list\")[0]?.id ?? \"\"",
-            "returns": "STRING",
-            "arguments": {
-              "A": {
-                "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "my variable",
-                "gen_id": "getStageListIdByName_1"
-              }
-            },
-            "func": "err"
-          },
-          {
-            "opcode": "setSpriteVariableById",
-            "text": "set var/list in Sprite (id: [A] value: [B])",
-            "blockType": Scratch.BlockType.COMMAND,
-            "code": "vm.editingTarget.variables[${setSpriteVariableById_1}].value = ${setSpriteVariableById_2}",
-            "arguments": {
-              "A": {
-                "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "variable id",
-                "gen_id": "setSpriteVariableById_1"
-              },
-              "B": {
-                "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "1",
-                "gen_id": "setSpriteVariableById_2"
-              }
-            },
-            "func": "err"
-          },
-          {
-            "opcode": "setStageVariableById",
-            "text": "set var/list in Stage (id: [A] value: [B])",
-            "blockType": Scratch.BlockType.COMMAND,
-            "code": "vm.runtime.getTargetForStage().variables[${setStageVariableById_1}].value = ${setStageVariableById_2}",
-            "arguments": {
-              "A": {
-                "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "variable id",
-                "gen_id": "setStageVariableById_1"
-              },
-              "B": {
-                "type": Scratch.ArgumentType.STRING,
-                "defaultValue": "1",
-                "gen_id": "setStageVariableById_2"
               }
             },
             "func": "err"
@@ -996,7 +842,7 @@
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
+                "defaultValue": "1 + 5",
                 "gen_id": "patchcommand_1"
               }
             },
@@ -1011,13 +857,13 @@
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
+                "defaultValue": "5 +",
                 "gen_id": "patchcommand2_1"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "1",
+                "defaultValue": "5",
                 "gen_id": "patchcommand2_2"
               }
             },
@@ -1032,19 +878,19 @@
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "return",
+                "defaultValue": "console.log(",
                 "gen_id": "patchcommand3_1"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "\"\"",
+                "defaultValue": "\"hello world\"",
                 "gen_id": "patchcommand3_2"
               },
               "C": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": ";",
+                "defaultValue": ")",
                 "gen_id": "patchcommand3_3"
               }
             },
@@ -1156,12 +1002,76 @@
         ],
       };
     }
+
     err(args, util, blockJSON) {
       const err = 'huh, weird error :shrug:';
       runtime.visualReport(util.thread.isCompiled ? util.thread.peekStack() : util.thread.peekStackFrame().op.id, err);
       return err;
     }
+
+    constructor() {
+      console.log("Loaded Mist's utils! (v5.5)");
+      this.newUpdate = false;
+      this.openSite = function() {
+        Scratch.openWindow("https://extensions.mistium.com");
+      }
+      if (typeof window.scaffolding !== "object") {
+        // fetch the extension from github
+        // compare it to the current file
+        fetch("https://raw.githubusercontent.com/Mistium/extensions.mistium/main/featured/Mist's%20Utils.js")
+          .then((res) => res.text())
+          .then((text) => {
+            if (!(text.includes("version: 5.5,"))) {
+              this.newUpdate = true;
+            }
+          })
+      };
+    }
+
   }
+
+  const {
+    vm,
+    BlockType,
+    ArgumentType
+  } = Scratch;
+  const {
+    runtime
+  } = vm;
+  const iwnafhwtb = vm.exports.i_will_not_ask_for_help_when_these_break();
+  const {
+    JSGenerator,
+    IRGenerator,
+    ScriptTreeGenerator
+  } = iwnafhwtb;
+  const {
+    TYPE_NUMBER,
+    TYPE_STRING,
+    TYPE_BOOLEAN,
+    TYPE_UNKNOWN,
+    TYPE_NUMBER_NAN,
+    TypedInput,
+    ConstantInput,
+    VariableInput,
+    Frame,
+    sanitize
+  } = JSGenerator.unstable_exports;
+  const JSGP = JSGenerator.prototype,
+    IRGP = IRGenerator.prototype,
+    STGP = ScriptTreeGenerator.prototype;
+
+  ConstantInput.prototype.asRaw = function() {
+    return this.constantValue;
+  };
+  TypedInput.prototype.asRaw = function() {
+    return this.asUnknown();
+  };
+  TypedInput.prototype.asSafe = function() {
+    return this.asUnknown();
+  };
+  VariableInput.prototype.asRaw = function() {
+    return this.asSafe();
+  };
 
   const PATCHES_ID = 'mistsutils_patches';
   const cst_patch = (obj, functions) => {
@@ -1261,7 +1171,7 @@
           const letters_1 = this.descendInput(node?.A).asNumber();
           const letters_2 = this.descendInput(node?.B).asNumber();
           const letters_3 = this.descendInput(node?.C).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (${letters_3}).substring(${letters_1}, ${letters_2}))\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${letters_3}).substring(Math.max(0,${letters_1}-1), Math.min(${letters_2}, ${letters_3}.length)))\n`;
           return;
         case 'mistsutils.starts':
           const starts_1 = this.descendInput(node?.A).asString();
@@ -1311,11 +1221,11 @@
           this.source += `\nvm.runtime.visualReport("${block.id}", (${splitarray_1}).split(${splitarray_2}))\n`;
           return;
         case 'mistsutils.length':
-          const length_1 = this.descendInput(node?.A).asString();
+          const length_1 = this.descendInput(node?.A).asRaw();
           this.source += `\nvm.runtime.visualReport("${block.id}", ((${length_1}).length))\n`;
           return;
         case 'mistsutils.item':
-          const item_1 = this.descendInput(node?.A).asString();
+          const item_1 = this.descendInput(node?.A).asRaw();
           const item_2 = this.descendInput(node?.B).asString();
           const item_3 = this.descendInput(node?.C).asNumber();
           this.source += `\nvm.runtime.visualReport("${block.id}", (${item_1}).split(${item_2})[${item_3}])\n`;
@@ -1332,7 +1242,7 @@
           this.source += `\n${jsonset_1}[${jsonset_2}] = ${jsonset_3}\n`;
           return;
         case 'mistsutils.squarebrackets':
-          const squarebrackets_1 = this.descendInput(node?.A).asString();
+          const squarebrackets_1 = this.descendInput(node?.A).asRaw();
           const squarebrackets_2 = this.descendInput(node?.B).asString();
           this.source += `\nvm.runtime.visualReport("${block.id}", (${squarebrackets_1})[${squarebrackets_2}])\n`;
           return;
@@ -1343,34 +1253,6 @@
         case 'mistsutils.jsonstringify':
           const jsonstringify_1 = this.descendInput(node?.A).asString();
           this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify(${jsonstringify_1}))\n`;
-          return;
-
-        case 'mistsutils.getVariableIdByName':
-          const getVariableIdByName_1 = this.descendInput(node?.A).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", Object.values(vm.editingTarget.variables).filter(variable => variable.name === ${getVariableIdByName_1} && variable.type !== "list")[0]?.id ?? "")\n`;
-          return;
-        case 'mistsutils.getSpriteListIdByName':
-          const getSpriteListIdByName_1 = this.descendInput(node?.A).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", Object.values(vm.editingTarget.variables).filter(variable => variable.name === ${getSpriteListIdByName_1} && variable.type === "list")[0]?.id ?? "")\n`;
-          return;
-
-        case 'mistsutils.getStageVariableIdByName':
-          const getStageVariableIdByName_1 = this.descendInput(node?.A).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === ${getStageVariableIdByName_1} && variable.type !== "list")[0]?.id ?? "")\n`;
-          return;
-        case 'mistsutils.getStageListIdByName':
-          const getStageListIdByName_1 = this.descendInput(node?.A).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === ${getStageListIdByName_1} && variable.type === "list")[0]?.id ?? "")\n`;
-          return;
-        case 'mistsutils.setSpriteVariableById':
-          const setSpriteVariableById_1 = this.descendInput(node?.A).asString();
-          const setSpriteVariableById_2 = this.descendInput(node?.B).asString();
-          this.source += `\nvm.editingTarget.variables[${setSpriteVariableById_1}].value = ${setSpriteVariableById_2}\n`;
-          return;
-        case 'mistsutils.setStageVariableById':
-          const setStageVariableById_1 = this.descendInput(node?.A).asString();
-          const setStageVariableById_2 = this.descendInput(node?.B).asString();
-          this.source += `\nvm.runtime.getTargetForStage().variables[${setStageVariableById_1}].value = ${setStageVariableById_2}\n`;
           return;
 
         case 'mistsutils.isnumber':
@@ -1534,7 +1416,7 @@
           const letters_1 = this.descendInput(node?.A).asNumber();
           const letters_2 = this.descendInput(node?.B).asNumber();
           const letters_3 = this.descendInput(node?.C).asString();
-          return new TypedInput(`(${letters_3}).substring(${letters_1}, ${letters_2})`, TYPE_STRING);
+          return new TypedInput(`(${letters_3}).substring(Math.max(0,${letters_1}-1), Math.min(${letters_2}, ${letters_3}.length))`, TYPE_STRING);
         case 'mistsutils.starts':
           const starts_1 = this.descendInput(node?.A).asString();
           const starts_2 = this.descendInput(node?.B).asString();
@@ -1574,10 +1456,10 @@
           const splitarray_2 = this.descendInput(node?.B).asString();
           return new TypedInput(`(${splitarray_1}).split(${splitarray_2})`, TYPE_STRING);
         case 'mistsutils.length':
-          const length_1 = this.descendInput(node?.A).asString();
+          const length_1 = this.descendInput(node?.A).asRaw();
           return new TypedInput(`((${length_1}).length)`, TYPE_NUMBER);
         case 'mistsutils.item':
-          const item_1 = this.descendInput(node?.A).asString();
+          const item_1 = this.descendInput(node?.A).asRaw();
           const item_2 = this.descendInput(node?.B).asString();
           const item_3 = this.descendInput(node?.C).asNumber();
           return new TypedInput(`(${item_1}).split(${item_2})[${item_3}]`, TYPE_STRING);
@@ -1591,7 +1473,7 @@
           const jsonset_3 = this.descendInput(node?.C).asString();
           return new TypedInput(`${jsonset_1}[${jsonset_2}] = ${jsonset_3}`, TYPE_UNKNOWN);
         case 'mistsutils.squarebrackets':
-          const squarebrackets_1 = this.descendInput(node?.A).asString();
+          const squarebrackets_1 = this.descendInput(node?.A).asRaw();
           const squarebrackets_2 = this.descendInput(node?.B).asString();
           return new TypedInput(`(${squarebrackets_1})[${squarebrackets_2}]`, TYPE_STRING);
         case 'mistsutils.jsonparse':
@@ -1600,28 +1482,6 @@
         case 'mistsutils.jsonstringify':
           const jsonstringify_1 = this.descendInput(node?.A).asString();
           return new TypedInput(`JSON.stringify(${jsonstringify_1})`, TYPE_STRING);
-
-        case 'mistsutils.getVariableIdByName':
-          const getVariableIdByName_1 = this.descendInput(node?.A).asString();
-          return new TypedInput(`Object.values(vm.editingTarget.variables).filter(variable => variable.name === ${getVariableIdByName_1} && variable.type !== "list")[0]?.id ?? ""`, TYPE_STRING);
-        case 'mistsutils.getSpriteListIdByName':
-          const getSpriteListIdByName_1 = this.descendInput(node?.A).asString();
-          return new TypedInput(`Object.values(vm.editingTarget.variables).filter(variable => variable.name === ${getSpriteListIdByName_1} && variable.type === "list")[0]?.id ?? ""`, TYPE_STRING);
-
-        case 'mistsutils.getStageVariableIdByName':
-          const getStageVariableIdByName_1 = this.descendInput(node?.A).asString();
-          return new TypedInput(`Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === ${getStageVariableIdByName_1} && variable.type !== "list")[0]?.id ?? ""`, TYPE_STRING);
-        case 'mistsutils.getStageListIdByName':
-          const getStageListIdByName_1 = this.descendInput(node?.A).asString();
-          return new TypedInput(`Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === ${getStageListIdByName_1} && variable.type === "list")[0]?.id ?? ""`, TYPE_STRING);
-        case 'mistsutils.setSpriteVariableById':
-          const setSpriteVariableById_1 = this.descendInput(node?.A).asString();
-          const setSpriteVariableById_2 = this.descendInput(node?.B).asString();
-          return new TypedInput(`vm.editingTarget.variables[${setSpriteVariableById_1}].value = ${setSpriteVariableById_2}`, TYPE_UNKNOWN);
-        case 'mistsutils.setStageVariableById':
-          const setStageVariableById_1 = this.descendInput(node?.A).asString();
-          const setStageVariableById_2 = this.descendInput(node?.B).asString();
-          return new TypedInput(`vm.runtime.getTargetForStage().variables[${setStageVariableById_1}].value = ${setStageVariableById_2}`, TYPE_UNKNOWN);
 
         case 'mistsutils.isnumber':
           const isnumber_1 = this.descendInput(node?.A).asString();
@@ -1887,40 +1747,6 @@
           return {
             block, kind: 'mistsutils.jsonstringify',
               A: this.descendInputOfBlock(block, 'A'),
-          };
-
-        case 'mistsutils_getVariableIdByName':
-          return {
-            block, kind: 'mistsutils.getVariableIdByName',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_getSpriteListIdByName':
-          return {
-            block, kind: 'mistsutils.getSpriteListIdByName',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-
-        case 'mistsutils_getStageVariableIdByName':
-          return {
-            block, kind: 'mistsutils.getStageVariableIdByName',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_getStageListIdByName':
-          return {
-            block, kind: 'mistsutils.getStageListIdByName',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_setSpriteVariableById':
-          return {
-            block, kind: 'mistsutils.setSpriteVariableById',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_setStageVariableById':
-          return {
-            block, kind: 'mistsutils.setStageVariableById',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
           };
 
         case 'mistsutils_isnumber':
@@ -2263,46 +2089,6 @@
             block,
             kind: 'mistsutils.jsonstringify',
               A: this.descendInputOfBlock(block, 'A'),
-          };
-
-        case 'mistsutils_getVariableIdByName':
-          return {
-            block,
-            kind: 'mistsutils.getVariableIdByName',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_getSpriteListIdByName':
-          return {
-            block,
-            kind: 'mistsutils.getSpriteListIdByName',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-
-        case 'mistsutils_getStageVariableIdByName':
-          return {
-            block,
-            kind: 'mistsutils.getStageVariableIdByName',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_getStageListIdByName':
-          return {
-            block,
-            kind: 'mistsutils.getStageListIdByName',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_setSpriteVariableById':
-          return {
-            block,
-            kind: 'mistsutils.setSpriteVariableById',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_setStageVariableById':
-          return {
-            block,
-            kind: 'mistsutils.setStageVariableById',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
           };
 
         case 'mistsutils_isnumber':
