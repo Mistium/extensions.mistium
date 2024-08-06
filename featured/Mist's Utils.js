@@ -236,9 +236,6 @@
             "func": "err"
           },
           {
-            "func": "err"
-          },
-          {
             "opcode": "clamp",
             "text": "clamp [A] between [B] and [C]",
             "blockType": Scratch.BlockType.REPORTER,
@@ -1231,9 +1228,6 @@
           const round_2 = this.descendInput(node?.B).asNumber();
           this.source += `\nvm.runtime.visualReport("${block.id}", Math.round((${round_1} / ${round_2}) * ${round_2}))\n`;
           return;
-        case 'mistsutils.undefined':
-          this.source += `\nundefined\n`;
-          return;
         case 'mistsutils.clamp':
           const clamp_1 = this.descendInput(node?.A).asNumber();
           const clamp_2 = this.descendInput(node?.B).asNumber();
@@ -1512,8 +1506,6 @@
           const round_1 = this.descendInput(node?.A).asNumber();
           const round_2 = this.descendInput(node?.B).asNumber();
           return new TypedInput(`Math.round((${round_1} / ${round_2}) * ${round_2})`, TYPE_NUMBER);
-        case 'mistsutils.undefined':
-          return new TypedInput(`undefined`, TYPE_UNKNOWN);
         case 'mistsutils.clamp':
           const clamp_1 = this.descendInput(node?.A).asNumber();
           const clamp_2 = this.descendInput(node?.B).asNumber();
@@ -1757,10 +1749,6 @@
             block, kind: 'mistsutils.round',
               A: this.descendInputOfBlock(block, 'A'),
               B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_undefined':
-          return {
-            block, kind: 'mistsutils.undefined',
           };
         case 'mistsutils_clamp':
           return {
@@ -2115,11 +2103,6 @@
             kind: 'mistsutils.round',
               A: this.descendInputOfBlock(block, 'A'),
               B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_undefined':
-          return {
-            block,
-            kind: 'mistsutils.undefined',
           };
         case 'mistsutils_clamp':
           return {
