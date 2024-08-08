@@ -144,6 +144,9 @@
     }
 
     writeToDatabase({ VALUE, KEY }) {
+      if (!this.initialised) {
+        console.error("Database not initialised");
+      }
       const transaction = this.db.transaction(["data"], "readwrite");
       const objectStore = transaction.objectStore("data");
       objectStore.put({
@@ -153,12 +156,15 @@
     }
 
     async readFromDatabase({KEY}) {
+      if (!this.initialised) {
+        console.error("Database not initialised");
+      }
       return new Promise((resolve, reject) => {
         const transaction = this.db.transaction(["data"], "readonly");
         const objectStore = transaction.objectStore("data");
         const request = objectStore.get(KEY);
         request.onsuccess = function (event) {
-          resolve(event.target.result ? event.target.result.value : null);
+          resolve(event.target.result ? event.target.result.value : "");
         };
         request.onerror = function (event) {
           reject("Error reading from database");
@@ -167,6 +173,9 @@
     }
 
     async getAllKeys() {
+      if (!this.initialised) {
+        console.error("Database not initialised");
+      }
       return new Promise((resolve, reject) => {
         const transaction = this.db.transaction(["data"], "readonly");
         const objectStore = transaction.objectStore("data");
@@ -184,17 +193,30 @@
 
 
     async keyExists({ KEY }) {
+      if (!this.initialised) {
+        console.error("Database not initialised");
+      }
       const keys = await this.getAllKeys();
       return keys.includes(KEY);
     }
 
     deleteFromDatabase({ KEY }) {
+      if (!this.initialised) {
+        console.error("Database not initialised");
+      }
       const transaction = this.db.transaction(["data"], "readwrite");
       const objectStore = transaction.objectStore("data");
-      objectStore.delete(KEY);
+      try {
+        objectStore.delete(KEY);
+      } catch (error) {
+        console.error("Error deleting key from database");
+      }
     }
 
     async exportDatabaseAsJSON() {
+      if (!this.initialised) {
+        console.error("Database not initialised");
+      }
       if (!this.db) {
         return Promise.reject("No database connection available");
       }
@@ -224,6 +246,9 @@
       });
     }
     async importJSONToDatabase({ jsonData }) {
+      if (!this.initialised) {
+        console.error("Database not initialised");
+      }
       if (!this.db) {
         return Promise.reject("No database connection available");
       }
