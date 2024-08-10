@@ -1,7 +1,7 @@
 /**!
  * Mist's Utils
  * @author mistium
- * @version 5.5
+ * @version 5.6
  * @copyright MIT & LGPLv3 License
  * Basically half of this is 0znzw's code lmao
  * Do not remove this comment
@@ -20,7 +20,7 @@
         id: 'mistsutils',
         name: 'Mists Utils',
         color1: '#2DA4A0',
-        version: 5.5,
+        version: 5.6,
         blocks: [{
             "blockType": Scratch.BlockType.BUTTON,
             "text": "New Version Available!",
@@ -434,7 +434,7 @@
             "opcode": "alltextAfterString",
             "text": "text after [B] in [A]",
             "blockType": Scratch.BlockType.REPORTER,
-            "code": "(${alltextAfterString_1}).substring((${alltextAfterString_1}).indexOf(\"\"+(${alltextAfterString_2})) + 1, ((${alltextAfterString_1}).length)",
+            "code": "(${alltextAfterString_1}).substring((${alltextAfterString_1}).indexOf(\"\"+(${alltextAfterString_2})) + 1, ((${alltextAfterString_1}).length))",
             "returns": "STRING",
             "arguments": {
               "A": {
@@ -644,6 +644,7 @@
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
+                "as": "RAW",
                 "defaultValue": "",
                 "gen_id": "jsonstringify_1"
               }
@@ -1010,7 +1011,7 @@
     }
 
     constructor() {
-      console.log("Loaded Mist's utils! (v5.5)");
+      console.log("Loaded Mist's utils! (v5.6)");
       this.newUpdate = false;
       this.openSite = function() {
         Scratch.openWindow("https://extensions.mistium.com");
@@ -1021,7 +1022,7 @@
         fetch("https://raw.githubusercontent.com/Mistium/extensions.mistium/main/featured/Mist's%20Utils.js")
           .then((res) => res.text())
           .then((text) => {
-            if (!(text.includes("version: 5.5,"))) {
+            if (!(text.includes("version: 5.6,"))) {
               this.newUpdate = true;
             }
           })
@@ -1202,7 +1203,7 @@
         case 'mistsutils.alltextAfterString':
           const alltextAfterString_1 = this.descendInput(node?.A).asString();
           const alltextAfterString_2 = this.descendInput(node?.B).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", (${alltextAfterString_1}).substring((${alltextAfterString_1}).indexOf(""+(${alltextAfterString_2})) + 1, ((${alltextAfterString_1}).length))\n`;
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${alltextAfterString_1}).substring((${alltextAfterString_1}).indexOf(""+(${alltextAfterString_2})) + 1, ((${alltextAfterString_1}).length)))\n`;
           return;
         case 'mistsutils.alltextBeforeString':
           const alltextBeforeString_1 = this.descendInput(node?.A).asString();
@@ -1251,7 +1252,7 @@
           this.source += `\nvm.runtime.visualReport("${block.id}", JSON.parse(${jsonparse_1}))\n`;
           return;
         case 'mistsutils.jsonstringify':
-          const jsonstringify_1 = this.descendInput(node?.A).asString();
+          const jsonstringify_1 = this.descendInput(node?.A).asRaw();
           this.source += `\nvm.runtime.visualReport("${block.id}", JSON.stringify(${jsonstringify_1}))\n`;
           return;
 
@@ -1441,7 +1442,7 @@
         case 'mistsutils.alltextAfterString':
           const alltextAfterString_1 = this.descendInput(node?.A).asString();
           const alltextAfterString_2 = this.descendInput(node?.B).asString();
-          return new TypedInput(`(${alltextAfterString_1}).substring((${alltextAfterString_1}).indexOf(""+(${alltextAfterString_2})) + 1, ((${alltextAfterString_1}).length)`, TYPE_STRING);
+          return new TypedInput(`(${alltextAfterString_1}).substring((${alltextAfterString_1}).indexOf(""+(${alltextAfterString_2})) + 1, ((${alltextAfterString_1}).length))`, TYPE_STRING);
         case 'mistsutils.alltextBeforeString':
           const alltextBeforeString_1 = this.descendInput(node?.A).asString();
           const alltextBeforeString_2 = this.descendInput(node?.B).asString();
@@ -1480,7 +1481,7 @@
           const jsonparse_1 = this.descendInput(node?.A).asString();
           return new TypedInput(`JSON.parse(${jsonparse_1})`, TYPE_STRING);
         case 'mistsutils.jsonstringify':
-          const jsonstringify_1 = this.descendInput(node?.A).asString();
+          const jsonstringify_1 = this.descendInput(node?.A).asRaw();
           return new TypedInput(`JSON.stringify(${jsonstringify_1})`, TYPE_STRING);
 
         case 'mistsutils.isnumber':
