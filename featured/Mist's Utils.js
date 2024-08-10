@@ -759,7 +759,7 @@
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
+                "defaultValue": "1 * 3",
                 "gen_id": "patchreporter_1"
               }
             },
@@ -776,13 +776,13 @@
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
+                "defaultValue": "1 * ",
                 "gen_id": "patchreporter2_1"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "1",
+                "defaultValue": "3",
                 "gen_id": "patchreporter2_2"
               }
             },
@@ -799,19 +799,19 @@
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "return",
+                "defaultValue": "1",
                 "gen_id": "patchreporter3_1"
               },
               "B": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "\"\"",
+                "defaultValue": "*",
                 "gen_id": "patchreporter3_2"
               },
               "C": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": ";",
+                "defaultValue": "3",
                 "gen_id": "patchreporter3_3"
               }
             },
@@ -828,7 +828,7 @@
               "A": {
                 "type": Scratch.ArgumentType.STRING,
                 "as": "RAW",
-                "defaultValue": "apple",
+                "defaultValue": "1 == 6",
                 "gen_id": "patchboolean_1"
               }
             },
