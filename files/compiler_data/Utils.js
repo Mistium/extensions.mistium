@@ -2,8 +2,18 @@ extension = {
   id: "mistsutils",
   color1: "#2DA4A0",
   name: "Mists Utils",
-  version: 5.4,
+  version: 5.6,
 };
+
+comment = `/**!
+ * Mist's Utils
+ * @author mistium
+ * @version ${extension.version}
+ * @copyright MIT & LGPLv3 License
+ * Basically half of this is 0znzw's code lmao
+ * Do not remove this comment
+ * Intended for originOS but can be used in other projects
+ */`
 
 constructor = `console.log("Loaded Mist's utils! (v${extension.version})");
   this.newUpdate = false;
@@ -108,8 +118,6 @@ blocks = [
     },
   },
   {
-  },
-  {
     opcode: "clamp",
     text: "clamp [A] between [B] and [C]",
     blockType: "REPORTER",
@@ -172,7 +180,7 @@ blocks = [
     opcode: "letters",
     text: "letters [A] to [B] of [C]",
     blockType: "REPORTER",
-    code: '([C]).substring([A], [B])',
+    code: '([C]).substring(Math.max(0,[A]-1), Math.min([B], [C].length))',
     returns: "STRING",
     arguments: {
       A: { type: "NUMBER", defaultValue: 2 },
@@ -240,7 +248,7 @@ blocks = [
     opcode: "alltextAfterString",
     text: "text after [B] in [A]",
     blockType: "REPORTER",
-    code: '([A]).substring(([A]).indexOf(""+([B])) + 1, (([A]).length)',
+    code: '([A]).substring(([A]).indexOf(""+([B])) + 1, (([A]).length))',
     returns: "STRING",
     arguments: {
       A: { type: "STRING", defaultValue: "apple" },
@@ -288,7 +296,7 @@ blocks = [
     code: "(([A]).length)",
     returns: "NUMBER",
     arguments: {
-      A: { type: "STRING", defaultValue: "apple" },
+      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
     },
   },
   {
@@ -298,7 +306,7 @@ blocks = [
     code: '([A]).split([B])[[C]]',
     returns: "STRING",
     arguments: {
-      A: { type: "STRING", defaultValue: "apple" },
+      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
       B: { type: "STRING", defaultValue: "l" },
       C: { type: "NUMBER", defaultValue: 1 },
     },
@@ -331,7 +339,7 @@ blocks = [
     code: "([A])[[B]]",
     returns: "STRING",
     arguments: {
-      A: { type: "STRING", defaultValue: "apple" },
+      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
       B: { type: "STRING", defaultValue: "1" },
     },
   },
@@ -352,70 +360,8 @@ blocks = [
     code: "JSON.stringify([A])",
     returns: "STRING",
     arguments: {
-      A: { type: "STRING", defaultValue: "" },
+      A: { type: "STRING", as: "RAW", defaultValue: "" },
     },
-  },
-  "Variables",
-  {
-    opcode: "getVariableIdByName",
-    text: "get Sprite Variable ID of [A]",
-    blockType: "REPORTER",
-    code: 'Object.values(vm.editingTarget.variables).filter(variable => variable.name === [A] && variable.type !== "list")[0]?.id ?? ""',
-    returns: "STRING",
-    arguments: {
-      A: { type: "STRING", defaultValue: "my variable" },
-    },
-  },
-  {
-    opcode: "getSpriteListIdByName",
-    text: "get Sprite List ID of [A]",
-    blockType: "REPORTER",
-    code: 'Object.values(vm.editingTarget.variables).filter(variable => variable.name === [A] && variable.type === "list")[0]?.id ?? ""',
-    returns: "STRING",
-    arguments: {
-      A: { type: "STRING", defaultValue: "my variable" },
-    },
-  },
-  "---",
-  {
-    opcode: "getStageVariableIdByName",
-    text: "get Stage Variable ID of [A]",
-    blockType: "REPORTER",
-    code: 'Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === [A] && variable.type !== "list")[0]?.id ?? ""',
-    returns: "STRING",
-    arguments: {
-      A: { type: "STRING", defaultValue: "my variable" },
-    },
-  },
-  {
-    opcode: "getStageListIdByName",
-    text: "get Stage List ID of [A]",
-    blockType: "REPORTER",
-    code: 'Object.values(vm.runtime.getTargetForStage().variables).filter(variable => variable.name === [A] && variable.type === "list")[0]?.id ?? ""',
-    returns: "STRING",
-    arguments: {
-      A: { type: "STRING", defaultValue: "my variable" },
-    },
-  },
-  {
-    opcode: "setSpriteVariableById",
-    text: "set var/list in Sprite (id: [A] value: [B])",
-    blockType: "COMMAND",
-    code: 'vm.editingTarget.variables[[A]].value = [B]',
-    arguments: {
-      A: { type: "STRING", defaultValue: "variable id" },
-      B: { type: "STRING", defaultValue: "1" },
-    }
-  },
-  {
-    opcode: "setStageVariableById",
-    text: "set var/list in Stage (id: [A] value: [B])",
-    blockType: "COMMAND",
-    code: 'vm.runtime.getTargetForStage().variables[[A]].value = [B]',
-    arguments: {
-      A: { type: "STRING", defaultValue: "variable id" },
-      B: { type: "STRING", defaultValue: "1" },
-    }
   },
   "Types",
   {
@@ -486,7 +432,7 @@ blocks = [
     code: "[A]",
     returns: "STRING",
     arguments: {
-      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
+      A: { type: "STRING", as: "RAW", defaultValue: "1 * 3" },
     },
     allowDropAnywhere: true,
   },
@@ -497,8 +443,8 @@ blocks = [
     code: "[A][B]",
     returns: "STRING",
     arguments: {
-      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
-      B: { type: "STRING", as: "RAW", defaultValue: "1" },
+      A: { type: "STRING", as: "RAW", defaultValue: "1 * " },
+      B: { type: "STRING", as: "RAW", defaultValue: "3" },
     },
     allowDropAnywhere: true,
   },
@@ -509,9 +455,9 @@ blocks = [
     code: "[A][B][C]",
     returns: "STRING",
     arguments: {
-      A: { type: "STRING", as: "RAW", defaultValue: "return" },
-      B: { type: "STRING", as: "RAW", defaultValue: '""' },
-      C: { type: "STRING", as: "RAW", defaultValue: ";" },
+      A: { type: "STRING", as: "RAW", defaultValue: "1" },
+      B: { type: "STRING", as: "RAW", defaultValue: '*' },
+      C: { type: "STRING", as: "RAW", defaultValue: "3" },
     },
     allowDropAnywhere: true,
   },
@@ -522,7 +468,7 @@ blocks = [
     code: "[A]",
     returns: "BOOLEAN",
     arguments: {
-      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
+      A: { type: "STRING", as: "RAW", defaultValue: "1 == 6" },
     },
   },
   {
@@ -531,7 +477,7 @@ blocks = [
     blockType: "COMMAND",
     code: "[A]",
     arguments: {
-      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
+      A: { type: "STRING", as: "RAW", defaultValue: "1 + 5" },
     },
   },
   {
@@ -540,8 +486,8 @@ blocks = [
     blockType: "COMMAND",
     code: "[A][B]",
     arguments: {
-      A: { type: "STRING", as: "RAW", defaultValue: "apple" },
-      B: { type: "STRING", as: "RAW", defaultValue: "1" },
+      A: { type: "STRING", as: "RAW", defaultValue: "5 +" },
+      B: { type: "STRING", as: "RAW", defaultValue: "5" },
     },
   },
   {
@@ -550,9 +496,9 @@ blocks = [
     blockType: "COMMAND",
     code: "[A][B][C]",
     arguments: {
-      A: { type: "STRING", as: "RAW", defaultValue: "return" },
-      B: { type: "STRING", as: "RAW", defaultValue: '""' },
-      C: { type: "STRING", as: "RAW", defaultValue: ";" },
+      A: { type: "STRING", as: "RAW", defaultValue: "console.log(" },
+      B: { type: "STRING", as: "RAW", defaultValue: '"hello world"' },
+      C: { type: "STRING", as: "RAW", defaultValue: ")" },
     },
   },
   "Reporters",
