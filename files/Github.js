@@ -34,11 +34,12 @@
           {
             opcode: 'getFileData',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'get file [PATH] from [USER] / [REPO]',
+            text: 'get file [PATH] from [USER] / [REPO] on [BRANCH]',
             arguments: {
               PATH: { type: Scratch.ArgumentType.STRING, defaultValue: 'path/to/file' },
               USER: { type: Scratch.ArgumentType.STRING, defaultValue: 'username' },
-              REPO: { type: Scratch.ArgumentType.STRING, defaultValue: 'repository' }
+              REPO: { type: Scratch.ArgumentType.STRING, defaultValue: 'repository' },
+              BRANCH: { type: Scratch.ArgumentType.STRING, defaultValue: 'main' }
             }
           },
           {
@@ -190,19 +191,18 @@
       }
     }
 
-    async getFileData({ PATH, USER, REPO }) {
-      const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${PATH}`;
+    async getFileData({ PATH, USER, REPO, BRANCH }) {
+      const url = `https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/${PATH}`;
       try {
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error('Failed to fetch file data.');
         }
-        const data = await response.json();
         // Assuming the content is base64 encoded
-        return atob(data.content);
+        return response.text();
       } catch (error) {
         console.error('Error:', error);
-        return null;
+        return "";
       }
     }
 
@@ -225,7 +225,7 @@
         }
       } catch (error) {
         console.error('Error:', error);
-        return null;
+        return "";
       }
     }
 
