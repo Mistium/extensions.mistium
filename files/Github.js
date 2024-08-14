@@ -162,7 +162,16 @@
     async getRepositoryInfo({ INFO, USER, REPO }) {
       const url = `https://api.github.com/repos/${USER}/${REPO}`;
       try {
-        const response = await fetch(url);
+        let response;
+        if (this.authToken) {
+          response = await fetch(url, {
+            headers: {
+              'Authorization': `token ${this.authToken}`
+            }
+          });
+        } else {
+          response = await fetch(url);
+        }
         if (!response.ok) {
           throw new Error('Failed to fetch repository info.');
         }
@@ -194,7 +203,16 @@
     async getFileData({ PATH, USER, REPO, BRANCH }) {
       const url = `https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/${PATH}`;
       try {
-        const response = await fetch(url);
+        let response;
+        if (this.authToken) {
+          response = await fetch(url, {
+            headers: {
+              'Authorization': `token ${this.authToken}`
+            }
+          });
+        } else {
+          response = await fetch(url);
+        }
         if (!response.ok) {
           throw new Error('Failed to fetch file data.');
         }
@@ -209,7 +227,16 @@
     async getFolderContents({ TYPE, FOLDER, USER, REPO }) {
       const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${FOLDER}`;
       try {
-        const response = await fetch(url);
+        let response;
+        if (this.authToken) {
+          response = await fetch(url, {
+            headers: {
+              'Authorization': `token ${this.authToken}`
+            }
+          });
+        } else {
+          response = await fetch(url);
+        }
         if (!response.ok) {
           throw new Error('Failed to fetch folder contents.');
         }
