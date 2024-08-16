@@ -290,7 +290,7 @@ class RoturExtension {
     this.packets = {};
   }
 
-  rawMessage(args) {
+  sendRaw(args) {
     let msg = {
       "cmd": "pmsg",
       "val": args.VAL,
