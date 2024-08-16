@@ -278,7 +278,7 @@ class RoturExtension {
     }
     let firstPacket = this.packets[target][0];
     this.packets[target].shift();
-    return firstPacket;
+    return JSON.stringify(firstPacket);
   }
 
   deletePacketsOnTarget(args) {
