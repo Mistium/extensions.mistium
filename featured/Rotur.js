@@ -71,6 +71,21 @@ class RoturExtension {
           }
         },
         {
+          opcode: 'sendRaw',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'send raw [PAYLOAD] to user [USER]',
+          arguments: {
+            VAL: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: '{"payload":"","source":"","target":"","timestamp":""}'
+            },
+            USER: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: 'targetUser'
+            },
+          }
+        },
+        {
           opcode: 'getPacketsFromTarget',
           blockType: Scratch.BlockType.REPORTER,
           text: 'get packets from [TARGET]',
@@ -273,6 +288,14 @@ class RoturExtension {
 
   deleteAllPackets() {
     this.packets = {};
+  }
+
+  rawMessage(args) {
+    let msg = {
+      "cmd": "pmsg",
+      "val": args.VAL,
+      "id": args.USER || ""
+    };
   }
 
   sendMessage(args) {
