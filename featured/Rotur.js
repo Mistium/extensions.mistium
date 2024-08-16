@@ -73,7 +73,7 @@ class RoturExtension {
         {
           opcode: 'sendRaw',
           blockType: Scratch.BlockType.COMMAND,
-          text: 'send raw [PAYLOAD] to user [USER]',
+          text: 'send raw [VAL] to user [USER]',
           arguments: {
             VAL: {
               type: Scratch.ArgumentType.STRING,
