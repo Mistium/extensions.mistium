@@ -296,6 +296,7 @@ class RoturExtension {
       "val": args.VAL,
       "id": args.USER || ""
     };
+    this.ws.send(JSON.stringify(msg));
   }
 
   sendMessage(args) {
