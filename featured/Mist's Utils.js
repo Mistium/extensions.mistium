@@ -1,7 +1,7 @@
 /**!
  * Mist's Utils
  * @author mistium
- * @version 5.6
+ * @version 5.7
  * @copyright MIT & LGPLv3 License
  * Basically half of this is 0znzw's code lmao
  * Do not remove this comment
@@ -20,7 +20,7 @@
         id: 'mistsutils',
         name: 'Mists Utils',
         color1: '#2DA4A0',
-        version: 5.6,
+        version: 5.7,
         blocks: [{
             "blockType": Scratch.BlockType.BUTTON,
             "text": "New Version Available!",
@@ -499,7 +499,7 @@
             "text": "split [A] by [B] (array)",
             "blockType": Scratch.BlockType.REPORTER,
             "code": "(${splitarray_1}).split(${splitarray_2})",
-            "returns": "STRING",
+            "returns": "RAW",
             "arguments": {
               "A": {
                 "type": Scratch.ArgumentType.STRING,
@@ -1011,7 +1011,7 @@
     }
 
     constructor() {
-      console.log("Loaded Mist's utils! (v5.6)");
+      console.log("Loaded Mist's utils! (v5.7)");
       this.newUpdate = false;
       this.openSite = function() {
         Scratch.openWindow("https://extensions.mistium.com");
@@ -1022,7 +1022,7 @@
         fetch("https://raw.githubusercontent.com/Mistium/extensions.mistium/main/featured/Mist's%20Utils.js")
           .then((res) => res.text())
           .then((text) => {
-            if (!(text.includes("version: 5.6,"))) {
+            if (!(text.includes("version: 5.7,"))) {
               this.newUpdate = true;
             }
           })
@@ -1455,7 +1455,7 @@
         case 'mistsutils.splitarray':
           const splitarray_1 = this.descendInput(node?.A).asString();
           const splitarray_2 = this.descendInput(node?.B).asString();
-          return new TypedInput(`(${splitarray_1}).split(${splitarray_2})`, TYPE_STRING);
+          return new TypedInput(`(${splitarray_1}).split(${splitarray_2})`, TYPE_UNKNOWN);
         case 'mistsutils.length':
           const length_1 = this.descendInput(node?.A).asRaw();
           return new TypedInput(`((${length_1}).length)`, TYPE_NUMBER);
