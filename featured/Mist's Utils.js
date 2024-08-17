@@ -1,7 +1,7 @@
 /**!
  * Mist's Utils
  * @author mistium
- * @version 5.7
+ * @version 5.8
  * @copyright MIT & LGPLv3 License
  * Basically half of this is 0znzw's code lmao
  * Do not remove this comment
@@ -20,7 +20,7 @@
         id: 'mistsutils',
         name: 'Mists Utils',
         color1: '#2DA4A0',
-        version: 5.7,
+        version: 5.8,
         blocks: [{
             "blockType": Scratch.BlockType.BUTTON,
             "text": "New Version Available!",
@@ -321,6 +321,46 @@
                 "type": Scratch.ArgumentType.STRING,
                 "defaultValue": "apple",
                 "gen_id": "letters_3"
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "linecount",
+            "text": "line count of [A]",
+            "blockType": Scratch.BlockType.REPORTER,
+            "code": "(${linecount_1}).split(\"\\n\").length",
+            "returns": "NUMBER",
+            "arguments": {
+              "A": {
+                "type": Scratch.ArgumentType.STRING,
+                "defaultValue": "apple",
+                "gen_id": "linecount_1"
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "linetoline",
+            "text": "lines [A] to [B] of [C]",
+            "blockType": Scratch.BlockType.REPORTER,
+            "code": "(${linetoline_3}).split(\"\\n\").slice(Math.max(0,${linetoline_1}-1), Math.min(${linetoline_2}, ${linetoline_3}.split(\"\\n\").length)).join(\"\\n\")",
+            "returns": "STRING",
+            "arguments": {
+              "A": {
+                "type": Scratch.ArgumentType.NUMBER,
+                "defaultValue": 2,
+                "gen_id": "linetoline_1"
+              },
+              "B": {
+                "type": Scratch.ArgumentType.NUMBER,
+                "defaultValue": 4,
+                "gen_id": "linetoline_2"
+              },
+              "C": {
+                "type": Scratch.ArgumentType.STRING,
+                "defaultValue": "apple",
+                "gen_id": "linetoline_3"
               }
             },
             "func": "err"
@@ -1011,7 +1051,7 @@
     }
 
     constructor() {
-      console.log("Loaded Mist's utils! (v5.7)");
+      console.log("Loaded Mist's utils! (v5.8)");
       this.newUpdate = false;
       this.openSite = function() {
         Scratch.openWindow("https://extensions.mistium.com");
@@ -1022,7 +1062,7 @@
         fetch("https://raw.githubusercontent.com/Mistium/extensions.mistium/main/featured/Mist's%20Utils.js")
           .then((res) => res.text())
           .then((text) => {
-            if (!(text.includes("version: 5.7,"))) {
+            if (!(text.includes("version: 5.8,"))) {
               this.newUpdate = true;
             }
           })
@@ -1173,6 +1213,16 @@
           const letters_2 = this.descendInput(node?.B).asNumber();
           const letters_3 = this.descendInput(node?.C).asString();
           this.source += `\nvm.runtime.visualReport("${block.id}", (${letters_3}).substring(Math.max(0,${letters_1}-1), Math.min(${letters_2}, ${letters_3}.length)))\n`;
+          return;
+        case 'mistsutils.linecount':
+          const linecount_1 = this.descendInput(node?.A).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${linecount_1}).split("\n").length)\n`;
+          return;
+        case 'mistsutils.linetoline':
+          const linetoline_1 = this.descendInput(node?.A).asNumber();
+          const linetoline_2 = this.descendInput(node?.B).asNumber();
+          const linetoline_3 = this.descendInput(node?.C).asString();
+          this.source += `\nvm.runtime.visualReport("${block.id}", (${linetoline_3}).split("\n").slice(Math.max(0,${linetoline_1}-1), Math.min(${linetoline_2}, ${linetoline_3}.split("\n").length)).join("\n"))\n`;
           return;
         case 'mistsutils.starts':
           const starts_1 = this.descendInput(node?.A).asString();
@@ -1418,6 +1468,14 @@
           const letters_2 = this.descendInput(node?.B).asNumber();
           const letters_3 = this.descendInput(node?.C).asString();
           return new TypedInput(`(${letters_3}).substring(Math.max(0,${letters_1}-1), Math.min(${letters_2}, ${letters_3}.length))`, TYPE_STRING);
+        case 'mistsutils.linecount':
+          const linecount_1 = this.descendInput(node?.A).asString();
+          return new TypedInput(`(${linecount_1}).split("\n").length`, TYPE_NUMBER);
+        case 'mistsutils.linetoline':
+          const linetoline_1 = this.descendInput(node?.A).asNumber();
+          const linetoline_2 = this.descendInput(node?.B).asNumber();
+          const linetoline_3 = this.descendInput(node?.C).asString();
+          return new TypedInput(`(${linetoline_3}).split("\n").slice(Math.max(0,${linetoline_1}-1), Math.min(${linetoline_2}, ${linetoline_3}.split("\n").length)).join("\n")`, TYPE_STRING);
         case 'mistsutils.starts':
           const starts_1 = this.descendInput(node?.A).asString();
           const starts_2 = this.descendInput(node?.B).asString();
@@ -1648,6 +1706,18 @@
         case 'mistsutils_letters':
           return {
             block, kind: 'mistsutils.letters',
+              A: this.descendInputOfBlock(block, 'A'),
+              B: this.descendInputOfBlock(block, 'B'),
+              C: this.descendInputOfBlock(block, 'C'),
+          };
+        case 'mistsutils_linecount':
+          return {
+            block, kind: 'mistsutils.linecount',
+              A: this.descendInputOfBlock(block, 'A'),
+          };
+        case 'mistsutils_linetoline':
+          return {
+            block, kind: 'mistsutils.linetoline',
               A: this.descendInputOfBlock(block, 'A'),
               B: this.descendInputOfBlock(block, 'B'),
               C: this.descendInputOfBlock(block, 'C'),
@@ -1974,6 +2044,20 @@
           return {
             block,
             kind: 'mistsutils.letters',
+              A: this.descendInputOfBlock(block, 'A'),
+              B: this.descendInputOfBlock(block, 'B'),
+              C: this.descendInputOfBlock(block, 'C'),
+          };
+        case 'mistsutils_linecount':
+          return {
+            block,
+            kind: 'mistsutils.linecount',
+              A: this.descendInputOfBlock(block, 'A'),
+          };
+        case 'mistsutils_linetoline':
+          return {
+            block,
+            kind: 'mistsutils.linetoline',
               A: this.descendInputOfBlock(block, 'A'),
               B: this.descendInputOfBlock(block, 'B'),
               C: this.descendInputOfBlock(block, 'C'),
