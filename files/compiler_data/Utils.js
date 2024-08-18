@@ -2,7 +2,7 @@ extension = {
   id: "mistsutils",
   color1: "#2DA4A0",
   name: "Mists Utils",
-  version: 5.6,
+  version: 5.8,
 };
 
 comment = `/**!
@@ -189,6 +189,28 @@ blocks = [
     },
   },
   {
+    opcode: "linecount",
+    text: "line count of [A]",
+    blockType: "REPORTER",
+    code: '([A]).split("\\\\n").length',
+    returns: "NUMBER",
+    arguments: {
+      A: { type: "STRING", defaultValue: "apple" },
+    },
+  },
+  {
+    opcode: "linetoline",
+    text: "lines [A] to [B] of [C]",
+    blockType: "REPORTER",
+    code: '([C]).split("\\\\n").slice(Math.max(0,[A]-1), Math.min([B], [C].split("\\\\n").length)).join("\\\\n")',
+    returns: "STRING",
+    arguments: {
+      A: { type: "NUMBER", defaultValue: 2 },
+      B: { type: "NUMBER", defaultValue: 4 },
+      C: { type: "STRING", defaultValue: "apple" },
+    },
+  },
+  {
     opcode: "starts",
     text: "[A] starts with [B]",
     blockType: "BOOLEAN",
@@ -283,7 +305,7 @@ blocks = [
     text: "split [A] by [B] (array)",
     blockType: "REPORTER",
     code: '([A]).split([B])',
-    returns: "STRING",
+    returns: "RAW",
     arguments: {
       A: { type: "STRING", defaultValue: "apple" },
       B: { type: "STRING", defaultValue: "l" },
