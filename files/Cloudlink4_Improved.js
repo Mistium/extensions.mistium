@@ -660,8 +660,9 @@
               break;
             case 'add':
               clVars.ulist.push(packet.val);
+              clVars.recentlyJoinedUser = packet.val;
+              Scratch.vm.startHats('cloudlink_whenuserconnects');
               break;
-            case 'remove':
             case 'remove':
               let index = -1
               for (let i = 0; i < clVars.ulist.length; i++) {
@@ -672,7 +673,8 @@
                 }
               }
               clVars.ulist.splice(index, 1);
-              break;
+              clVars.recentlyLeftUser = packet.val;
+              Scratch.vm.startHats('cloudlink_whenuserdisconnects');
               break;
             default:
               console.warn(`[CloudLink] Unrecognised userlist mode: \"${packet.mode}\".`);
@@ -1509,6 +1511,30 @@
                 defaultValue: "All data",
               },
             },
+          },
+
+          {
+            opcode: "whenuserdisconnects",
+            blockType: Scratch.BlockType.EVENT,
+            text: Scratch.translate("when any user disconnects"),
+          },
+
+          {
+            opcode: "whenuserconnects",
+            blockType: Scratch.BlockType.EVENT,
+            text: Scratch.translate("when any user connects"),
+          },
+
+          {
+            opcode: "recentlyjoined",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("recently joined user"),
+          },
+
+          {
+            opcode: "recentlyleft",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("recently left user"),
           },
 
           "---",
@@ -2434,6 +2460,14 @@
         return;
       }
       clVars.listeners.varStates[String(args.ID)].hasNew = false;
+    }
+
+    recentlyJoinedUser() {
+      return makeValueScratchSafe(clVars.recentlyJoinedUser.username);
+    }
+
+    recentlyLeftUser() {
+      return makeValueScratchSafe(clVars.recentlyLeftUser.username);
     }
 
     // Command - Clears all packet queues.
