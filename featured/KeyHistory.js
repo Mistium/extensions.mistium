@@ -21,6 +21,7 @@
       this.max_key_history = 100; // Adjust the maximum number of keys to keep in history
       this.keybinds = ["Ctrl", "Shift", "Alt"];
       this.keysDown = [];
+      this.keysHit = [];
       this.pause = false;
     }
 
@@ -135,6 +136,17 @@
               },
             },
           },
+          {
+            opcode: "iskeyhit",
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: "key [KEY] hit?",
+            arguments: {
+              KEY: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "a",
+              },
+            },
+          }
         ],
       };
     }
@@ -195,6 +207,12 @@
       if (index !== -1) {
         this.keysDown.splice(index, 1);
       }
+
+      const hitIndex = this.keysHit.indexOf(key);
+
+      if (hitIndex !== -1) {
+        this.keysHit.splice(hitIndex, 1);
+      }
     }
     
 
@@ -238,6 +256,17 @@
 
     iskeyPressed({ KEY }) {
       return this.keysDown.includes(Scratch.Cast.toString(KEY));
+    }
+
+    iskeyhit({ KEY }) {
+      KEY = Scratch.Cast.toString(KEY)
+      console.log(this.keysHit)
+      if (this.keysHit.indexOf(KEY) === -1) {
+        this.keysHit.push(KEY)
+        return true;
+      } else {
+        return false;
+      }
     }
 
     getKeysDown() {
