@@ -191,8 +191,8 @@
             text: 'When I receive message',
           },
           {
-            opcode: 'recievedFrom'
-            blockType: Scratch.BlockType.String,
+            opcode: 'recievedFrom',
+            blockType: Scratch.BlockType.STRING,
             text: 'Recieved Last Message From'
           }
         ]
