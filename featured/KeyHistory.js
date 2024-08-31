@@ -22,6 +22,7 @@
       this.keybinds = ["Ctrl", "Shift", "Alt"];
       this.keysDown = [];
       this.keysHit = [];
+      this.keyHitTimes = [];
       this.pause = false;
     }
 
@@ -179,8 +180,12 @@
 
     onKeyDown(event) {
       Scratch.vm.runtime.startHats('KeyHistoryExtension_onKeyPressed');
-    
+
       const key = Scratch.Cast.toString(event.key ?? "").toLowerCase();
+      if (!this.keysHit.includes(key)) {
+        this.keysHit.push(key);
+        this.keyHitTimes.push(Date.now());
+      }
     
       // Only add the key if it's not already in keysDown
       if (!this.keysDown.includes(key)) {
@@ -212,6 +217,7 @@
 
       if (hitIndex !== -1) {
         this.keysHit.splice(hitIndex, 1);
+        this.keyHitTimes.splice(hitIndex, 1);
       }
     }
     
@@ -260,10 +266,12 @@
 
     iskeyhit({ KEY }) {
       KEY = Scratch.Cast.toString(KEY)
-      console.log(this.keysHit)
-      if (this.keysHit.indexOf(KEY) === -1) {
-        this.keysHit.push(KEY)
-        return true;
+      let hit = this.keysHit.indexOf(KEY);
+      if (hit !== -1) {
+        let out = false
+        out = ((Date.now() - this.keyHitTimes[hit]) < 100)
+        this.keyHitTimes[hit] = 0;
+        return out;
       } else {
         return false;
       }
