@@ -22,6 +22,7 @@
       this.messageQueue = {};
       this.connectedServers = {};
       this.lastFrom = ""
+      this.lastDisconnected = ""
     }
 
     getInfo() {
@@ -187,13 +188,25 @@
           },
           {
             opcode: 'recievedMessage',
-            blockType: Scratch.BlockType.HAT,
+            blockType: Scratch.BlockType.EVENT,
             text: 'When I receive message',
+            isEdgeActivated: false,
           },
           {
             opcode: 'recievedFrom',
-            blockType: Scratch.BlockType.STRING,
-            text: 'Recieved Last Message From'
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'Recieved Last Message From',
+          },
+          {
+            opcode: 'whenDisconnected',
+            blockType: Scratch.BlockType.EVENT,
+            text: 'When Any Websocket Disconnects',
+            isEdgeActivated: false,
+          },
+          {
+            opcode: 'lastDisconnected',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'Most Recent Disconnect',
           }
         ]
       };
@@ -223,18 +236,26 @@
           this.messageQueue[serverId] = [];
         }
         this.messageQueue[serverId].push(event.data);
-        this.runtime.startHats('webSocketPlus_recievedMessage');
+        Scratch.vm.runtime.startHats('webSocketPlus_recievedMessage');
         this.lastFrom = serverId
       };
       ws.onerror = (error) => {
         console.error(`WebSocket error on ${serverId}:`, error);
       };
       ws.onclose = () => {
+        this.lastDisconnect = serverId
         delete this.wsServers[serverId];
         delete this.connectedServers[serverId];
       };
     }
+    
+    recievedMessage() {return "";}
 
+    whenDisconnected() {return "";}
+    
+    lastDisconnected() {
+        return this.lastDisconnect;
+    }
     recievedFrom() {
         return this.lastFrom;
     }
