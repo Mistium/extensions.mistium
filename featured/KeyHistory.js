@@ -1,7 +1,7 @@
 // Name: Key History
 // ID: KeyHistoryExtension
 // By: Mistium <https://scratch.mit.edu/users/M1stium>
-// Verson: 5
+// Verson: 6
 // Description: Store a list of previously pressed keys and clipboard events.
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
@@ -24,6 +24,9 @@
       this.keysHit = [];
       this.keyHitTimes = [];
       this.pause = false;
+      document.addEventListener("keydown", (event) => this.onKeyDown(event));
+      document.addEventListener("keyup", (event) => this.onKeyUp(event));
+      document.addEventListener("paste", (event) => this.onPaste(event));
     }
 
     getInfo() {
@@ -282,16 +285,6 @@
     }
   }
 
-  // Create an instance of the KeyHistoryExtension class
-  const extension = new KeyHistoryExtension();
-
   // Register the extension with Scratch
-  Scratch.extensions.register(extension);
-
-  // Listen for keydown events and call the onKeyDown method
-  document.addEventListener("keydown", (event) => extension.onKeyDown(event));
-  document.addEventListener("keyup", (event) => extension.onKeyUp(event)); // Corrected here
-
-  // Listen for paste events and call the onPaste method
-  document.addEventListener("paste", (event) => extension.onPaste(event));
+  Scratch.extensions.register(new KeyHistoryExtension());
 })(Scratch);
