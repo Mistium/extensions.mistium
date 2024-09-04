@@ -1,7 +1,7 @@
 // Name: Key History
 // ID: KeyHistoryExtension
 // By: Mistium <https://scratch.mit.edu/users/M1stium>
-// Verson: 6
+// Verson: 5
 // Description: Store a list of previously pressed keys and clipboard events.
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
@@ -31,7 +31,7 @@
 
     getInfo() {
       return {
-        id: "KeyHistoryExtension",
+        id: "MistKeyHistoryExtension",
         name: "Key History",
         color1: "#36644E",
         blocks: [
