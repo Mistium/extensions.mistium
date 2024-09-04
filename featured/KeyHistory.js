@@ -184,9 +184,10 @@
     onKeyDown(event) {
       Scratch.vm.runtime.startHats('KeyHistoryExtension_onKeyPressed');
 
-      const key = Scratch.Cast.toString(event.key ?? "").toLowerCase();
-      if (!this.keysHit.includes(key)) {
-        this.keysHit.push(key);
+      const key = Scratch.Cast.toString(event.key ?? "");
+      const lowerkey = key.toLowerCase();
+      if (!this.keysHit.includes(lowerkey)) {
+        this.keysHit.push(lowerkey);
         this.keyHitTimes.push(Date.now());
       }
     
@@ -207,8 +208,7 @@
     
       // Convert the key to a string to ensure consistency
       const key = Scratch.Cast.toString(event.key ?? "").toLowerCase();
-    
-      // Find the index of the key in the keysDown array
+      const lowerkey = key.toLowerCase();
       const index = this.keysDown.indexOf(key);
     
       // Check if the key is actually in the array before trying to remove it
@@ -216,7 +216,7 @@
         this.keysDown.splice(index, 1);
       }
 
-      const hitIndex = this.keysHit.indexOf(key);
+      const hitIndex = this.keysHit.indexOf(lowerkey);
 
       if (hitIndex !== -1) {
         this.keysHit.splice(hitIndex, 1);
