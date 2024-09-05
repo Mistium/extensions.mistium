@@ -192,8 +192,8 @@
       }
     
       // Only add the key if it's not already in keysDown
-      if (!this.keysDown.includes(key)) {
-        this.keysDown.push(key);
+      if (!this.keysDown.includes(lowerkey)) {
+        this.keysDown.push(lowerkey);
       }
     
       if (event.metaKey || event.ctrlKey || this.isKeybind(key) || this.pause) {
@@ -209,14 +209,14 @@
       // Convert the key to a string to ensure consistency
       const key = Scratch.Cast.toString(event.key ?? "").toLowerCase();
       const lowerkey = key.toLowerCase();
-      const index = this.keysDown.indexOf(key);
+      const index = this.keysDown.indexOf(lowerkey);
     
       // Check if the key is actually in the array before trying to remove it
       if (index !== -1) {
         this.keysDown.splice(index, 1);
       }
 
-      const hitIndex = this.keysHit.indexOf(lowerkey);
+      let hitIndex = this.keysHit.indexOf(lowerkey);
 
       if (hitIndex !== -1) {
         this.keysHit.splice(hitIndex, 1);
