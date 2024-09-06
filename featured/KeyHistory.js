@@ -27,6 +27,7 @@
       document.addEventListener("keydown", (event) => this.onKeyDown(event));
       document.addEventListener("keyup", (event) => this.onKeyUp(event));
       document.addEventListener("paste", (event) => this.onPaste(event));
+      console.log("Key History Extension Loaded");
     }
 
     getInfo() {
@@ -102,24 +103,6 @@
           },
           "---",
           {
-            opcode: "onKeyPressed",
-            blockType: Scratch.BlockType.EVENT,
-            text: "when key is pressed",
-            isEdgeActivated: false,
-          },
-          {
-            opcode: "onKeyReleased",
-            blockType: Scratch.BlockType.EVENT,
-            text: "when key is released",
-            isEdgeActivated: false,
-          },
-          {
-            opcode: "onTextPasted",
-            blockType: Scratch.BlockType.EVENT,
-            text: "when text is pasted",
-            isEdgeActivated: false,
-          },
-          {
             opcode: "lastKeyPressed",
             blockType: Scratch.BlockType.REPORTER,
             text: "last key pressed",
@@ -182,8 +165,6 @@
     }
 
     onKeyDown(event) {
-      Scratch.vm.runtime.startHats('KeyHistoryExtension_onKeyPressed');
-
       const key = Scratch.Cast.toString(event.key ?? "");
       const lowerkey = key.toLowerCase();
       if (!this.keysHit.includes(lowerkey)) {
@@ -204,8 +185,6 @@
     }
 
     onKeyUp(event) {
-      Scratch.vm.runtime.startHats('KeyHistoryExtension_onKeyReleased');
-    
       // Convert the key to a string to ensure consistency
       const key = Scratch.Cast.toString(event.key ?? "").toLowerCase();
       const lowerkey = key.toLowerCase();
@@ -226,7 +205,6 @@
     
 
     onPaste(event) {
-      Scratch.vm.runtime.startHats('KeyHistoryExtension_onTextPasted');
       const pastedText = event.clipboardData.getData("text/plain");
       this.addKeyToHistory(Scratch.Cast.toString(pastedText));
     }
