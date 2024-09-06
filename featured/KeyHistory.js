@@ -143,7 +143,7 @@
     }
 
     getFirstKey() {
-      return Scratch.Cast.toString(this.keyHistory[0]);
+      return Scratch.Cast.toString(this.keyHistory[0] ?? "");
     }
 
     deleteFirstKey() {
