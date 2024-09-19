@@ -123,6 +123,21 @@
                         }
                     },
                     {
+                        opcode: 'addScriptTagSrc',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'Add Script Tag With ID [ID] And Source [SRC]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'scriptID'
+                            },
+                            SRC: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'https://example.com/script.js'
+                            }
+                        }
+                    },
+                    {
                         opcode: 'viewAllScriptTags',
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'List All Script Tags'
@@ -279,6 +294,18 @@
             if (!this.tags[id]) {
                 const scriptTag = document.createElement('script');
                 scriptTag.id = id;
+                document.body.appendChild(scriptTag);
+                this.tags[id] = scriptTag;
+            }
+        }
+
+        addScriptTagSrc(args) {
+            const id = args.ID;
+            const src = args.SRC;
+            if (!this.tags[id]) {
+                const scriptTag = document.createElement('script');
+                scriptTag.id = id;
+                scriptTag.src = src;
                 document.body.appendChild(scriptTag);
                 this.tags[id] = scriptTag;
             }
