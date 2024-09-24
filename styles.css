@@ -9,7 +9,7 @@ body {
   padding: 0;
   transition: background-color 0.3s ease;
   color: #fff;
-  background: linear-gradient(135deg, #000, #57cdac);
+  background: linear-gradient(45deg, #000, #000, #000, #000, #000, #57cdac);
 }
 
 
