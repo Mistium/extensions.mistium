@@ -11,6 +11,7 @@
     class EvalPlus {
         constructor() {
             this.enabled = true; // Eval is enabled by default
+            this.tags = {};
         }
 
         getInfo() {
@@ -291,7 +292,7 @@
 
         addScriptTag(args) {
             const id = args.ID;
-            if (!this.tags[id]) {
+            if (!this.tags?.[id]) {
                 const scriptTag = document.createElement('script');
                 scriptTag.id = id;
                 document.body.appendChild(scriptTag);
@@ -302,7 +303,7 @@
         addScriptTagSrc(args) {
             const id = args.ID;
             const src = args.SRC;
-            if (!this.tags[id]) {
+            if (!this.tags?.[id]) {
                 const scriptTag = document.createElement('script');
                 scriptTag.id = id;
                 scriptTag.src = src;
@@ -332,7 +333,7 @@
         setScriptInTag(args) {
             const id = args.ID;
             const script = args.SCRIPT;
-            const scriptTag = this.tags[id];
+            const scriptTag = this.tags?.[id];
             if (scriptTag) {
                 scriptTag.textContent = script;
             }
@@ -346,7 +347,7 @@
 
         refreshScriptTag(args) {
             const id = args.ID;
-            const scriptTag = this.tags[id];
+            const scriptTag = this.tags?.[id];
             if (scriptTag) {
                 scriptTag.remove();
                 delete this.tags[id];
