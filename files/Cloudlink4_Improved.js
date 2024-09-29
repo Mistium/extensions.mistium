@@ -6,7 +6,10 @@
 
 /* eslint-disable */
 // prettier-ignore
-/* generated l10n code */Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my username": "(VANHA - ÄLÄ KÄYTÄ UUSISSA PROJEKTEISSA) oma käyttäjänimi", "_A name": "nimi", "_All data": "kaikki data", "_Another name": "toinen nimi", "_Apple": "omena", "_Banana": "banaani", "_Direct data": "kohdennettu data", "_Global data": "globaali data", "_Global variables": "globaalit muuttujat", "_Hide old blocks": "Piilota vanhat lohkot", "_ID [ID] connected?": "onko tunniste [ID] yhdistetty?", "_Private data": "yksityinen data", "_Private variables": "yksityiset muuttujat", "_Show old blocks": "Näytä vanhat lohkot", "_Status code": "tilakoodi", "_When I receive new [TYPE] data for [VAR]": "kun vastaanotan uuden kohteen [TYPE] datan muuttujalle [VAR]", "_[NUM] from JSON array [ARRAY]": "[NUM] JSON-taulukossa [ARRAY]", "_[PATH] of [JSON_STRING]": "[PATH] JSON-koodissa [JSON_STRING]", "_attach listener [ID] to next packet": "lisää kuuntelija [ID] seuraavaan datapakettiin", "_clear all packets for [TYPE]": "tyhjennä kaikki kohteen [TYPE] datapaketit", "_connect to [IP]": "yhdistä palvelimeen [IP]", "_connect to server [ID]": "yhdistä palvelimeen nro [ID]", "_connected?": "onko yhdistetty?", "_convert [toBeJSONified] to JSON": "muunna [toBeJSONified] JSON-muotoon", "_direct": "kohdennettu", "_direct data": "kohdennettu data", "_disconnect": "katkaise yhteys", "_extension version": "laajennuksen versio", "_failed to connnect?": "epäonnistuiko yhteyden muodostaminen?", "_fetch data from URL [url]": "hae data URL-osoitteesta [url]", "_global data": "globaali data", "_got new [TYPE] data for variable [VAR]?": "onko uusi [TYPE] [VAR] data saapunut?", "_got new [TYPE]?": "onko uusi [TYPE] saapunut?", "_got new packet with listener [ID]?": "onko uusi datapaketti kuuntelijalla [ID] saapunut?", "_id": "tunniste", "_is [JSON_STRING] valid JSON?": "onko [JSON_STRING] kelvollista JSON-koodia?", "_link status": "yhteyden tila", "_link to room(s) [ROOMS]": "yhdistä huoneisiin [ROOMS]", "_linked to rooms?": "onko yhdistetty huoneisiin?", "_lost connection?": "katkesiko yhteys?", "_my IP address": "oma IP-osoite", "_my user object": "oma käyttäjäolio", "_my username": "oma käyttäjänimi", "_packet queue for [TYPE]": "kohteen [TYPE] datapakettijono", "_private data": "yksityinen data", "_reset got new [ID] listener status": "nollaa uusi kuuntelijan [ID] tila", "_reset got new [TYPE] [VAR] status": "nollaa uusi kohteen [TYPE] muuttujan [VAR] tila", "_reset got new [TYPE] status": "nollaa uusi kohteen [TYPE] tila", "_response for listener [ID]": "vastaus kuuntelijalle [ID]", "_select room(s) [ROOMS] for next packet": "valitse huoneet [ROOMS] seuraavalle datapaketille", "_send [DATA]": "lähetä [DATA]", "_send [DATA] to [ID]": "lähetä [DATA] käyttäjälle [ID]", "_send command [CMD] [ID] [DATA]": "lähetä komento [CMD] [ID] [DATA]", "_send command without ID [CMD] [DATA]": "lähetä komento ilman tunnistetta [CMD] [DATA]", "_send request with method [method] for URL [url] with data [data] and headers [headers]": "lähetä pyyntö menetelmällä [method] URL-osoitteeseen [url] datalla [data] ja otsakkeilla [headers]", "_send variable [VAR] to [ID] with data [DATA]": "lähetä muuttuja [VAR] käyttäjälle [ID] datalla [DATA]", "_send variable [VAR] with data [DATA]": "lähetä muuttuja [VAR] datalla [DATA]", "_server MOTD": "palvelimen viesti", "_server list": "palvelinluettelo", "_server version": "palvelimen versio", "_set [NAME] as username": "aseta käyttäjänimeksi [NAME]", "_size of queue for [TYPE]": "kohteen [TYPE] jonon koko", "_status code": "tilakoodi", "_unlink from all rooms": "katkaise yhteys kaikkiin huoneisiin", "_username synced?": "onko käyttäjänimi synkronoitu?", "_usernames": "käyttäjänimet", "_val": "arvo", "_when I receive new [TYPE] message": "kun vastaanotan uuden kohteen [TYPE] viestin", "_when I receive new message with listener [ID]": "kun vastaanotan uuden viestin kuuntelijalla [ID]", "_when connected": "kun yhteys muodostuu", "_when disconnected": "kun yhteys katkeaa" }, "nl": { "_[PATH] of [JSON_STRING]": "[PATH] van [JSON_STRING]", "_id": "ID" }, "ru": { "_[PATH] of [JSON_STRING]": "[PATH] из [JSON_STRING]", "_id": "ID" }, "zh-cn": { "_(OLD - DO NOT USE IN NEW PROJECTS) my username": "(旧版 - 不要在新项目中使用它) 我的用户名", "_A name": "一个名字", "_All data": "所有数据", "_Another name": "另一个名称", "_Apple": "苹果", "_Banana": "香蕉", "_Direct data": "直接数据", "_Global data": "全局数据", "_Global variables": "全局变量", "_Hide old blocks": "隐藏旧积木", "_ID [ID] connected?": "ID[ID]连接？", "_Private data": "私有数据", "_Private variables": "私有变量", "_Show old blocks": "显示旧积木", "_Status code": "状态码", "_When I receive new [TYPE] data for [VAR]": "当我收到新的用于[VAR]的[TYPE]信息", "_[NUM] from JSON array [ARRAY]": "JSON数组[ARRAY]的[NUM]", "_[PATH] of [JSON_STRING]": "[JSON_STRING]中的[PATH]", "_[TYPE] [VAR] data": "[TYPE][VAR]数据", "_attach listener [ID] to next packet": "附加监听器 [ID] 到下一个数据包", "_clear all packets for [TYPE]": "清空[TYPE]的所有数据包", "_connect to [IP]": "连接到[IP]", "_connect to server [ID]": "连接到服务器[ID]", "_connected?": "已连接？", "_convert [toBeJSONified] to JSON": "将[toBeJSONified]转为JSON", "_direct": "直接", "_direct data": "直接数据", "_disconnect": "断开连接", "_extension version": "扩展版本", "_failed to connnect?": "连接失败？", "_fetch data from URL [url]": "从 URL [url]获取数据", "_global data": "全局数据", "_got new [TYPE] data for variable [VAR]?": "收到新的用于变量[VAR]的[TYPE]数据？", "_got new [TYPE]?": "收到新的[TYPE]？", "_got new packet with listener [ID]?": "从监听器[ID]收到新的包？", "_id": "ID", "_is [JSON_STRING] valid JSON?": "[JSON_STRING]是合法JSON？", "_link status": "链接状态", "_link to room(s) [ROOMS]": "连接到房间(列表)[ROOMS]", "_linked to rooms?": "已连接到房间？", "_lost connection?": "连接丢失？", "_my IP address": "我的IP地址", "_my user object": "我的用户对象", "_my username": "我的用户名", "_packet queue for [TYPE]": "[TYPE]的包队列", "_private data": "私有数据", "_reset got new [ID] listener status": "重置收到新的[ID]监听器的状态", "_reset got new [TYPE] [VAR] status": "重置收到新的[TYPE][VAR]状态", "_reset got new [TYPE] status": "重置收到新的[TYPE]状态", "_response for listener [ID]": "监听器[ID]的回应", "_select room(s) [ROOMS] for next packet": "为下一个数据包选择房间(列表)[ROOMS]", "_send [DATA]": "发送[DATA]", "_send [DATA] to [ID]": "发送[DATA]给[ID]", "_send command [CMD] [ID] [DATA]": "发送命令[CMD][ID][DATA]", "_send command without ID [CMD] [DATA]": "发送没有ID[CMD][DATA]的命令", "_send request with method [method] for URL [url] with data [data] and headers [headers]": "发送[method]方法的请求给URL[url]携带数据[data]头部信息 [headers]", "_send variable [VAR] to [ID] with data [DATA]": "发送变量[VAR]给[ID]附带数据[DATA]", "_send variable [VAR] with data [DATA]": "发送变量[VAR]附带数据[DATA]", "_server MOTD": "服务器MOTD", "_server list": "服务器列表", "_server version": "服务器版本", "_set [NAME] as username": "设置[NAME]为用户名", "_size of queue for [TYPE]": "[TYPE]的队列大小", "_status code": "状态码", "_unlink from all rooms": "从所有房间断开连接", "_username synced?": "已同步用户名？", "_usernames": "用户名列表", "_when I receive new [TYPE] message": "当我收到新的[TYPE]信息", "_when I receive new message with listener [ID]": "当我通过监听器[ID]接收到新消息时`", "_when connected": "当建立连接", "_when disconnected": "当断开连接" } });/* end generated l10n code */(function (Scratch) {
+/* generated l10n code */
+Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my username": "(VANHA - ÄLÄ KÄYTÄ UUSISSA PROJEKTEISSA) oma käyttäjänimi", "_A name": "nimi", "_All data": "kaikki data", "_Another name": "toinen nimi", "_Apple": "omena", "_Banana": "banaani", "_Direct data": "kohdennettu data", "_Global data": "globaali data", "_Global variables": "globaalit muuttujat", "_Hide old blocks": "Piilota vanhat lohkot", "_ID [ID] connected?": "onko tunniste [ID] yhdistetty?", "_Private data": "yksityinen data", "_Private variables": "yksityiset muuttujat", "_Show old blocks": "Näytä vanhat lohkot", "_Status code": "tilakoodi", "_When I receive new [TYPE] data for [VAR]": "kun vastaanotan uuden kohteen [TYPE] datan muuttujalle [VAR]", "_[NUM] from JSON array [ARRAY]": "[NUM] JSON-taulukossa [ARRAY]", "_[PATH] of [JSON_STRING]": "[PATH] JSON-koodissa [JSON_STRING]", "_attach listener [ID] to next packet": "lisää kuuntelija [ID] seuraavaan datapakettiin", "_clear all packets for [TYPE]": "tyhjennä kaikki kohteen [TYPE] datapaketit", "_connect to [IP]": "yhdistä palvelimeen [IP]", "_connect to server [ID]": "yhdistä palvelimeen nro [ID]", "_connected?": "onko yhdistetty?", "_convert [toBeJSONified] to JSON": "muunna [toBeJSONified] JSON-muotoon", "_direct": "kohdennettu", "_direct data": "kohdennettu data", "_disconnect": "katkaise yhteys", "_extension version": "laajennuksen versio", "_failed to connnect?": "epäonnistuiko yhteyden muodostaminen?", "_fetch data from URL [url]": "hae data URL-osoitteesta [url]", "_global data": "globaali data", "_got new [TYPE] data for variable [VAR]?": "onko uusi [TYPE] [VAR] data saapunut?", "_got new [TYPE]?": "onko uusi [TYPE] saapunut?", "_got new packet with listener [ID]?": "onko uusi datapaketti kuuntelijalla [ID] saapunut?", "_id": "tunniste", "_is [JSON_STRING] valid JSON?": "onko [JSON_STRING] kelvollista JSON-koodia?", "_link status": "yhteyden tila", "_link to room(s) [ROOMS]": "yhdistä huoneisiin [ROOMS]", "_linked to rooms?": "onko yhdistetty huoneisiin?", "_lost connection?": "katkesiko yhteys?", "_my IP address": "oma IP-osoite", "_my user object": "oma käyttäjäolio", "_my username": "oma käyttäjänimi", "_packet queue for [TYPE]": "kohteen [TYPE] datapakettijono", "_private data": "yksityinen data", "_reset got new [ID] listener status": "nollaa uusi kuuntelijan [ID] tila", "_reset got new [TYPE] [VAR] status": "nollaa uusi kohteen [TYPE] muuttujan [VAR] tila", "_reset got new [TYPE] status": "nollaa uusi kohteen [TYPE] tila", "_response for listener [ID]": "vastaus kuuntelijalle [ID]", "_select room(s) [ROOMS] for next packet": "valitse huoneet [ROOMS] seuraavalle datapaketille", "_send [DATA]": "lähetä [DATA]", "_send [DATA] to [ID]": "lähetä [DATA] käyttäjälle [ID]", "_send command [CMD] [ID] [DATA]": "lähetä komento [CMD] [ID] [DATA]", "_send command without ID [CMD] [DATA]": "lähetä komento ilman tunnistetta [CMD] [DATA]", "_send request with method [method] for URL [url] with data [data] and headers [headers]": "lähetä pyyntö menetelmällä [method] URL-osoitteeseen [url] datalla [data] ja otsakkeilla [headers]", "_send variable [VAR] to [ID] with data [DATA]": "lähetä muuttuja [VAR] käyttäjälle [ID] datalla [DATA]", "_send variable [VAR] with data [DATA]": "lähetä muuttuja [VAR] datalla [DATA]", "_server MOTD": "palvelimen viesti", "_server list": "palvelinluettelo", "_server version": "palvelimen versio", "_set [NAME] as username": "aseta käyttäjänimeksi [NAME]", "_size of queue for [TYPE]": "kohteen [TYPE] jonon koko", "_status code": "tilakoodi", "_unlink from all rooms": "katkaise yhteys kaikkiin huoneisiin", "_username synced?": "onko käyttäjänimi synkronoitu?", "_usernames": "käyttäjänimet", "_val": "arvo", "_when I receive new [TYPE] message": "kun vastaanotan uuden kohteen [TYPE] viestin", "_when I receive new message with listener [ID]": "kun vastaanotan uuden viestin kuuntelijalla [ID]", "_when connected": "kun yhteys muodostuu", "_when disconnected": "kun yhteys katkeaa" }, "nl": { "_[PATH] of [JSON_STRING]": "[PATH] van [JSON_STRING]", "_id": "ID" }, "ru": { "_[PATH] of [JSON_STRING]": "[PATH] из [JSON_STRING]", "_id": "ID" }, "zh-cn": { "_(OLD - DO NOT USE IN NEW PROJECTS) my username": "(旧版 - 不要在新项目中使用它) 我的用户名", "_A name": "一个名字", "_All data": "所有数据", "_Another name": "另一个名称", "_Apple": "苹果", "_Banana": "香蕉", "_Direct data": "直接数据", "_Global data": "全局数据", "_Global variables": "全局变量", "_Hide old blocks": "隐藏旧积木", "_ID [ID] connected?": "ID[ID]连接？", "_Private data": "私有数据", "_Private variables": "私有变量", "_Show old blocks": "显示旧积木", "_Status code": "状态码", "_When I receive new [TYPE] data for [VAR]": "当我收到新的用于[VAR]的[TYPE]信息", "_[NUM] from JSON array [ARRAY]": "JSON数组[ARRAY]的[NUM]", "_[PATH] of [JSON_STRING]": "[JSON_STRING]中的[PATH]", "_[TYPE] [VAR] data": "[TYPE][VAR]数据", "_attach listener [ID] to next packet": "附加监听器 [ID] 到下一个数据包", "_clear all packets for [TYPE]": "清空[TYPE]的所有数据包", "_connect to [IP]": "连接到[IP]", "_connect to server [ID]": "连接到服务器[ID]", "_connected?": "已连接？", "_convert [toBeJSONified] to JSON": "将[toBeJSONified]转为JSON", "_direct": "直接", "_direct data": "直接数据", "_disconnect": "断开连接", "_extension version": "扩展版本", "_failed to connnect?": "连接失败？", "_fetch data from URL [url]": "从 URL [url]获取数据", "_global data": "全局数据", "_got new [TYPE] data for variable [VAR]?": "收到新的用于变量[VAR]的[TYPE]数据？", "_got new [TYPE]?": "收到新的[TYPE]？", "_got new packet with listener [ID]?": "从监听器[ID]收到新的包？", "_id": "ID", "_is [JSON_STRING] valid JSON?": "[JSON_STRING]是合法JSON？", "_link status": "链接状态", "_link to room(s) [ROOMS]": "连接到房间(列表)[ROOMS]", "_linked to rooms?": "已连接到房间？", "_lost connection?": "连接丢失？", "_my IP address": "我的IP地址", "_my user object": "我的用户对象", "_my username": "我的用户名", "_packet queue for [TYPE]": "[TYPE]的包队列", "_private data": "私有数据", "_reset got new [ID] listener status": "重置收到新的[ID]监听器的状态", "_reset got new [TYPE] [VAR] status": "重置收到新的[TYPE][VAR]状态", "_reset got new [TYPE] status": "重置收到新的[TYPE]状态", "_response for listener [ID]": "监听器[ID]的回应", "_select room(s) [ROOMS] for next packet": "为下一个数据包选择房间(列表)[ROOMS]", "_send [DATA]": "发送[DATA]", "_send [DATA] to [ID]": "发送[DATA]给[ID]", "_send command [CMD] [ID] [DATA]": "发送命令[CMD][ID][DATA]", "_send command without ID [CMD] [DATA]": "发送没有ID[CMD][DATA]的命令", "_send request with method [method] for URL [url] with data [data] and headers [headers]": "发送[method]方法的请求给URL[url]携带数据[data]头部信息 [headers]", "_send variable [VAR] to [ID] with data [DATA]": "发送变量[VAR]给[ID]附带数据[DATA]", "_send variable [VAR] with data [DATA]": "发送变量[VAR]附带数据[DATA]", "_server MOTD": "服务器MOTD", "_server list": "服务器列表", "_server version": "服务器版本", "_set [NAME] as username": "设置[NAME]为用户名", "_size of queue for [TYPE]": "[TYPE]的队列大小", "_status code": "状态码", "_unlink from all rooms": "从所有房间断开连接", "_username synced?": "已同步用户名？", "_usernames": "用户名列表", "_when I receive new [TYPE] message": "当我收到新的[TYPE]信息", "_when I receive new message with listener [ID]": "当我通过监听器[ID]接收到新消息时`", "_when connected": "当建立连接", "_when disconnected": "当断开连接" } });
+/* end generated l10n code */
+(function (Scratch) {
 
   /*
   CloudLink Extension for TurboWarp v0.1.2.
@@ -328,7 +331,7 @@
   function sendMessage(message) {
     // Prevent running this while disconnected
     if (clVars.socket == null) {
-     //console.warn("[CloudLink] Ignoring attempt to send a packet while disconnected.");
+      //console.warn("[CloudLink] Ignoring attempt to send a packet while disconnected.");
       return;
     }
 
@@ -354,7 +357,7 @@
         };
 
       } else {
-       //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support listeners.");
+        //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support listeners.");
       }
       clVars.listeners.enablerState = false;
     }
@@ -362,7 +365,7 @@
     // Check if server supports rooms
     if (((message.cmd == "link") || (message.cmd == "unlink")) && (clVars.linkState.identifiedProtocol < 2)) {
       // 0.1.8.x was the first server version to support rooms.
-     //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support room linking/unlinking.");
+      //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support room linking/unlinking.");
       return;
     }
 
@@ -371,19 +374,19 @@
     try {
       outgoing = JSON.stringify(message);
     } catch (SyntaxError) {
-     //console.warn("[CloudLink] Failed to send a packet, invalid syntax:", message);
+      //console.warn("[CloudLink] Failed to send a packet, invalid syntax:", message);
       return;
     }
 
     // Send the message
-   //console.log("[CloudLink] TX:", message);
+    //console.log("[CloudLink] TX:", message);
     clVars.socket.send(outgoing);
   }
 
   // Only sends the handshake command.
   function sendHandshake() {
     if (clVars.handshakeAttempted) return;
-   //console.log("[CloudLink] Sending handshake...");
+    //console.log("[CloudLink] Sending handshake...");
     sendMessage({
       cmd: "handshake",
       val: {
@@ -400,7 +403,7 @@
 
   // Compare the version string of the server to known compatible variants to configure clVars.linkState.identifiedProtocol.
   async function setServerVersion(version) {
-   //console.log(`[CloudLink] Server version: ${String(version)}`);
+    //console.log(`[CloudLink] Server version: ${String(version)}`);
     clVars.server_version = version;
 
     // Auto-detect versions
@@ -422,7 +425,7 @@
 
           // Disconnect if protcol is too old
           if (value == -1) {
-           //console.warn(`[CloudLink] Server is too old to enable leagacy support. Disconnecting.`);
+            //console.warn(`[CloudLink] Server is too old to enable leagacy support. Disconnecting.`);
             return clVars.socket.close(1000, "");
           }
 
@@ -465,16 +468,16 @@
     try {
       packet = JSON.parse(data)
     } catch (SyntaxError) {
-     //console.error("[CloudLink] Incoming message parse failure! Is this really a CloudLink server?", data);
+      //console.error("[CloudLink] Incoming message parse failure! Is this really a CloudLink server?", data);
       return;
     };
 
     // Handle packet commands
     if (!packet.hasOwnProperty("cmd")) {
-     //console.error("[CloudLink] Incoming message read failure! This message doesn't contain the required \"cmd\" key. Is this really a CloudLink server?", packet);
+      //console.error("[CloudLink] Incoming message read failure! This message doesn't contain the required \"cmd\" key. Is this really a CloudLink server?", packet);
       return;
     }
-   //console.log("[CloudLink] RX:", packet);
+    //console.log("[CloudLink] RX:", packet);
     switch (packet.cmd) {
       case "gmsg":
         clVars.gmsg.varState = packet.val;
@@ -522,7 +525,7 @@
 
             // Server 0.1.7 (at least)
             case "motd":
-             //console.log(`[CloudLink] Message of the day: \"${packet.val.val}\"`);
+              //console.log(`[CloudLink] Message of the day: \"${packet.val.val}\"`);
               clVars.motd = packet.val.val;
               return;
           }
@@ -536,7 +539,7 @@
         break;
 
       case "client_obj":
-       //console.log("[CloudLink] Client object for this session:", packet.val);
+        //console.log("[CloudLink] Client object for this session:", packet.val);
         clVars.myUserObject = packet.val;
         break;
 
@@ -544,7 +547,7 @@
         // Store direct value
         // Protocol v0 (0.1.5 and legacy) don't implement status codes.
         if (clVars.linkState.identifiedProtocol == 0) {
-         //console.warn("[CloudLink] Received a statuscode message while using protocol v0. This event shouldn't happen. It's likely that this server is modified (did MikeDEV overlook some unexpected behavior?).");
+          //console.warn("[CloudLink] Received a statuscode message while using protocol v0. This event shouldn't happen. It's likely that this server is modified (did MikeDEV overlook some unexpected behavior?).");
           return;
         }
 
@@ -567,17 +570,17 @@
                   clVars.myUserObject = packet.val;
                   clVars.username.value = packet.val.username;
                   clVars.username.accepted = true;
-                 //console.log(`[CloudLink] Username has been set to \"${clVars.username.value}\" successfully!`);
+                  //console.log(`[CloudLink] Username has been set to \"${clVars.username.value}\" successfully!`);
 
                   // Username rejected / error
                 } else {
-                 //console.log(`[CloudLink] Username rejected by the server! Error code ${packet.code}.}`);
+                  //console.log(`[CloudLink] Username rejected by the server! Error code ${packet.code}.}`);
                 }
                 return;
 
               case "handshake_cfg":
                 // Prevent handshake responses being stored in the statuscode variables
-               //console.log("[CloudLink] Server responded to our handshake!");
+                //console.log("[CloudLink] Server responded to our handshake!");
                 return;
 
               case "link":
@@ -586,11 +589,11 @@
                 if (packet.code.includes("I:100")) {
                   clVars.rooms.isAttemptingLink = false;
                   clVars.rooms.isLinked = true;
-                 //console.log("[CloudLink] Room linked successfully!");
+                  //console.log("[CloudLink] Room linked successfully!");
 
                   // Room link rejected / error
                 } else {
-                 //console.log(`[CloudLink] Room link rejected! Error code ${packet.code}.}`);
+                  //console.log(`[CloudLink] Room link rejected! Error code ${packet.code}.}`);
                 }
                 return;
 
@@ -600,11 +603,11 @@
                 if (packet.code.includes("I:100")) {
                   clVars.rooms.isAttemptingUnlink = false;
                   clVars.rooms.isLinked = false;
-                 //console.log("[CloudLink] Room unlinked successfully!");
+                  //console.log("[CloudLink] Room unlinked successfully!");
 
                   // Room link rejected / error
                 } else {
-                 //console.log(`[CloudLink] Room unlink rejected! Error code ${packet.code}.}`);
+                  //console.log(`[CloudLink] Room unlink rejected! Error code ${packet.code}.}`);
                 }
                 return;
             }
@@ -637,7 +640,7 @@
           if ((clVars.username.attempted) && (clVars.ulist.includes(clVars.username.temp))) {
             clVars.username.value = clVars.username.temp;
             clVars.username.accepted = true;
-           //console.log(`[CloudLink] Username has been set to \"${clVars.username.value}\" successfully!`);
+            //console.log(`[CloudLink] Username has been set to \"${clVars.username.value}\" successfully!`);
           }
         }
 
@@ -650,7 +653,7 @@
         else {
           // Check for "mode" key
           if (!packet.hasOwnProperty("mode")) {
-           //console.warn("[CloudLink] Userlist message did not specify \"mode\" while running in protocol mode 3 or 4.");
+            //console.warn("[CloudLink] Userlist message did not specify \"mode\" while running in protocol mode 3 or 4.");
             return;
           };
           // Handle methods
@@ -660,6 +663,8 @@
               break;
             case 'add':
               clVars.ulist.push(packet.val);
+              clVars.recentlyJoinedUser = packet.val;
+              Scratch.vm.runtime.startHats('cloudlink_whenuserconnects');
               break;
             case 'remove':
             case 'remove':
@@ -672,15 +677,16 @@
                 }
               }
               clVars.ulist.splice(index, 1);
-              break;
+              clVars.recentlyLeftUser = packet.val;
+              Scratch.vm.runtime.startHats('cloudlink_whenuserdisconnects');
               break;
             default:
-             //console.warn(`[CloudLink] Unrecognised userlist mode: \"${packet.mode}\".`);
+              //console.warn(`[CloudLink] Unrecognised userlist mode: \"${packet.mode}\".`);
               break;
           }
         }
 
-       //console.log("[CloudLink] Updating userlist:", clVars.ulist);
+        //console.log("[CloudLink] Updating userlist:", clVars.ulist);
         break;
 
       case "server_version":
@@ -689,18 +695,18 @@
         break;
 
       case "client_ip":
-       //console.log(`[CloudLink] Client IP address: ${packet.val}`);
-       //console.warn("[CloudLink] This server has relayed your identified IP address to you. Under normal circumstances, this will be erased server-side when you disconnect, but you should still be careful. Unless you trust this server, it is not recommended to send login credentials or personal info.");
+        //console.log(`[CloudLink] Client IP address: ${packet.val}`);
+        //console.warn("[CloudLink] This server has relayed your identified IP address to you. Under normal circumstances, this will be erased server-side when you disconnect, but you should still be careful. Unless you trust this server, it is not recommended to send login credentials or personal info.");
         clVars.client_ip = packet.val;
         break;
 
       case "motd":
-       //console.log(`[CloudLink] Message of the day: \"${packet.val}\"`);
+        //console.log(`[CloudLink] Message of the day: \"${packet.val}\"`);
         clVars.motd = packet.val;
         break;
 
       default:
-       //console.warn(`[CloudLink] Unrecognised command: \"${packet.cmd}\".`);
+        //console.warn(`[CloudLink] Unrecognised command: \"${packet.cmd}\".`);
         return;
     }
 
@@ -727,7 +733,7 @@
   // Basic netcode needed to make the extension work
   async function newClient(url) {
     if (!(await Scratch.canFetch(url))) {
-     //console.warn("[CloudLink] Did not get permission to connect, aborting...");
+      //console.warn("[CloudLink] Did not get permission to connect, aborting...");
       return;
     }
 
@@ -736,11 +742,11 @@
     clVars.linkState.disconnectType = 0;
 
     // Establish a connection to the server
-   //console.log("[CloudLink] Connecting to server:", url);
+    //console.log("[CloudLink] Connecting to server:", url);
     try {
       clVars.socket = new WebSocket(url);
     } catch (e) {
-     //console.warn("[CloudLink] An exception has occurred:", e);
+      //console.warn("[CloudLink] An exception has occurred:", e);
       return;
     }
 
@@ -749,11 +755,11 @@
       clVars.currentServerUrl = url;
 
       // Set the link state to connected.
-     //console.log("[CloudLink] Connected.");
+      //console.log("[CloudLink] Connected.");
 
       // If a server_version message hasn't been received in over half a second, try to broadcast a handshake
       clVars.handshakeTimeout = window.setTimeout(function () {
-       //console.log("[CloudLink] Hmm... This server hasn't sent us it's server info. Going to attempt a handshake.");
+        //console.log("[CloudLink] Hmm... This server hasn't sent us it's server info. Going to attempt a handshake.");
         sendHandshake();
       }, 500);
 
@@ -771,7 +777,7 @@
       switch (clVars.linkState.status) {
         case 1: // Was connecting
           // Set the link state to ungraceful disconnect.
-         //console.log(`[CloudLink] Connection failed (${event.code}).`);
+          //console.log(`[CloudLink] Connection failed (${event.code}).`);
           clVars.linkState.status = 4;
           clVars.linkState.disconnectType = 1;
           break;
@@ -779,12 +785,12 @@
         case 2: // Was already connected
           if (event.wasClean || clVars.linkState.isAttemptingGracefulDisconnect) {
             // Set the link state to graceful disconnect.
-           //console.log(`[CloudLink] Disconnected (${event.code} ${event.reason}).`);
+            //console.log(`[CloudLink] Disconnected (${event.code} ${event.reason}).`);
             clVars.linkState.status = 3;
             clVars.linkState.disconnectType = 0;
           } else {
             // Set the link state to ungraceful disconnect.
-           //console.log(`[CloudLink] Lost connection (${event.code} ${event.reason}).`);
+            //console.log(`[CloudLink] Lost connection (${event.code} ${event.reason}).`);
             clVars.linkState.status = 4;
             clVars.linkState.disconnectType = 2;
           }
@@ -813,11 +819,11 @@
         clVars.serverList = JSON.parse(data);
       })
       .catch((err) => {
-       //console.log("[CloudLink] An error has occurred while parsing the public server list:", err);
+        //console.log("[CloudLink] An error has occurred while parsing the public server list:", err);
         clVars.serverList = {};
       });
   } catch (err) {
-   //console.log("[CloudLink] An error has occurred while fetching the public server list:", err);
+    //console.log("[CloudLink] An error has occurred while fetching the public server list:", err);
     clVars.serverList = {};
   }
 
@@ -1539,6 +1545,32 @@
             }
           },
 
+          {
+            opcode: "whenuserdisconnects",
+            blockType: Scratch.BlockType.EVENT,
+            text: Scratch.translate("when any user disconnects"),
+            isEdgeActivated: false,
+          },
+
+          {
+            opcode: "whenuserconnects",
+            blockType: Scratch.BlockType.EVENT,
+            text: Scratch.translate("when any user connects"),
+            isEdgeActivated: false,
+          },
+
+          {
+            opcode: "recentlyjoined",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("recently joined user"),
+          },
+
+          {
+            opcode: "recentlyleft",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("recently left user"),
+          },
+
           "---",
 
           {
@@ -1690,7 +1722,7 @@
     // ID - String (listener ID)
     returnListenerData(args) {
       if (!clVars.listeners.varStates.hasOwnProperty(String(args.ID))) {
-       //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
+        //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
         return "";
       }
       return clVars.listeners.varStates[String(args.ID)].varState;
@@ -1839,13 +1871,13 @@
       switch (args.TYPE) {
         case 'Global variables':
           if (!clVars.gvar.varStates.hasOwnProperty(String(args.VAR))) {
-           //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
+            //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
             return "";
           }
           return clVars.gvar.varStates[String(args.VAR)].varState;
         case 'Private variables':
           if (!clVars.pvar.varStates.hasOwnProperty(String(args.VAR))) {
-           //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
+            //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
             return "";
           }
           return clVars.pvar.varStates[String(args.VAR)].varState;
@@ -1898,7 +1930,7 @@
       return Scratch.fetch(args.url, { method: "GET" })
         .then(response => response.text())
         .catch(error => {
-         //console.warn(`[CloudLink] Fetch error: ${error}`);
+          //console.warn(`[CloudLink] Fetch error: ${error}`);
         });
     }
 
@@ -1912,7 +1944,7 @@
         })
           .then(response => response.text())
           .catch(error => {
-           //console.warn(`[CloudLink] Request error: ${error}`);
+            //console.warn(`[CloudLink] Request error: ${error}`);
           });
       } else {
         return Scratch.fetch(args.url, {
@@ -1922,7 +1954,7 @@
         })
           .then(response => response.text())
           .catch(error => {
-           //console.warn(`[CloudLink] Request error: ${error}`);
+            //console.warn(`[CloudLink] Request error: ${error}`);
           });
       }
     }
@@ -2101,13 +2133,13 @@
       switch (args.TYPE) {
         case 'Global variables':
           if (!clVars.gvar.varStates.hasOwnProperty(String(args.VAR))) {
-           //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
+            //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
             return false;
           }
           return clVars.gvar.varStates[String(args.ID)].hasNew;
         case 'Private variables':
           if (!clVars.pvar.varStates.hasOwnProperty(String(args.VAR))) {
-           //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
+            //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
             return false;
           }
           return clVars.pvar.varStates[String(args.ID)].hasNew;
@@ -2118,7 +2150,7 @@
     // ID - String (listener ID)
     returnIsNewListener(args) {
       if (!clVars.listeners.varStates.hasOwnProperty(String(args.ID))) {
-       //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
+        //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
         return false;
       }
       return clVars.listeners.varStates[String(args.ID)].hasNew;
@@ -2164,7 +2196,7 @@
     // IP - String (websocket URL)
     openSocket(args) {
       if (clVars.socket != null) {
-       //console.warn("[CloudLink] Already connected to a server.");
+        //console.warn("[CloudLink] Already connected to a server.");
         return;
       };
       return newClient(args.IP);
@@ -2174,11 +2206,11 @@
     // ID - Number (server entry #)
     openSocketPublicServers(args) {
       if (clVars.socket != null) {
-       //console.warn("[CloudLink] Already connected to a server.");
+        //console.warn("[CloudLink] Already connected to a server.");
         return;
       };
       if (!clVars.serverList.hasOwnProperty(String(args.ID))) {
-       //console.warn("[CloudLink] Not a valid server ID!");
+        //console.warn("[CloudLink] Not a valid server ID!");
         return;
       };
       return newClient(clVars.serverList[String(args.ID)]["url"]);
@@ -2187,10 +2219,10 @@
     // Command - Closes the connection.
     closeSocket() {
       if (clVars.socket == null) {
-       //console.warn("[CloudLink] Already disconnected.");
+        //console.warn("[CloudLink] Already disconnected.");
         return;
       };
-     //console.log("[CloudLink] Disconnecting...");
+      //console.log("[CloudLink] Disconnecting...");
       clVars.linkState.isAttemptingGracefulDisconnect = true;
       clVars.socket.close(1000, "Client going away");
     }
@@ -2203,13 +2235,13 @@
 
       // Prevent running if an attempt is currently processing.
       if (clVars.username.attempted) {
-       //console.warn("[CloudLink] Already attempting to set username!");
+        //console.warn("[CloudLink] Already attempting to set username!");
         return;
       };
 
       // Prevent running if the username is already set.
       if (clVars.username.accepted) {
-       //console.warn("[CloudLink] Already set username!");
+        //console.warn("[CloudLink] Already set username!");
         return;
       };
 
@@ -2230,19 +2262,19 @@
 
       // Require server support
       if (clVars.linkState.identifiedProtocol < 2) {
-       //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support listeners.");
+        //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support listeners.");
         return;
       }
 
       // Prevent running if the username hasn't been set.
       if (!clVars.username.accepted) {
-       //console.warn("[CloudLink] Username must be set before creating a listener!");
+        //console.warn("[CloudLink] Username must be set before creating a listener!");
         return;
       };
 
       // Must be used once per packet
       if (clVars.listeners.enablerState) {
-       //console.warn("[CloudLink] Cannot create multiple listeners at a time!");
+        //console.warn("[CloudLink] Cannot create multiple listeners at a time!");
         return;
       }
 
@@ -2260,25 +2292,25 @@
 
       // Require server support
       if (clVars.linkState.identifiedProtocol < 2) {
-       //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support rooms.");
+        //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support rooms.");
         return;
       }
 
       // Prevent running if the username hasn't been set.
       if (!clVars.username.accepted) {
-       //console.warn("[CloudLink] Username must be set before linking to rooms!");
+        //console.warn("[CloudLink] Username must be set before linking to rooms!");
         return;
       };
 
       // Prevent running if already linked.
       if (clVars.rooms.isLinked) {
-       //console.warn("[CloudLink] Already linked to rooms!");
+        //console.warn("[CloudLink] Already linked to rooms!");
         return;
       };
 
       // Prevent running if a room link is in progress.
       if (clVars.rooms.isAttemptingLink) {
-       //console.warn("[CloudLink] Currently linking to rooms! Please wait!");
+        //console.warn("[CloudLink] Currently linking to rooms! Please wait!");
         return;
       };
 
@@ -2295,25 +2327,25 @@
 
       // Require server support
       if (clVars.linkState.identifiedProtocol < 2) {
-       //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support rooms.");
+        //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support rooms.");
         return;
       }
 
       // Prevent running if the username hasn't been set.
       if (!clVars.username.accepted) {
-       //console.warn("[CloudLink] Username must be set before selecting rooms!");
+        //console.warn("[CloudLink] Username must be set before selecting rooms!");
         return;
       };
 
       // Require once per packet
       if (clVars.rooms.enablerState) {
-       //console.warn("[CloudLink] Cannot use the room selector more than once at a time!");
+        //console.warn("[CloudLink] Cannot use the room selector more than once at a time!");
         return;
       }
 
       // Prevent running if not linked.
       if (!clVars.rooms.isLinked) {
-       //console.warn("[CloudLink] Cannot use room selector while not linked to rooms!");
+        //console.warn("[CloudLink] Cannot use room selector while not linked to rooms!");
         return;
       };
 
@@ -2329,25 +2361,25 @@
 
       // Require server support
       if (clVars.linkState.identifiedProtocol < 2) {
-       //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support rooms.");
+        //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support rooms.");
         return;
       }
 
       // Prevent running if the username hasn't been set.
       if (!clVars.username.accepted) {
-       //console.warn("[CloudLink] Username must be set before unjoining rooms!");
+        //console.warn("[CloudLink] Username must be set before unjoining rooms!");
         return;
       };
 
       // Prevent running if already unlinked.
       if (!clVars.rooms.isLinked) {
-       //console.warn("[CloudLink] Already unlinked from rooms!");
+        //console.warn("[CloudLink] Already unlinked from rooms!");
         return;
       };
 
       // Prevent running if a room unlink is in progress.
       if (clVars.rooms.isAttemptingUnlink) {
-       //console.warn("[CloudLink] Currently unlinking from rooms! Please wait!");
+        //console.warn("[CloudLink] Currently unlinking from rooms! Please wait!");
         return;
       };
 
@@ -2374,7 +2406,7 @@
 
       // Prevent running if the username hasn't been set.
       if (!clVars.username.accepted) {
-       //console.warn("[CloudLink] Username must be set before sending private messages!");
+        //console.warn("[CloudLink] Username must be set before sending private messages!");
         return;
       };
 
@@ -2400,7 +2432,7 @@
 
       // Prevent running if the username hasn't been set.
       if (!clVars.username.accepted) {
-       //console.warn("[CloudLink] Username must be set before sending private variables!");
+        //console.warn("[CloudLink] Username must be set before sending private variables!");
         return;
       };
 
@@ -2426,7 +2458,7 @@
 
       // Prevent running if the username hasn't been set.
       if (!clVars.username.accepted) {
-       //console.warn("[CloudLink] Username must be set before using this command!");
+        //console.warn("[CloudLink] Username must be set before using this command!");
         return;
       };
 
@@ -2458,13 +2490,13 @@
       switch (args.TYPE) {
         case 'Global variables':
           if (!clVars.gvar.varStates.hasOwnProperty(String(args.VAR))) {
-           //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
+            //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
             return;
           }
           clVars.gvar.varStates[String(args.ID)].hasNew = false;
         case 'Private variables':
           if (!clVars.pvar.varStates.hasOwnProperty(String(args.VAR))) {
-           //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
+            //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
             return false;
           }
           clVars.pvar.varStates[String(args.ID)].hasNew = false;
@@ -2475,7 +2507,7 @@
     // ID - Listener ID
     resetNewListener(args) {
       if (!clVars.listeners.varStates.hasOwnProperty(String(args.ID))) {
-       //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
+        //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
         return;
       }
       clVars.listeners.varStates[String(args.ID)].hasNew = false;
@@ -2512,6 +2544,14 @@
           clVars.pvar.queue = [];
           break;
       }
+    }
+
+    recentlyjoined() {
+      return makeValueScratchSafe(JSON.stringify(clVars?.recentlyJoinedUser ?? {}));
+    }
+
+    recentlyleft() {
+      return makeValueScratchSafe(JSON.stringify(clVars?.recentlyLeftUser ?? {}));
     }
   }
   Scratch.extensions.register(new CloudLink());
