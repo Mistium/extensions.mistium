@@ -26,7 +26,7 @@ class BlurImageExtension {
   blurImage(args) {
     const dataUri = args.URL;
     const blur = args.BLUR;
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       var image = new Image();
       image.crossOrigin = "anonymous";
       image.onload = function() {
@@ -37,6 +37,9 @@ class BlurImageExtension {
         ctx.filter = "blur(" + blur + "px)";
         ctx.drawImage(image, 0, 0, image.width, image.height);
         resolve(canvas.toDataURL());
+      };
+      image.onerror = function() {
+        reject(new Error("Failed to load image from URL: " + dataUri));
       };
       image.src = dataUri;
     });
