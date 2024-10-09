@@ -15,7 +15,7 @@ class MistFetch {
                     arguments: {
                         URL: {
                             type: Scratch.ArgumentType.STRING,
-                            defaultValue: 'https://example.com'
+                            defaultValue: 'https://extensions.turbowarp.org/hello.txt'
                         },
                         ID: {
                             type: Scratch.ArgumentType.STRING,
@@ -66,6 +66,23 @@ class MistFetch {
                             defaultValue: 'request1'
                         }
                     }
+                },
+                {
+                    opcode: 'whenIdRequestCompleted',
+                    blockType: Scratch.BlockType.EVENT,
+                    text: 'when request [ID] completed',
+                    isEdgeActivated: false,
+                    arguments: {
+                        ID: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'request1'
+                        }
+                    }
+                },
+                {
+                    opcode: 'inProgress',
+                    blockType: Scratch.BlockType.REPORTER,
+                    text: 'all requests in progress',
                 }
             ]
         };
@@ -93,6 +110,7 @@ class MistFetch {
                         const { done: doneReading, value } = await reader.read();
                         if (doneReading) {
                             done = true;
+                            Scratch.vm.runtime.startHats('mistfetch_whenIdRequestCompleted', { ID: ID });
                             this.requests[ID].completed = true;
                         } else {
                             this.requests[ID].totalBytes += value.length;
@@ -142,6 +160,17 @@ class MistFetch {
             return `Request with ID ${ID} has been deleted.`;
         }
         return `No request found for ID: ${ID}`;
+    }
+
+    whenIdRequestCompleted({ ID }) {
+        if (this.requests[ID] && this.requests[ID].completed) {
+            return true;
+        }
+        return false;
+    }
+
+    inProgress() {
+        return JSON.stringify(Object.keys(this.requests));
     }
 }
 
