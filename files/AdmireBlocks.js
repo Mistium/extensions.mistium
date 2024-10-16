@@ -1,6 +1,6 @@
 // this version of AdmireBlocks was modified by @mistium to be more optimsed and generally better when used.
 function rotate_left(n, s) {
-  return (n << s) | (n >>> (32 - s)
+  return (n << s) | (n >>> (32 - s))
 }
 
 function SHA1(msg) {
