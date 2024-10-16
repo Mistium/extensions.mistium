@@ -27,7 +27,6 @@
       runtime.on("BEFORE_EXECUTE", () => {
         timer++;
         runtime.shouldExecuteStopClicked = false;
-        runtime.startHats("HyperSenseSP_whenKeyPressed");
       });
       runtime.on("PROJECT_START", () => { timer = 0 });
       runtime.on("PROJECT_STOP_ALL", () => { timer = 0 });
@@ -41,9 +40,7 @@
 
       this.scrollDistance = 0;
       this.oldScroll = [0, 0];
-      this.loudnessArray = [];
       window.addEventListener("wheel", this.handleScroll);
-      this.isMicrophoneEnabled = false;
       this.pressedKey = null;
       this.wait = [false, "sprite"];
       this.pressedKeys = {};
@@ -61,10 +58,6 @@
         delete this.pressedKeys[releasedKey];
         currentlyPressedKey = Object.keys(this.pressedKeys).pop() || null;
         keyPressTime = 0;
-      });
-      document.addEventListener("mousemove", (event) => {
-        window.mouseX = event.clientX;
-        window.mouseY = event.clientY;
       });
     }
 
@@ -327,11 +320,6 @@
     whenKeyHit(args) {
       const key = Scratch.Cast.toString(args.KEY).replace(" ", "");
       return this.handleKeyPress(key, false);
-    }
-
-    whenKeyPressed(args) {
-      const key = Scratch.Cast.toString(args.KEY).replace(" ", "");
-      return this.handleKeyPress(key, true);
     }
 
     isKeyPressed(args) {
