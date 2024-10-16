@@ -135,7 +135,7 @@
 
             if (isJsFile) {
                 const profileCardLink = document.createElement("a");
-                profileCardLink.href = item.download_url;
+                profileCardLink.href = item.download_url.replace("https://raw.githubusercontent.com/Mistium/extensions.mistium/main/","https://extensions.mistium.com/");
                 profileCardLink.target = "_blank";
                 profileCardLink.rel = "noopener noreferrer";
 
