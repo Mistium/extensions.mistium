@@ -110,7 +110,9 @@ class MistFetch {
                         const { done: doneReading, value } = await reader.read();
                         if (doneReading) {
                             done = true;
-                            Scratch.vm.runtime.startHats('mistfetch_whenIdRequestCompleted', { ID: ID });
+                            if (Scratch.extensions.unsandboxed) {
+                                Scratch.vm.runtime.startHats('mistfetch_whenIdRequestCompleted', { ID: ID });
+                            }
                             this.requests[ID].completed = true;
                         } else {
                             this.requests[ID].totalBytes += value.length;
