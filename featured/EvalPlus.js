@@ -3,11 +3,6 @@
 // If a copy of the MPL was not distributed with this file,
 // Then you can obtain one at https://mozilla.org/MPL/2.0/
 (function (Scratch) {
-    if (!Scratch.extensions.unsandboxed) {
-        throw new Error("EvalPlus must be unsandboxed");
-    }
-
-
     class EvalPlus {
         constructor() {
             this.enabled = true; // Eval is enabled by default
