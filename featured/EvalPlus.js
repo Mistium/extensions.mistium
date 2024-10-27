@@ -2,7 +2,11 @@
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
 // If a copy of the MPL was not distributed with this file,
 // Then you can obtain one at https://mozilla.org/MPL/2.0/
+
 (function (Scratch) {
+
+    const cast = Scratch.Cast;
+
     class EvalPlus {
         constructor() {
             this.enabled = true; // Eval is enabled by default
@@ -191,6 +195,7 @@
         }
 
         cmdBlock({ CODE }) {
+            CODE = cast.toString(CODE);
             try {
                 if (!this.enabled) return;
                 eval(CODE);
@@ -200,6 +205,7 @@
         }
 
         boolBlock({ CODE }) {
+            CODE = cast.toString(CODE);
             try {
                 if (!this.enabled) return false;
                 return eval(CODE);
@@ -210,6 +216,7 @@
         }
 
         reporterBlock({ CODE }) {
+            CODE = cast.toString(CODE);
             try {
                 if (!this.enabled) return null;
                 return eval(CODE);
@@ -220,6 +227,7 @@
         }
 
         capturedReporter({ CODE }) {
+            CODE = cast.toString(CODE);
             try {
                 if (!this.enabled) return null;
                 this.consoleOutput = [];
@@ -239,6 +247,7 @@
         }
 
         restrictedCmdBlock({ CODE }) {
+            CODE = cast.toString(CODE);
             try {
                 if (!this.enabled) return;
                 // Add more restrictions if needed
@@ -252,6 +261,7 @@
         }
 
         restrictedBoolBlock({ CODE }) {
+            CODE = cast.toString(CODE);
             try {
                 if (!this.enabled) return false;
                 if (!/^[a-zA-Z0-9\s()\[\]{};.,\-+=*\/%]*$/.test(CODE)) {
@@ -265,6 +275,7 @@
         }
 
         restrictedReporterBlock({ CODE }) {
+            CODE = cast.toString(CODE);
             try {
                 if (!this.enabled) return null;
                 if (!/^[a-zA-Z0-9\s()\[\]{};.,\-+=*\/%]*$/.test(CODE)) {
@@ -286,7 +297,7 @@
         }
 
         addScriptTag(args) {
-            const id = args.ID;
+            const id = cast.toString(args.ID);
             if (!this.tags?.[id]) {
                 const scriptTag = document.createElement('script');
                 scriptTag.id = id;
@@ -296,8 +307,8 @@
         }
 
         addScriptTagSrc(args) {
-            const id = args.ID;
-            const src = args.SRC;
+            const id = cast.toString(args.ID);
+            const src = cast.toString(args.SRC);
             if (!this.tags?.[id]) {
                 const scriptTag = document.createElement('script');
                 scriptTag.id = id;
@@ -317,7 +328,7 @@
         }
 
         deleteScriptTag(args) {
-            const id = args.ID;
+            const id = cast.toString(args.ID);
             const scriptTag = this.tags[id];
             if (scriptTag) {
                 scriptTag.remove();
@@ -326,8 +337,8 @@
         }
 
         setScriptInTag(args) {
-            const id = args.ID;
-            const script = args.SCRIPT;
+            const id = cast.toString(args.ID);
+            const script = cast.toString(args.SCRIPT);
             const scriptTag = this.tags?.[id];
             if (scriptTag) {
                 scriptTag.textContent = script;
@@ -335,13 +346,13 @@
         }
 
         getElementbyID(args) {
-            const id = args.ID;
+            const id = cast.toString(args.ID);
             const element = document.getElementById(id);
             return element ? element.outerHTML : "";
         }
 
         refreshScriptTag(args) {
-            const id = args.ID;
+            const id = cast.toString(args.ID);
             const scriptTag = this.tags?.[id];
             if (scriptTag) {
                 scriptTag.remove();

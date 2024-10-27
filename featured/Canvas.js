@@ -2,6 +2,8 @@
 // Author: Mistium
 // Description: Create and manipulate canvases with this extension
 
+cast = Scratch.Cast
+
 class CanvasExtension {
   constructor(runtime) {
     this.runtime = runtime;
@@ -470,10 +472,17 @@ class CanvasExtension {
   }
 
   createCanvas(args) {
-    const { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR } = args;
+    let { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    X = cast.toNumber(X);
+    Y = cast.toNumber(Y);
+    WIDTH = cast.toNumber(WIDTH);
+    HEIGHT = cast.toNumber(HEIGHT);
+    COLOUR = cast.toString(COLOUR);
+    
     if (this.canvases[CANVAS_ID]) {
       this.canvases[CANVAS_ID].remove();
-      delete this.canvases[CANVAS_ID]
+      delete this.canvases[CANVAS_ID];
     }
     const canvas = document.createElement('canvas');
     canvas.id = CANVAS_ID;
@@ -490,18 +499,22 @@ class CanvasExtension {
   }
 
   deleteCanvas(args) {
-    const { CANVAS_ID } = args;
+    let { CANVAS_ID } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       canvas.remove();
-      delete this.canvases[CANVAS_ID]
+      delete this.canvases[CANVAS_ID];
     } else {
       console.log(`Canvas ${CANVAS_ID} not found`);
     }
   }
 
   moveCanvas(args) {
-    const { CANVAS_ID, X, Y } = args;
+    let { CANVAS_ID, X, Y } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    X = cast.toNumber(X);
+    Y = cast.toNumber(Y);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       canvas.x = X;
@@ -514,7 +527,10 @@ class CanvasExtension {
   }
 
   resizeCanvas(args) {
-    const { CANVAS_ID, WIDTH, HEIGHT } = args;
+    let { CANVAS_ID, WIDTH, HEIGHT } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    WIDTH = cast.toNumber(WIDTH);
+    HEIGHT = cast.toNumber(HEIGHT);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       canvas.width = WIDTH;
@@ -527,7 +543,10 @@ class CanvasExtension {
   }
 
   setCanvasStyle(args) {
-    const { CANVAS_ID, PROPERTY, VALUE } = args;
+    let { CANVAS_ID, PROPERTY, VALUE } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    PROPERTY = cast.toString(PROPERTY);
+    VALUE = cast.toString(VALUE);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       canvas.style[PROPERTY] = VALUE;
@@ -537,7 +556,9 @@ class CanvasExtension {
   }
 
   setCanvasLayer(args) {
-    const { CANVAS_ID, LAYER } = args;
+    let { CANVAS_ID, LAYER } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    LAYER = cast.toNumber(LAYER);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       canvas.style.zIndex = LAYER;
@@ -547,7 +568,8 @@ class CanvasExtension {
   }
 
   clearCanvas(args) {
-    const { CANVAS_ID } = args;
+    let { CANVAS_ID } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -558,7 +580,16 @@ class CanvasExtension {
   }
 
   drawTriangle(args) {
-    const { CANVAS_ID, X1, Y1, X2, Y2, X3, Y3, COLOUR, FILL } = args;
+    let { CANVAS_ID, X1, Y1, X2, Y2, X3, Y3, COLOUR, FILL } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    X1 = cast.toNumber(X1);
+    Y1 = cast.toNumber(Y1);
+    X2 = cast.toNumber(X2);
+    Y2 = cast.toNumber(Y2);
+    X3 = cast.toNumber(X3);
+    Y3 = cast.toNumber(Y3);
+    COLOUR = cast.toString(COLOUR);
+    FILL = cast.toString(FILL);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       let translatedX1 = (canvas.width  / 2) + X1;
@@ -585,7 +616,15 @@ class CanvasExtension {
   }
 
   drawRectangle(args) {
-    const { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR, ROUNDING, FILL } = args;
+    let { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR, ROUNDING, FILL } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    X = cast.toNumber(X);
+    Y = cast.toNumber(Y);
+    WIDTH = cast.toNumber(WIDTH);
+    HEIGHT = cast.toNumber(HEIGHT);
+    COLOUR = cast.toString(COLOUR);
+    ROUNDING = cast.toNumber(ROUNDING);
+    FILL = cast.toString(FILL);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -627,7 +666,11 @@ class CanvasExtension {
   
 
   setPixel(args) {
-    const { CANVAS_ID, X, Y, COLOUR } = args;
+    let { CANVAS_ID, X, Y, COLOUR } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    X = cast.toNumber(X);
+    Y = cast.toNumber(Y);
+    COLOUR = cast.toString(COLOUR);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       let translatedX1 = (canvas.width  / 2) + X;
@@ -641,7 +684,8 @@ class CanvasExtension {
   }
 
   getWidth(args) {
-    const { CANVAS_ID } = args;
+    let { CANVAS_ID } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       return canvas.width;
@@ -651,7 +695,8 @@ class CanvasExtension {
   }
 
   getHeight(args) {
-    const { CANVAS_ID } = args;
+    let { CANVAS_ID } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       return canvas.height;
@@ -661,7 +706,8 @@ class CanvasExtension {
   }
 
   getCanvasLayer(args) {
-    const { CANVAS_ID } = args;
+    let { CANVAS_ID } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       return canvas.style.zIndex;
@@ -671,7 +717,8 @@ class CanvasExtension {
   }
 
   getCanvasX(args) {
-    const { CANVAS_ID } = args;
+    let { CANVAS_ID } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
     const canvas = this.canvases[CANVAS_ID];
     // convert the x of the canvas to scratch coordinates
     if (canvas) {
@@ -684,7 +731,8 @@ class CanvasExtension {
   }
 
   getCanvasY(args) {
-    const { CANVAS_ID } = args;
+    let { CANVAS_ID } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       const stageHeight = vm.runtime.stageHeight;
@@ -696,7 +744,9 @@ class CanvasExtension {
   }
 
   getCanvasAs(args) {
-    const { CANVAS_ID, TYPE } = args;
+    let { CANVAS_ID, TYPE } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    TYPE = cast.toString(TYPE);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -712,7 +762,8 @@ class CanvasExtension {
   }
 
   getPixelCount(args) {
-    const { CANVAS_ID } = args;
+    let { CANVAS_ID } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -724,7 +775,10 @@ class CanvasExtension {
   }
 
   getPixel(args) {
-    const { CANVAS_ID, X, Y } = args;
+    let { CANVAS_ID, X, Y } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    X = cast.toNumber(X);
+    Y = cast.toNumber(Y);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       let translatedX1 = (canvas.width  / 2) + X;
@@ -738,7 +792,9 @@ class CanvasExtension {
   }
 
   getPixelIndex(args) {
-    const { CANVAS_ID, INDEX } = args;
+    let { CANVAS_ID, INDEX } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    INDEX = cast.toNumber(INDEX);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -750,7 +806,10 @@ class CanvasExtension {
   }
 
   setPixelIndex(args) {
-    const { CANVAS_ID, INDEX, COLOUR } = args;
+    let { CANVAS_ID, INDEX, COLOUR } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    INDEX = cast.toNumber(INDEX);
+    COLOUR = cast.toString(COLOUR);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -763,7 +822,11 @@ class CanvasExtension {
   }
 
   setPixel(args) {
-    const { CANVAS_ID, X, Y, COLOUR } = args;
+    let { CANVAS_ID, X, Y, COLOUR } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    X = cast.toNumber(X);
+    Y = cast.toNumber(Y);
+    COLOUR = cast.toString(COLOUR);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       let translatedX1 = (canvas.width  / 2) + X;
@@ -778,7 +841,15 @@ class CanvasExtension {
   }
 
   drawLine(args) {
-    const { CANVAS_ID, X1, Y1, X2, Y2, COLOUR, LINEWIDTH, LINECAP } = args;
+    let { CANVAS_ID, X1, Y1, X2, Y2, COLOUR, LINEWIDTH, LINECAP } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    X1 = cast.toNumber(X1);
+    Y1 = cast.toNumber(Y1);
+    X2 = cast.toNumber(X2);
+    Y2 = cast.toNumber(Y2);
+    COLOUR = cast.toString(COLOUR);
+    LINEWIDTH = cast.toNumber(LINEWIDTH);
+    LINECAP = cast.toString(LINECAP);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       let translatedX1 = (canvas.width  / 2) + X1;
@@ -799,7 +870,13 @@ class CanvasExtension {
   }
 
   stampImage(args) {
-    const { CANVAS_ID, URL, X, Y, WIDTH, HEIGHT } = args;
+    let { CANVAS_ID, URL, X, Y, WIDTH, HEIGHT } = args;
+    CANVAS_ID = cast.toString(CANVAS_ID);
+    URL = cast.toString(URL);
+    X = cast.toNumber(X);
+    Y = cast.toNumber(Y);
+    WIDTH = cast.toNumber(WIDTH);
+    HEIGHT = cast.toNumber(HEIGHT);
     const canvas = this.canvases[CANVAS_ID];
     if (canvas) {
       const ctx = canvas.getContext('2d');
