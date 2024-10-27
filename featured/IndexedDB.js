@@ -1,4 +1,4 @@
-// Name: IndexedDB
+// Name: IndexedDB and LocalStorage
 // By: @mistium on discord
 // Description: Access and write to IndexedDB.
 // License: MPL-2.0
@@ -8,6 +8,12 @@
 
 (function (Scratch) {
   "use strict";
+
+  const cast = Scratch.Cast;
+
+  function label(text) {
+    return { blockType: Scratch.BlockType.LABEL, text: text };
+  }
 
   class IndexedDB {
     constructor() {
@@ -21,99 +27,121 @@
     getInfo() {
       return {
         id: 'mistiumindexeddb',
-        name: 'IndexedDB',
+        name: 'Indexed DB',
         color1: '#C65B5B',
-        blocks: [{
-          opcode: 'setDBName',
-          blockType: Scratch.BlockType.COMMAND,
-          text: 'Set database name to [NAME]',
-          arguments: {
-            NAME: {
-              type: Scratch.ArgumentType.STRING,
-              defaultValue: "scratchDB"
+        blocks: [
+          {
+            opcode: 'setDBName',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'set database name to [NAME]',
+            arguments: {
+              NAME: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "scratchDB"
+              }
+            }
+          },
+          {
+            opcode: 'writeToDatabase',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'set key [KEY] to [VALUE]',
+            arguments: {
+              VALUE: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "value"
+              },
+              KEY: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "data"
+              }
+            }
+          },
+          {
+            opcode: 'deleteFromDatabase',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'delete value with key [KEY] from database',
+            arguments: {
+              KEY: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "data"
+              }
+            }
+          },
+          {
+            opcode: 'readFromDatabase',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'read value [KEY]',
+            arguments: {
+              KEY: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "data"
+              }
+            }
+          },
+          {
+            opcode: 'keyExists',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: 'key [KEY] exists in database?',
+            arguments: {
+              KEY: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "data"
+              }
+            }
+          },
+          label('database info'),
+          {
+            opcode: 'isinitialised',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: 'is database initialised?',
+          },
+          {
+            opcode: 'getDatabaseSize',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get size of database',
+            disableMonitor: true
+          },
+          {
+            opcode: 'getKeySize',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get size of key [KEY]',
+            arguments: {
+              KEY: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "data"
+              }
+            }
+          },
+          {
+            opcode: 'getAllKeys',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get all keys from database',
+            disableMonitor: true
+          },
+          label('export and import'),
+          {
+            opcode: 'exportDatabaseAsJSON',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'export database as json',
+            disableMonitor: true
+          },
+          {
+            opcode: 'importJSONToDatabase',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'import [jsonData] into database',
+            arguments: {
+              jsonData: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "{}"
+              }
             }
           }
-        },
-        {
-          opcode: 'isinitialised',
-          blockType: Scratch.BlockType.BOOLEAN,
-          text: 'Is database initialised?',
-        },
-        {
-          opcode: 'writeToDatabase',
-          blockType: Scratch.BlockType.COMMAND,
-          text: 'Set Key [KEY] to [VALUE]',
-          arguments: {
-            VALUE: {
-              type: Scratch.ArgumentType.STRING,
-              defaultValue: ""
-            },
-            KEY: {
-              type: Scratch.ArgumentType.STRING,
-              defaultValue: "data"
-            }
-          }
-        },
-        {
-          opcode: 'readFromDatabase',
-          blockType: Scratch.BlockType.REPORTER,
-          text: 'Read value [KEY]',
-          arguments: {
-            KEY: {
-              type: Scratch.ArgumentType.STRING,
-              defaultValue: "data"
-            }
-          }
-        },
-        {
-          opcode: 'getAllKeys',
-          blockType: Scratch.BlockType.REPORTER,
-          text: 'Get all keys from database',
-        },
-        {
-          opcode: 'keyExists',
-          blockType: Scratch.BlockType.BOOLEAN,
-          text: 'Key [KEY] exists in database?',
-          arguments: {
-            KEY: {
-              type: Scratch.ArgumentType.STRING,
-              defaultValue: "data"
-            }
-          }
-        },
-        {
-          opcode: 'deleteFromDatabase',
-          blockType: Scratch.BlockType.COMMAND,
-          text: 'Delete value with key [KEY] from database',
-          arguments: {
-            KEY: {
-              type: Scratch.ArgumentType.STRING,
-              defaultValue: "data"
-            }
-          }
-        },
-        {
-          opcode: 'exportDatabaseAsJSON',
-          blockType: Scratch.BlockType.REPORTER,
-          text: 'Export database as JSON',
-        },
-        {
-          opcode: 'importJSONToDatabase',
-          blockType: Scratch.BlockType.COMMAND,
-          text: 'Import [jsonData] into database',
-          arguments: {
-            jsonData: {
-              type: Scratch.ArgumentType.STRING,
-              defaultValue: "{}"
-            }
-          }
-        },
         ]
       };
     }
 
     setDBName({ NAME }) {
-      this.dbName = NAME;
+      this.dbName = cast.toString(NAME);
       this.initializeDatabase(); // Re-initialize the database with the new name
     }
 
@@ -150,19 +178,19 @@
       const transaction = this.db.transaction(["data"], "readwrite");
       const objectStore = transaction.objectStore("data");
       objectStore.put({
-        key: KEY,
-        value: VALUE
+        key: cast.toString(KEY),
+        value: cast.toString(VALUE)
       });
     }
 
-    async readFromDatabase({KEY}) {
+    async readFromDatabase({ KEY }) {
       if (!this.initialised) {
         console.error("Database not initialised");
       }
       return new Promise((resolve, reject) => {
         const transaction = this.db.transaction(["data"], "readonly");
         const objectStore = transaction.objectStore("data");
-        const request = objectStore.get(KEY);
+        const request = objectStore.get(cast.toString(KEY));
         request.onsuccess = function (event) {
           resolve(event.target.result ? event.target.result.value : "");
         };
@@ -191,13 +219,12 @@
       });
     }
 
-
     async keyExists({ KEY }) {
       if (!this.initialised) {
         console.error("Database not initialised");
       }
       const keys = await this.getAllKeys();
-      return keys.includes(KEY);
+      return keys.includes(cast.toString(KEY));
     }
 
     deleteFromDatabase({ KEY }) {
@@ -207,7 +234,7 @@
       const transaction = this.db.transaction(["data"], "readwrite");
       const objectStore = transaction.objectStore("data");
       try {
-        objectStore.delete(KEY);
+        objectStore.delete(cast.toString(KEY));
       } catch (error) {
         console.error("Error deleting key from database");
       }
@@ -245,6 +272,7 @@
         };
       });
     }
+
     async importJSONToDatabase({ jsonData }) {
       if (!this.initialised) {
         console.error("Database not initialised");
@@ -255,7 +283,7 @@
 
       return new Promise((resolve, reject) => {
         try {
-          const data = JSON.parse(jsonData);
+          const data = JSON.parse(cast.toString(jsonData));
           const transaction = this.db.transaction(["data"], "readwrite");
           const objectStore = transaction.objectStore("data");
 
@@ -276,6 +304,63 @@
       });
     }
 
+    async getDatabaseSize() {
+      if (!this.initialised) {
+        console.error("Database not initialised");
+      }
+      if (!this.db) {
+        return Promise.reject("No database connection available");
+      }
+
+      return new Promise((resolve, reject) => {
+        const transaction = this.db.transaction(["data"], "readonly");
+        const objectStore = transaction.objectStore("data");
+        const request = objectStore.getAll();
+
+        request.onsuccess = function (event) {
+          const data = event.target.result;
+          try {
+            const totalSize = data.reduce((acc, entry) => acc + entry.key.length + entry.value.length, 0);
+            resolve(totalSize.toString());
+          } catch (error) {
+            reject("Error calculating database size");
+          }
+        };
+
+        request.onerror = function (event) {
+          reject("Error getting database size");
+        };
+      });
+    }
+
+    async getKeySize({ KEY }) {
+      if (!this.initialised) {
+        console.error("Database not initialised");
+      }
+      if (!this.db) {
+        return Promise.reject("No database connection available");
+      }
+
+      return new Promise((resolve, reject) => {
+        const transaction = this.db.transaction(["data"], "readonly");
+        const objectStore = transaction.objectStore("data");
+        const request = objectStore.get(cast.toString(KEY));
+
+        request.onsuccess = function (event) {
+          const entry = event.target.result;
+          if (entry) {
+            resolve((entry.key.length + entry.value.length).toString());
+          } else {
+            resolve("0");
+          }
+        };
+
+        request.onerror = function (event) {
+          reject("Error getting key size");
+        };
+      });
+    }
   }
+
   Scratch.extensions.register(new IndexedDB());
 })(Scratch);

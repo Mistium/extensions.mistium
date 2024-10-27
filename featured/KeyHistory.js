@@ -11,6 +11,8 @@
 (function (Scratch) {
   "use strict";
 
+  Cast = Scratch.Cast;
+
   if (!Scratch.extensions.unsandboxed) {
     throw new Error(`'Key History' needs to be run unsandboxed.`);
   }
@@ -143,7 +145,7 @@
     }
 
     getFirstKey() {
-      return Scratch.Cast.toString(this.keyHistory[0] ?? "");
+      return Cast.toString(this.keyHistory[0] ?? "");
     }
 
     deleteFirstKey() {
@@ -157,15 +159,15 @@
     }
 
     AddKey({ KEY }) {
-      this.addKeyToHistory(Scratch.Cast.toString(KEY));
+      this.addKeyToHistory(Cast.toString(KEY));
     }
 
     setMaxQueueSize({ LENGTH }) {
-      this.max_key_history = Scratch.Cast.toNumber(LENGTH);
+      this.max_key_history = Cast.toNumber(LENGTH);
     }
 
     onKeyDown(event) {
-      const key = Scratch.Cast.toString(event.key ?? "");
+      const key = Cast.toString(event.key ?? "");
       const lowerkey = key.toLowerCase();
       if (!this.keysHit.includes(lowerkey)) {
         this.keysHit.push(lowerkey);
@@ -186,7 +188,7 @@
 
     onKeyUp(event) {
       // Convert the key to a string to ensure consistency
-      const key = Scratch.Cast.toString(event.key ?? "").toLowerCase();
+      const key = Cast.toString(event.key ?? "").toLowerCase();
       const lowerkey = key.toLowerCase();
       const index = this.keysDown.indexOf(lowerkey);
     
@@ -206,7 +208,7 @@
 
     onPaste(event) {
       const pastedText = event.clipboardData.getData("text/plain");
-      this.addKeyToHistory(Scratch.Cast.toString(pastedText));
+      this.addKeyToHistory(Cast.toString(pastedText));
     }
 
     ignoreKeybinds({ KEYS }) {
@@ -216,7 +218,7 @@
     }
 
     isKeybind(key) {
-      return this.keybinds.includes(Scratch.Cast.toString(key));
+      return this.keybinds.includes(Cast.toString(key));
     }
 
     addKeyToHistory(key) {
@@ -226,7 +228,7 @@
       }
 
       // Add the key to the end of the array
-      this.keyHistory.push(Scratch.Cast.toString(key));
+      this.keyHistory.push(Cast.toString(key));
     }
 
     enableKeyHistory() {
@@ -238,15 +240,15 @@
     }
 
     lastKeyPressed() {
-      return Scratch.Cast.toString(this.keyHistory[this.keyHistory.length - 1] ?? "");
+      return Cast.toString(this.keyHistory[this.keyHistory.length - 1] ?? "");
     }
 
     iskeyPressed({ KEY }) {
-      return this.keysDown.includes(Scratch.Cast.toString(KEY));
+      return this.keysDown.includes(Cast.toString(KEY));
     }
 
     iskeyhit({ KEY }) {
-      KEY = Scratch.Cast.toString(KEY)
+      KEY = Cast.toString(KEY)
       let hit = this.keysHit.indexOf(KEY);
       if (hit !== -1) {
         let out = false

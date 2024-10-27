@@ -9,6 +9,8 @@
 (function (Scratch) {
   "use strict";
 
+  const cast = Scratch.Cast;
+
   const iframesMap = new Map();
   const SANDBOX = [
     "allow-same-origin",
@@ -24,6 +26,7 @@
 
   class IframePlusExtension {
     setZIndex({ ID }) {
+      ID = cast.toString(ID);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         const { iframe } = iframeInfo;
@@ -271,21 +274,23 @@
       };
     }
 
-  setLayerOfIframe({ ID, LAYER }) {
-    const iframeInfo = iframesMap.get(ID);
-    if (iframeInfo) {
-      const { iframe, overlay } = iframeInfo;
+    setLayerOfIframe({ ID, LAYER }) {
+      ID = cast.toString(ID);
+      LAYER = cast.toString(LAYER);
+      const iframeInfo = iframesMap.get(ID);
+      if (iframeInfo) {
+        const { iframe, overlay } = iframeInfo;
 
-      // Ensure that the style property is defined before setting zIndex
-      if (overlay && overlay.style) {
-        overlay.style.zIndex = LAYER;
-      }
+        // Ensure that the style property is defined before setting zIndex
+        if (overlay && overlay.style) {
+          overlay.style.zIndex = LAYER;
+        }
 
-      if (iframe && iframe.style) {
-        iframe.style.zIndex = LAYER;
+        if (iframe && iframe.style) {
+          iframe.style.zIndex = LAYER;
+        }
       }
     }
-  }
 
     getTotalLayers() {
       // Return the total number of layers
@@ -293,6 +298,7 @@
     }
 
     getLayerOfIframe({ ID }) {
+      ID = cast.toString(ID);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         const { overlay } = iframeInfo;
@@ -302,6 +308,8 @@
     }
 
     async display({ URL, ID }) {
+      URL = cast.toString(URL);
+      ID = cast.toString(ID);
       this.remove({ ID }); // Remove existing iframe with the same ID, if any
 
       if (await Scratch.canEmbed(URL)) {
@@ -311,14 +319,16 @@
     }
     
     showHtmlContent({ HTML, ID }) {
+      HTML = cast.toString(HTML);
+      ID = cast.toString(ID);
       this.remove({ ID }); // Remove existing iframe with the same ID, if any
     
       const src = `data:text/html;charset=utf-8,${encodeURIComponent(HTML)}`;
       this.createFrame(src, ID);
     }
 
-
     remove({ ID }) {
+      ID = cast.toString(ID);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         const { iframe, overlay } = iframeInfo;
@@ -341,6 +351,7 @@
     }
     
     show({ ID }) {
+      ID = cast.toString(ID);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         const { iframe } = iframeInfo;
@@ -349,6 +360,7 @@
     }
 
     hide({ ID }) {
+      ID = cast.toString(ID);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         const { iframe } = iframeInfo;
@@ -357,6 +369,7 @@
     }
 
     getIframeTitle({ ID }) {
+      ID = cast.toString(ID);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         const { iframe } = iframeInfo;
@@ -366,6 +379,9 @@
     }
     
     resize({ ID, WIDTH, HEIGHT }) {
+      ID = cast.toString(ID);
+      WIDTH = cast.toString(WIDTH);
+      HEIGHT = cast.toString(HEIGHT);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         const { iframe } = iframeInfo;
@@ -378,6 +394,9 @@
     }
 
     move({ ID, X, Y }) {
+      ID = cast.toString(ID);
+      X = cast.toString(X);
+      Y = cast.toString(Y);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         iframeInfo.x = X - iframeInfo.width / 2;
@@ -387,6 +406,11 @@
     }
 
     setCorners({ ID, X1, Y1, X2, Y2 }) {
+      ID = cast.toString(ID);
+      X1 = cast.toString(X1);
+      Y1 = cast.toString(Y1);
+      X2 = cast.toString(X2);
+      Y2 = cast.toString(Y2);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         iframeInfo.x = X1;
@@ -398,6 +422,7 @@
     }
 
     stamp({ ID }) {
+      ID = cast.toString(ID);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         const { iframe } = iframeInfo;
@@ -414,8 +439,9 @@
         // Additional actions as needed...
       }
     }
-    getIframeURL(ID) {
-      ID = ID.ID;
+
+    getIframeURL({ ID }) {
+      ID = cast.toString(ID);
       const iframe = document.getElementById(ID);
       if (iframe) {
         const iframeUrl = iframe.src;
@@ -427,6 +453,8 @@
     }
 
     setIframeURL({ ID, URL }) {
+      ID = cast.toString(ID);
+      URL = cast.toString(URL);
       const iframeInfo = iframesMap.get(ID);
       if (iframeInfo) {
         const { iframe } = iframeInfo;
@@ -450,37 +478,36 @@
       return canvas.toDataURL();
     }
 
-createFrame(src, ID) {
-  ID = ID.toString()
-  const iframe = document.createElement("iframe");
-  iframe.style.width = "100%";
-  iframe.style.height = "100%";
-  iframe.style.border = "none";
-  iframe.style.position = "absolute";
-  iframe.setAttribute("id", ID);
-  iframe.setAttribute("sandbox", SANDBOX.join(" "));
-  iframe.setAttribute(
-    "allow",
-    Object.entries(featurePolicy)
-      .map(([name, permission]) => `${name} ${permission}`)
-      .join("; ")
-  );
-  iframe.setAttribute("allowtransparency", "true");
-  iframe.setAttribute("src", src);
+    createFrame(src, ID) {
+      ID = cast.toString(ID);
+      const iframe = document.createElement("iframe");
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.border = "none";
+      iframe.style.position = "absolute";
+      iframe.setAttribute("id", ID);
+      iframe.setAttribute("sandbox", SANDBOX.join(" "));
+      iframe.setAttribute(
+        "allow",
+        Object.entries(featurePolicy)
+          .map(([name, permission]) => `${name} ${permission}`)
+          .join("; ")
+      );
+      iframe.setAttribute("allowtransparency", "true");
+      iframe.setAttribute("src", src);
 
-  const overlay = Scratch.renderer.addOverlay(iframe, "manual");
+      const overlay = Scratch.renderer.addOverlay(iframe, "manual");
 
-  // Store iframe information in the map
-  iframesMap.set(ID, { iframe, overlay, width: 480, height: 360, x: 0, y: 0, interactive: true });
+      // Store iframe information in the map
+      iframesMap.set(ID, { iframe, overlay, width: 480, height: 360, x: 0, y: 0, interactive: true });
 
-  // Update iframe attributes
-  this.updateFrameAttributes(iframesMap.get(ID));
-  console.log("Map Data:");
-  iframesMap.forEach((value, key) => {
-    console.log("Key:", key, "Value:", value);
-  });
-}
-
+      // Update iframe attributes
+      this.updateFrameAttributes(iframesMap.get(ID));
+      console.log("Map Data:");
+      iframesMap.forEach((value, key) => {
+        console.log("Key:", key, "Value:", value);
+      });
+    }
 
     updateFrameAttributes(iframeInfo) {
       if (!iframeInfo) {
@@ -504,6 +531,6 @@ createFrame(src, ID) {
       iframe.style.pointerEvents = interactive ? "auto" : "none";
     }
   }
- 
+
   Scratch.extensions.register(new IframePlusExtension());
 })(Scratch);

@@ -15,6 +15,8 @@
     }
   }
 
+  const Cast = Scratch.Cast;
+
   class Python {
     constructor() {
       this.output = '';
@@ -82,6 +84,7 @@
     }
     
     async runPyAsync({ CODE }) {
+      CODE = Cast.toString(CODE);
       try {
         await this.redirectOutput(async () => await pyodide.runPythonAsync(CODE));
         return this.output;
@@ -91,6 +94,7 @@
     }
     
     async evalPyAsync({ CODE }) {
+      CODE = Cast.toString(CODE);
       try {
         return await pyodide.runPythonAsync(CODE);
       } catch (error) {
@@ -107,6 +111,7 @@
     }
 
     loadPackage({ PACKAGE }) {
+      PACKAGE = Cast.toString(PACKAGE);
       try {
         return pyodide.loadPackage(PACKAGE);
       } catch (error) {
@@ -115,6 +120,7 @@
     }
 
     getvar({ NAME }) {
+      NAME = Cast.toString(NAME);
       try {
         if (typeof pyodide === 'undefined') {
           throw new Error("Pyodide object not found.");

@@ -15,6 +15,8 @@
     }
   }
 
+  const Cast = Scratch.Cast;
+
   class WebSocketServer {
     constructor(runtime) {
       this.runtime = runtime;
@@ -33,12 +35,12 @@
         blocks: [
           {
             blockType: Scratch.BlockType.LABEL,
-            text: "Main Connection System"
+            text: "main connection system"
           },
           {
             opcode: 'connectSecure',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'connect to secure server [URL] on port [PORT]',
+            text: 'connect to secure server [url] on port [port]',
             arguments: {
               URL: { type: Scratch.ArgumentType.STRING, defaultValue: 'echo.websocket.org' },
               PORT: { type: Scratch.ArgumentType.STRING, defaultValue: '443' }
@@ -47,7 +49,7 @@
           {
             opcode: 'send',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'send [MESSAGE] to connection [ID]',
+            text: 'send [message] to connection [id]',
             arguments: {
               MESSAGE: { type: Scratch.ArgumentType.STRING, defaultValue: 'Hello, Server!' },
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
@@ -56,7 +58,7 @@
           {
             opcode: 'getNextMessage',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'get next message from connection [ID]',
+            text: 'get next message from connection [id]',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -64,7 +66,7 @@
           {
             opcode: 'discardNextMessage',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'discard next message from connection [ID]',
+            text: 'discard next message from connection [id]',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -72,7 +74,7 @@
           {
             opcode: 'isConnected',
             blockType: Scratch.BlockType.BOOLEAN,
-            text: 'connection [ID] connected?',
+            text: 'connection [id] connected?',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -85,7 +87,7 @@
           {
             opcode: 'hasNewMessages',
             blockType: Scratch.BlockType.BOOLEAN,
-            text: 'new messages from connection [ID]?',
+            text: 'new messages from connection [id]?',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -93,7 +95,7 @@
           {
             opcode: 'getAllMessages',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'get all messages from connection [ID]',
+            text: 'get all messages from connection [id]',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -101,7 +103,7 @@
           {
             opcode: 'disconnectFromConnection',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'disconnect from connection [ID]',
+            text: 'disconnect from connection [id]',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -114,7 +116,7 @@
           "---",
           {
             blockType: Scratch.BlockType.LABEL,
-            text: "Random Utils"
+            text: "random utils"
           },
           {
             opcode: 'generateRandomId',
@@ -124,12 +126,12 @@
           "---",
           {
             blockType: Scratch.BlockType.LABEL,
-            text: "Cloudlink Functions"
+            text: "cloudlink functions"
           },
           {
             opcode: 'sendHandshake',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'Send Handshake on connection: [ID]',
+            text: 'send handshake on connection: [id]',
             arguments: {
               ID: {
                 type: Scratch.ArgumentType.STRING,
@@ -140,7 +142,7 @@
           {
             opcode: 'setusername',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'Set Username To [USERNAME] on connection: [ID]',
+            text: 'set username to [username] on connection: [id]',
             arguments: {
               USERNAME: {
                 type: Scratch.ArgumentType.STRING,
@@ -155,7 +157,7 @@
           {
             opcode: 'linkrooms',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'Link Rooms [ROOMS] on connection: [ID]',
+            text: 'link rooms [rooms] on connection: [id]',
             arguments: {
               ROOMS: {
                 type: Scratch.ArgumentType.STRING,
@@ -170,7 +172,7 @@
           {
             opcode: 'sendMessageCloudlink',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'Send Message [MESSAGE] to [TO] on connection: [ID]',
+            text: 'send message [message] to [to] on connection: [id]',
             arguments: {
               MESSAGE: {
                 type: Scratch.ArgumentType.STRING,
@@ -189,24 +191,24 @@
           {
             opcode: 'recievedMessage',
             blockType: Scratch.BlockType.EVENT,
-            text: 'When I receive message',
+            text: 'when i receive message',
             isEdgeActivated: false,
           },
           {
             opcode: 'recievedFrom',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'Recieved Last Message From',
+            text: 'received last message from',
           },
           {
             opcode: 'whenDisconnected',
             blockType: Scratch.BlockType.EVENT,
-            text: 'When Any Websocket Disconnects',
+            text: 'when any websocket disconnects',
             isEdgeActivated: false,
           },
           {
             opcode: 'lastDisconnected',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'Most Recent Disconnect',
+            text: 'most recent disconnect',
           }
         ]
       };
@@ -219,7 +221,7 @@
     connectSecure({ URL, PORT }) {
       const serverId = this.generateRandomId();
       if (!this.wsServers[serverId]) {
-        const ws = new WebSocket(`wss://${URL}:${PORT}`);
+        const ws = new WebSocket(`wss://${Cast.toString(URL)}:${Cast.toString(PORT)}`);
         this.setupWebSocketHandlers(serverId, ws);
         return serverId;
       }
@@ -248,24 +250,24 @@
         delete this.connectedServers[serverId];
       };
     }
-    
-    recievedMessage() {return "";}
 
-    whenDisconnected() {return "";}
-    
+    recievedMessage() { return ""; }
+
+    whenDisconnected() { return ""; }
+
     lastDisconnected() {
-        return this.lastDisconnect;
+      return this.lastDisconnect;
     }
     recievedFrom() {
-        return this.lastFrom;
+      return this.lastFrom;
     }
-    
+
     send({ MESSAGE, ID }) {
-      sendMessage(this.wsServers[ID], MESSAGE);
+      sendMessage(this.wsServers[Cast.toString(ID)], Cast.toString(MESSAGE));
     }
 
     getNextMessage({ ID }) {
-      const queue = this.messageQueue[ID];
+      const queue = this.messageQueue[Cast.toString(ID)];
       if (queue && queue.length > 0) {
         return queue[0];
       }
@@ -273,14 +275,14 @@
     }
 
     discardNextMessage({ ID }) {
-      const queue = this.messageQueue[ID];
+      const queue = this.messageQueue[Cast.toString(ID)];
       if (queue && queue.length > 0) {
         queue.shift();
       }
     }
 
     isConnected({ ID }) {
-      return this.connectedServers[ID] || false;
+      return this.connectedServers[Cast.toString(ID)] || false;
     }
 
     getConnectedConnections() {
@@ -288,22 +290,22 @@
     }
 
     hasNewMessages({ ID }) {
-      const queue = this.messageQueue[ID];
+      const queue = this.messageQueue[Cast.toString(ID)];
       return queue && queue.length > 0;
     }
 
     getAllMessages({ ID }) {
-      const queue = JSON.stringify(this.messageQueue[ID] || []);
+      const queue = JSON.stringify(this.messageQueue[Cast.toString(ID)] || []);
       return queue;
     }
 
     disconnectFromConnection({ ID }) {
-      const ws = this.wsServers[ID];
+      const ws = this.wsServers[Cast.toString(ID)];
       if (ws) {
         ws.close();
-        delete this.wsServers[ID];
-        delete this.messageQueue[ID];
-        delete this.connectedServers[ID];
+        delete this.wsServers[Cast.toString(ID)];
+        delete this.messageQueue[Cast.toString(ID)];
+        delete this.connectedServers[Cast.toString(ID)];
       }
     }
 
@@ -325,34 +327,34 @@
         },
         "listener": "handshake_cfg"
       };
-      sendMessage(this.wsServers[ID], JSON.stringify(msg));
+      sendMessage(this.wsServers[Cast.toString(ID)], JSON.stringify(msg));
     }
 
     setusername({ USERNAME, ID }) {
       let msg = {
         "cmd": "setid",
-        "val": USERNAME,
+        "val": Cast.toString(USERNAME),
         "listener": "username_cfg"
       };
-      sendMessage(this.wsServers[ID], JSON.stringify(msg));
+      sendMessage(this.wsServers[Cast.toString(ID)], JSON.stringify(msg));
     }
 
     linkrooms({ ROOMS, ID }) {
       let msg = {
         "cmd": "link",
-        "val": ROOMS,
+        "val": Cast.toString(ROOMS),
         "listener": "link"
       };
-      sendMessage(this.wsServers[ID], JSON.stringify(msg));
+      sendMessage(this.wsServers[Cast.toString(ID)], JSON.stringify(msg));
     }
 
     sendMessageCloudlink({ ID, MESSAGE, TO }) {
       let msg = {
         "cmd": "pmsg",
-        "val": MESSAGE,
-        "id": TO
+        "val": Cast.toString(MESSAGE),
+        "id": Cast.toString(TO)
       };
-      sendMessage(this.wsServers[ID], JSON.stringify(msg));
+      sendMessage(this.wsServers[Cast.toString(ID)], JSON.stringify(msg));
     }
   }
 
