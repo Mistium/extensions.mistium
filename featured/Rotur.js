@@ -118,7 +118,7 @@ class RoturExtension {
         },
         SYSTEM: {
           type: Scratch.ArgumentType.STRING,
-          defaultValue: "rotur.js",
+          defaultValue: "rotur",
         },
         VERSION: {
           type: Scratch.ArgumentType.STRING,
