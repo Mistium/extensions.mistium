@@ -473,8 +473,7 @@
       };
     }
 
-    createCanvas(args) {
-      let { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR } = args;
+    createCanvas({ CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       X = cast.toNumber(X);
       Y = cast.toNumber(Y);
@@ -500,89 +499,64 @@
       this.canvases[CANVAS_ID] = canvas;
     }
 
-    deleteCanvas(args) {
-      let { CANVAS_ID } = args;
+    deleteCanvas({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        canvas.remove();
-        delete this.canvases[CANVAS_ID];
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      canvas.remove();
+      delete this.canvases[CANVAS_ID];
     }
 
-    moveCanvas(args) {
-      let { CANVAS_ID, X, Y } = args;
+    moveCanvas({ CANVAS_ID, X, Y }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       X = cast.toNumber(X);
       Y = cast.toNumber(Y);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        canvas.x = X;
-        canvas.y = Y;
-        canvas.style.left = `${(vm.runtime.stageWidth / 2 + X) - (canvas.width / 2)}px`;
-        canvas.style.top = `${(vm.runtime.stageHeight / 2 - Y) - (canvas.height / 2)}px`;
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      canvas.x = X;
+      canvas.y = Y;
+      canvas.style.left = `${(vm.runtime.stageWidth / 2 + X) - (canvas.width / 2)}px`;
+      canvas.style.top = `${(vm.runtime.stageHeight / 2 - Y) - (canvas.height / 2)}px`;
     }
 
-    resizeCanvas(args) {
-      let { CANVAS_ID, WIDTH, HEIGHT } = args;
+    resizeCanvas({ CANVAS_ID, WIDTH, HEIGHT }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       WIDTH = cast.toNumber(WIDTH);
       HEIGHT = cast.toNumber(HEIGHT);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        canvas.width = WIDTH;
-        canvas.height = HEIGHT;
-        canvas.style.left = `${(vm.runtime.stageWidth / 2 + canvas.x) - (WIDTH / 2)}px`;
-        canvas.style.top = `${(vm.runtime.stageHeight / 2 - canvas.y) - (HEIGHT / 2)}px`;
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      canvas.width = WIDTH;
+      canvas.height = HEIGHT;
+      canvas.style.left = `${(vm.runtime.stageWidth / 2 + canvas.x) - (WIDTH / 2)}px`;
+      canvas.style.top = `${(vm.runtime.stageHeight / 2 - canvas.y) - (HEIGHT / 2)}px`;
     }
 
-    setCanvasStyle(args) {
-      let { CANVAS_ID, PROPERTY, VALUE } = args;
+    setCanvasStyle({ CANVAS_ID, PROPERTY, VALUE }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       PROPERTY = cast.toString(PROPERTY);
       VALUE = cast.toString(VALUE);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        canvas.style[PROPERTY] = VALUE;
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      canvas.style[PROPERTY] = VALUE;
     }
 
-    setCanvasLayer(args) {
-      let { CANVAS_ID, LAYER } = args;
+    setCanvasLayer({ CANVAS_ID, LAYER }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       LAYER = cast.toNumber(LAYER);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        canvas.style.zIndex = LAYER;
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      canvas.style.zIndex = LAYER;
     }
 
-    clearCanvas(args) {
-      let { CANVAS_ID } = args;
+    clearCanvas({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    drawTriangle(args) {
-      let { CANVAS_ID, X1, Y1, X2, Y2, X3, Y3, COLOUR, FILL } = args;
+    drawTriangle({ CANVAS_ID, X1, Y1, X2, Y2, X3, Y3, COLOUR, FILL }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       X1 = cast.toNumber(X1);
       Y1 = cast.toNumber(Y1);
@@ -590,35 +564,31 @@
       Y2 = cast.toNumber(Y2);
       X3 = cast.toNumber(X3);
       Y3 = cast.toNumber(Y3);
+      if (!canvas) return;
       COLOUR = cast.toString(COLOUR);
       FILL = cast.toString(FILL);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        let translatedX1 = (canvas.width / 2) + X1;
-        let translatedY1 = (canvas.height / 2) - Y1;
-        let translatedX2 = (canvas.width / 2) + X2;
-        let translatedY2 = (canvas.height / 2) - Y2;
-        let translatedX3 = (canvas.width / 2) + X3;
-        let translatedY3 = (canvas.height / 2) - Y3;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = COLOUR;
-        ctx.beginPath();
-        ctx.moveTo(translatedX1, translatedY1);
-        ctx.lineTo(translatedX2, translatedY2);
-        ctx.lineTo(translatedX3, translatedY3);
-        ctx.closePath();
-        if (FILL === 'yes') {
-          ctx.fill();
-        } else {
-          ctx.stroke();
-        }
+      let translatedX1 = (canvas.width / 2) + X1;
+      let translatedY1 = (canvas.height / 2) - Y1;
+      let translatedX2 = (canvas.width / 2) + X2;
+      let translatedY2 = (canvas.height / 2) - Y2;
+      let translatedX3 = (canvas.width / 2) + X3;
+      let translatedY3 = (canvas.height / 2) - Y3;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = COLOUR;
+      ctx.beginPath();
+      ctx.moveTo(translatedX1, translatedY1);
+      ctx.lineTo(translatedX2, translatedY2);
+      ctx.lineTo(translatedX3, translatedY3);
+      ctx.closePath();
+      if (FILL === 'yes') {
+        ctx.fill();
       } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
+        ctx.stroke();
       }
     }
 
-    drawRectangle(args) {
-      let { CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR, ROUNDING, FILL } = args;
+    drawRectangle({ CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR, ROUNDING, FILL }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       X = cast.toNumber(X);
       Y = cast.toNumber(Y);
@@ -628,222 +598,168 @@
       ROUNDING = cast.toNumber(ROUNDING);
       FILL = cast.toString(FILL);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = COLOUR;
-        ctx.strokeStyle = COLOUR;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = COLOUR;
+      ctx.strokeStyle = COLOUR;
 
-        // Convert Scratch coordinates to canvas coordinates
-        const translatedX = (canvas.width / 2) + X - (WIDTH / 2);
-        const translatedY = (canvas.height / 2) - Y - (HEIGHT / 2);
+      // Convert Scratch coordinates to canvas coordinates
+      const translatedX = (canvas.width / 2) + X - (WIDTH / 2);
+      const translatedY = (canvas.height / 2) - Y - (HEIGHT / 2);
 
-        ctx.beginPath();
-        if (ROUNDING > 0) {
-          // Rounded rectangle
-          const radius = Math.min(ROUNDING, WIDTH / 2, HEIGHT / 2);
-          ctx.moveTo(translatedX + radius, translatedY);
-          ctx.lineTo(translatedX + WIDTH - radius, translatedY);
-          ctx.quadraticCurveTo(translatedX + WIDTH, translatedY, translatedX + WIDTH, translatedY + radius);
-          ctx.lineTo(translatedX + WIDTH, translatedY + HEIGHT - radius);
-          ctx.quadraticCurveTo(translatedX + WIDTH, translatedY + HEIGHT, translatedX + WIDTH - radius, translatedY + HEIGHT);
-          ctx.lineTo(translatedX + radius, translatedY + HEIGHT);
-          ctx.quadraticCurveTo(translatedX, translatedY + HEIGHT, translatedX, translatedY + HEIGHT - radius);
-          ctx.lineTo(translatedX, translatedY + radius);
-          ctx.quadraticCurveTo(translatedX, translatedY, translatedX + radius, translatedY);
-        } else {
-          // Regular rectangle
-          ctx.rect(translatedX, translatedY, WIDTH, HEIGHT);
-        }
-        ctx.closePath();
-
-        if (FILL === 'yes') {
-          ctx.fill();
-        } else {
-          ctx.stroke();
-        }
+      ctx.beginPath();
+      if (ROUNDING > 0) {
+        // Rounded rectangle
+        const radius = Math.min(ROUNDING, WIDTH / 2, HEIGHT / 2);
+        ctx.moveTo(translatedX + radius, translatedY);
+        ctx.lineTo(translatedX + WIDTH - radius, translatedY);
+        ctx.quadraticCurveTo(translatedX + WIDTH, translatedY, translatedX + WIDTH, translatedY + radius);
+        ctx.lineTo(translatedX + WIDTH, translatedY + HEIGHT - radius);
+        ctx.quadraticCurveTo(translatedX + WIDTH, translatedY + HEIGHT, translatedX + WIDTH - radius, translatedY + HEIGHT);
+        ctx.lineTo(translatedX + radius, translatedY + HEIGHT);
+        ctx.quadraticCurveTo(translatedX, translatedY + HEIGHT, translatedX, translatedY + HEIGHT - radius);
+        ctx.lineTo(translatedX, translatedY + radius);
+        ctx.quadraticCurveTo(translatedX, translatedY, translatedX + radius, translatedY);
       } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
+        // Regular rectangle
+        ctx.rect(translatedX, translatedY, WIDTH, HEIGHT);
+      }
+      ctx.closePath();
+
+      if (FILL === 'yes') {
+        ctx.fill();
+      } else {
+        ctx.stroke();
       }
     }
 
 
-    setPixel(args) {
-      let { CANVAS_ID, X, Y, COLOUR } = args;
+    setPixel({ CANVAS_ID, X, Y, COLOUR }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       X = cast.toNumber(X);
       Y = cast.toNumber(Y);
       COLOUR = cast.toString(COLOUR);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        let translatedX1 = (canvas.width / 2) + X;
-        let translatedY1 = (canvas.height / 2) - Y;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = COLOUR;
-        ctx.fillRect(translatedX1, translatedY1, 1, 1);
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      let translatedX1 = (canvas.width / 2) + X;
+      let translatedY1 = (canvas.height / 2) - Y;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = COLOUR;
+      ctx.fillRect(translatedX1, translatedY1, 1, 1);
     }
 
-    getWidth(args) {
-      let { CANVAS_ID } = args;
+    getWidth({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        return canvas.width;
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return 0;
+      return canvas.width;
     }
 
-    getHeight(args) {
-      let { CANVAS_ID } = args;
+    getHeight({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        return canvas.height;
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return 0;
+      return canvas.height;
     }
 
-    getCanvasLayer(args) {
-      let { CANVAS_ID } = args;
+    getCanvasLayer({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        return canvas.style.zIndex;
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return 0;
+      return canvas.style.zIndex;
     }
 
-    getCanvasX(args) {
-      let { CANVAS_ID } = args;
+    getCanvasX({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       // convert the x of the canvas to scratch coordinates
-      if (canvas) {
-        const stageWidth = vm.runtime.stageWidth;
-        return (parseInt(canvas.style.left) + canvas.width / 2) - stageWidth / 2
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-        return 0;
-      }
+      if (!canvas) return 0;
+      const stageWidth = vm.runtime.stageWidth;
+      return (parseInt(canvas.style.left) + canvas.width / 2) - stageWidth / 2
     }
 
-    getCanvasY(args) {
-      let { CANVAS_ID } = args;
+    getCanvasY({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        const stageHeight = vm.runtime.stageHeight;
-        return stageHeight / 2 - (parseInt(canvas.style.top) + canvas.height / 2);
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-        return 0;
-      }
+      if (!canvas) return 0;
+      const stageHeight = vm.runtime.stageHeight;
+      return stageHeight / 2 - (parseInt(canvas.style.top) + canvas.height / 2);
     }
 
-    getCanvasAs(args) {
-      let { CANVAS_ID, TYPE } = args;
+    getCanvasAs({ CANVAS_ID, TYPE }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       TYPE = cast.toString(TYPE);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        if (TYPE === 'dataURI') {
-          return canvas.toDataURL();
-        } else if (TYPE === 'array') {
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          return imageData.data;
-        }
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
-    }
-
-    getPixelCount(args) {
-      let { CANVAS_ID } = args;
-      CANVAS_ID = cast.toString(CANVAS_ID);
-      const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
+      if (!canvas) return "";
+      const ctx = canvas.getContext('2d');
+      if (TYPE === 'dataURI') {
+        return canvas.toDataURL();
+      } else if (TYPE === 'array') {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        return imageData.data.length / 4;
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
-    }
-
-    getPixel(args) {
-      let { CANVAS_ID, X, Y } = args;
-      CANVAS_ID = cast.toString(CANVAS_ID);
-      X = cast.toNumber(X);
-      Y = cast.toNumber(Y);
-      const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        let translatedX1 = (canvas.width / 2) + X;
-        let translatedY1 = (canvas.height / 2) - Y;
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(translatedX1, translatedY1, 1, 1);
         return imageData.data;
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
       }
     }
 
-    getPixelIndex(args) {
-      let { CANVAS_ID, INDEX } = args;
+    getPixelCount({ CANVAS_ID }) {
+      CANVAS_ID = cast.toString(CANVAS_ID);
+      const canvas = this.canvases[CANVAS_ID];
+      if (!canvas) return 0;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      return imageData.data.length / 4;
+    }
+
+    getPixel({ CANVAS_ID, X, Y }) {
+      CANVAS_ID = cast.toString(CANVAS_ID);
+      X = cast.toNumber(X);
+      Y = cast.toNumber(Y);
+      const canvas = this.canvases[CANVAS_ID];
+      if (!canvas) return "";
+      let translatedX1 = (canvas.width / 2) + X;
+      let translatedY1 = (canvas.height / 2) - Y;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(translatedX1, translatedY1, 1, 1);
+      return imageData.data;
+    }
+
+    getPixelIndex({ CANVAS_ID, INDEX }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       INDEX = cast.toNumber(INDEX);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        return imageData.data.slice(INDEX * 4, INDEX * 4 + 4);
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return "";
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      return imageData.data.slice(INDEX * 4, INDEX * 4 + 4);
     }
 
-    setPixelIndex(args) {
-      let { CANVAS_ID, INDEX, COLOUR } = args;
+    setPixelIndex({ CANVAS_ID, INDEX, COLOUR }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       INDEX = cast.toNumber(INDEX);
       COLOUR = cast.toString(COLOUR);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        imageData.data.set(COLOUR, INDEX * 4);
-        ctx.putImageData(imageData, 0, 0);
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      imageData.data.set(COLOUR, INDEX * 4);
+      ctx.putImageData(imageData, 0, 0);
     }
 
-    setPixel(args) {
-      let { CANVAS_ID, X, Y, COLOUR } = args;
+    setPixel({ CANVAS_ID, X, Y, COLOUR }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       X = cast.toNumber(X);
       Y = cast.toNumber(Y);
       COLOUR = cast.toString(COLOUR);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        let translatedX1 = (canvas.width / 2) + X;
-        let translatedY1 = (canvas.height / 2) - Y;
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(translatedX1, translatedY1, 1, 1);
-        imageData.data.set(COLOUR);
-        ctx.putImageData(imageData, X, Y);
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      let translatedX1 = (canvas.width / 2) + X;
+      let translatedY1 = (canvas.height / 2) - Y;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(translatedX1, translatedY1, 1, 1);
+      imageData.data.set(COLOUR);
+      ctx.putImageData(imageData, X, Y);
     }
 
-    drawLine(args) {
-      let { CANVAS_ID, X1, Y1, X2, Y2, COLOUR, LINEWIDTH, LINECAP } = args;
+    drawLine({ CANVAS_ID, X1, Y1, X2, Y2, COLOUR, LINEWIDTH, LINECAP }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       X1 = cast.toNumber(X1);
       Y1 = cast.toNumber(Y1);
@@ -853,26 +769,22 @@
       LINEWIDTH = cast.toNumber(LINEWIDTH);
       LINECAP = cast.toString(LINECAP);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        let translatedX1 = (canvas.width / 2) + X1;
-        let translatedY1 = (canvas.height / 2) - Y1;
-        let translatedX2 = (canvas.width / 2) + X2;
-        let translatedY2 = (canvas.height / 2) - Y2;
-        const ctx = canvas.getContext('2d');
-        ctx.lineWidth = LINEWIDTH;
-        ctx.strokeStyle = COLOUR;
-        ctx.lineCap = LINECAP;
-        ctx.beginPath();
-        ctx.moveTo(translatedX1, translatedY1);
-        ctx.lineTo(translatedX2, translatedY2);
-        ctx.stroke()
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
-      }
+      if (!canvas) return;
+      let translatedX1 = (canvas.width / 2) + X1;
+      let translatedY1 = (canvas.height / 2) - Y1;
+      let translatedX2 = (canvas.width / 2) + X2;
+      let translatedY2 = (canvas.height / 2) - Y2;
+      const ctx = canvas.getContext('2d');
+      ctx.lineWidth = LINEWIDTH;
+      ctx.strokeStyle = COLOUR;
+      ctx.lineCap = LINECAP;
+      ctx.beginPath();
+      ctx.moveTo(translatedX1, translatedY1);
+      ctx.lineTo(translatedX2, translatedY2);
+      ctx.stroke()
     }
 
-    stampImage(args) {
-      let { CANVAS_ID, URL, X, Y, WIDTH, HEIGHT } = args;
+    stampImage({ CANVAS_ID, URL, X, Y, WIDTH, HEIGHT }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       URL = cast.toString(URL);
       X = cast.toNumber(X);
@@ -880,21 +792,18 @@
       WIDTH = cast.toNumber(WIDTH);
       HEIGHT = cast.toNumber(HEIGHT);
       const canvas = this.canvases[CANVAS_ID];
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        img.src = URL;
-        img.onload = () => {
-          // Center the image based on canvas dimensions and specified X, Y
-          const translatedX1 = (canvas.width / 2) + X - (WIDTH / 2);
-          const translatedY1 = (canvas.height / 2) - Y - (HEIGHT / 2);
-          ctx.drawImage(img, translatedX1, translatedY1, WIDTH, HEIGHT);
-        }
-        img.onerror = (err) => {
-          console.log(`Error loading image: ${err}`);
-        }
-      } else {
-        console.log(`Canvas ${CANVAS_ID} not found`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.src = URL;
+      img.onload = () => {
+        // Center the image based on canvas dimensions and specified X, Y
+        const translatedX1 = (canvas.width / 2) + X - (WIDTH / 2);
+        const translatedY1 = (canvas.height / 2) - Y - (HEIGHT / 2);
+        ctx.drawImage(img, translatedX1, translatedY1, WIDTH, HEIGHT);
+      }
+      img.onerror = (err) => {
+        console.log(`Error loading image: ${err}`);
       }
     }
   }
