@@ -17,7 +17,7 @@
     getInfo() {
       return {
         id: 'MistiumCanvas',
-        name: "Mist's Canvases",
+        name: "Canvas",
         color1: '#4A893D',
         blocks: [
           {
@@ -48,7 +48,30 @@
               COLOUR: {
                 type: Scratch.ArgumentType.COLOR,
                 defaultValue: '#000000'
-              }
+              },
+            }
+          },
+          {
+            opcode: 'createInvisCanvas',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'create invisible canvas [CANVAS_ID] width: [WIDTH] height: [HEIGHT] background colour: [COLOUR]',
+            arguments: {
+              CANVAS_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'canvas1'
+              },
+              WIDTH: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 100
+              },
+              HEIGHT: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 100
+              },
+              COLOUR: {
+                type: Scratch.ArgumentType.COLOR,
+                defaultValue: '#000000'
+              },
             }
           },
           {
@@ -496,6 +519,32 @@
       canvas.width = WIDTH;
       canvas.height = HEIGHT;
       vm.renderer.addOverlay(canvas);
+      this.canvases[CANVAS_ID] = canvas;
+    }
+
+    createInvisCanvas({ CANVAS_ID, WIDTH, HEIGHT, COLOUR }) {
+      CANVAS_ID = cast.toString(CANVAS_ID);
+      X = cast.toNumber(X);
+      Y = cast.toNumber(Y);
+      WIDTH = cast.toNumber(WIDTH);
+      HEIGHT = cast.toNumber(HEIGHT);
+      COLOUR = cast.toString(COLOUR);
+
+      if (this.canvases[CANVAS_ID]) {
+        this.canvases[CANVAS_ID].remove();
+        delete this.canvases[CANVAS_ID];
+      }
+      const canvas = document.createElement('canvas');
+      canvas.id = CANVAS_ID;
+      canvas.style.position = 'absolute';
+      canvas.style.display = 'none'
+      canvas.x = 0;
+      canvas.y = 0;
+      canvas.style.left = '0px';
+      canvas.style.top = '0px';
+      canvas.style.backgroundColor = COLOUR;
+      canvas.width = WIDTH;
+      canvas.height = HEIGHT;
       this.canvases[CANVAS_ID] = canvas;
     }
 
