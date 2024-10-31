@@ -6,7 +6,7 @@
 // If a copy of the MPL was not distributed with this file,
 // Then you can obtain one at https://mozilla.org/MPL/2.0/
 
-// OASM v9
+// OASM v10
 
 (function (Scratch) {
   "use strict";
@@ -40,10 +40,72 @@
     }
   }
 
+  const circularRightShift = (number, k) => {
+    return (number >>> k) | (number << (32 - k));
+  };
+
+  const circularLeftShift = (number, k) => {
+    return (number << k) | (number >>> (32 - k));
+  };
+
   class OASM {
     constructor() {
       this.prep = [];
       this.errors = [];
+      this.stack = [];
+      this.allCommands = [
+        "totv", // basics
+        "setv",
+        "chav",
+        "jump",
+        "equl",
+        "gthn",
+        "lthn",
+        "prnt",
+        "ngth", 
+        "nlth",
+        "svto",
+        "mulv",
+        "divv",
+        "subv",
+        "pend", // pen
+        "penu",
+        "penc",
+        "pens",
+        "pene",
+        "setx", // position
+        "sety",
+        "setp",
+        "labl", // misc
+        "getd",
+        "sinv", // trig
+        "cosv",
+        "tanv",
+        "modv",
+        "sqrt", // utils
+        "copy",
+        "letr",
+        "leng",
+        "join",
+        "neql",
+        "jnws",
+        "clrs", // stack
+        "push",
+        "pops",
+        "peek",
+        "shft",
+        "upsk",
+        "ptsk",
+        "zfls", // bitwise
+        "bsrs",
+        "band",
+        "bwor",
+        "bxor",
+        "zfrs",
+        "bnot",
+        "bcrs",
+        "bcrs",
+      ];
     }
 
     getInfo() {
@@ -152,6 +214,7 @@
       Y = cast.toNumber(Y);
       const target = util.target;
       target.setXY(X, Y);
+      this.stack = []
       this.vars = [];
       this.pc = 1;
       this.output = [];
@@ -293,8 +356,7 @@
             this.vars[this.in2 - 1] = ("" + this.vars[this.in1]).length;
             break;
           case "33":
-            this.vars[this.in3 - 1] =
-              "" + this.vars[this.in1] + ("" + this.vars[this.in2 - 1]);
+            this.vars[this.in3 - 1] = "" + this.vars[this.in1] + ("" + this.vars[this.in2 - 1]);
             break;
           case "34":
             if (this.vars[this.in1] !== this.vars[this.in2 - 1]) {
@@ -302,8 +364,55 @@
             }
             break;
           case "35":
-            this.vars[this.in3 - 1] =
-              "" + this.vars[this.in1] + " " + ("" + this.vars[this.in2 - 1]);
+            this.vars[this.in3 - 1] = "" + this.vars[this.in1] + " " + ("" + this.vars[this.in2 - 1]);
+            break;
+          case "36":
+            this.stack = [];
+            break;
+          case "37":
+            this.stack.splice(0, 0, this.vars[this.in1]);
+            break;
+          case "38":
+            this.vars[this.in1] = this.stack.splice(0, 1)[0];
+            break;
+          case "39":
+            this.vars[this.in1] = this.stack[0];
+            break;
+          case "40":
+            this.stack.shift();
+            break;
+          case "41":
+            this.stack[0] = this.in1;
+            break;
+          case "42":
+            this.output.push(JSON.stringify(this.stack))
+            break;
+          case "43":
+            this.vars[this.in1] <<= this.vars[this.in2 - 1];
+            break;
+          case "44":
+            this.vars[this.in1] >>= this.vars[this.in2 - 1];
+            break;
+          case "45":
+            this.vars[this.in1] &= this.vars[this.in2 - 1];
+            break;
+          case "46":
+            this.vars[this.in1] |= this.vars[this.in2 - 1];
+            break;
+          case "47":
+            this.vars[this.in1] ^= this.vars[this.in2 - 1];
+            break;
+          case "48":
+            this.vars[this.in1] >>>= this.vars[this.in2 - 1];
+            break;
+          case "49":
+            this.vars[this.in1] = ~this.vars[this.in1];
+            break;
+          case "50":
+            this.vars[this.in1] = circularRightShift(this.vars[this.in1], this.vars[this.in2 - 1]);
+            break;
+          case "51":
+            this.vars[this.in1] = circularLeftShift(this.vars[this.in1], this.vars[this.in2 - 1])
             break;
           default:
             console.log("Unknown Command: " + cmd);
@@ -322,49 +431,13 @@
     }
 
     allcmds() {
-      return '["totv", "setv", "chav", "jump", "equl", "gthn", "lthn", "prnt", "ngth", "nlth", "svto", "mulv", "divv", "subv", "pend", "penu", "penc", "pens", "pene", "setx", "sety", "setp", "labl", "getd", "sinv", "cosv", "tanv", "modv", "sqrt", "copy", "letr", "leng", "join", "neql","jnws"]';
+      return JSON.stringify(this.allCommands);
     }
 
     compile({ CODE }) {
-      const all_oasm_commands = [
-        "totv",
-        "setv",
-        "chav",
-        "jump",
-        "equl",
-        "gthn",
-        "lthn",
-        "prnt",
-        "ngth",
-        "nlth",
-        "svto",
-        "mulv",
-        "divv",
-        "subv",
-        "pend",
-        "penu",
-        "penc",
-        "pens",
-        "pene",
-        "setx",
-        "sety",
-        "setp",
-        "labl",
-        "getd",
-        "sinv",
-        "cosv",
-        "tanv",
-        "modv",
-        "sqrt",
-        "copy",
-        "letr",
-        "leng",
-        "join",
-        "neql",
-        "jnws",
-      ];
+      const all_oasm_commands = this.allCommands
       const all_oasm_jumps = ["jump", "equl", "gthn", "lthn", "ngth", "nlth"];
-      CODE = JSON.parse(Cast.toString(CODE));
+      CODE = JSON.parse(cast.toString(CODE));
       this.vars = [];
       this.commands = [];
       this.item = "";
@@ -418,7 +491,7 @@
     }
 
     transpileOTAS({ CODE }) {
-      this.CODE = JSON.parse(Cast.toString(CODE));
+      this.CODE = JSON.parse(cast.toString(CODE));
       let prep = [];
       let OUT = [];
       let vars = [];
@@ -528,6 +601,69 @@
             this.spl[0] = "getd";
             this.spl[2] = this.spl[1];
             this.spl[1] = "key" + this.spl[1];
+            break;
+          case "stack.print":
+            this.spl[0] = "ptsk";
+            break;
+          case "stack.push":
+            this.spl[0] = "push";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            break;
+          case "stack.clear":
+            this.spl[0] = "clrs";
+            break;
+          case "stack.peek":
+            this.spl[0] = "peek";
+            break;
+          case "stack.shift":
+            this.spl[0] = "shft";
+            break;
+          case "stack.pop":
+            this.spl[0] = "pops";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            break;
+          case "stack.update":
+            this.spl[0] = "upsk";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            break;
+          case "bitwise.left":
+            this.spl[0] = "zfls";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            break;
+          case "bitwise.right":
+            this.spl[0] = "zfrs";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            break;
+          case "bitwise.and":
+            this.spl[0] = "band";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            break;
+          case "bitwise.or":
+            this.spl[0] = "bwor";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            break;
+          case "bitwise.xor":
+            this.spl[0] = "bxor";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            break;
+          case "bitwise.not":
+            this.spl[0] = "bnot";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            break;
+          case "bitwise.ciright":
+            this.spl[0] = "bcrs";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
+            break;
+          case "bitwise.cileft":
+            this.spl[0] = "bcrs";
+            this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
+            this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
             break;
           case "-":
             this.spl[0] = "";
