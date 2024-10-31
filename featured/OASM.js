@@ -62,7 +62,7 @@
         "gthn",
         "lthn",
         "prnt",
-        "ngth", 
+        "ngth",
         "nlth",
         "svto",
         "mulv",
@@ -442,51 +442,49 @@
       this.commands = [];
       this.item = "";
       for (let i = 0; i < CODE.length; i++) {
-        this.cur = CODE[i].split(" ");
-        this.cur = this.cur.concat(Array(4 - this.cur.length).fill("0"));
-        if (this.cur[0] === "labl") {
+        let cur = CODE[i].split(" ");
+        cur = cur.concat(Array(4 - cur.length).fill("0"));
+        if (cur[0] === "labl" || cur[0] === "23") {
           this.mapcur = [];
           CODE = CODE.map((line) => {
             this.mapline = line.split(" ");
             if (all_oasm_jumps.indexOf(this.mapline[0]) !== -1) {
-              if (this.mapline[3] === this.cur[1]) {
-                this.mapline[3] = (i + 1).toString();
-              } else if (this.mapline[1] === this.cur[1]) {
-                this.mapline[1] = (i + 1).toString();
+              if (this.mapline[3] === cur[1]) {
+                this.mapline[3] = (i + 2).toString();
+              } else if (this.mapline[1] === cur[1]) {
+                this.mapline[1] = (i + 2).toString();
               }
               return this.mapline.join(" ");
             }
             return line;
           });
-        } else if (this.cur[0] === "setv") {
-          if (
-            !Number.isInteger(Number(this.cur[1])) &&
-            this.vars.indexOf(this.cur[1]) === -1
-          ) {
-            this.vars.push(this.cur[1]);
-            this.len = this.vars.length;
-            this.mapcur = [];
-            CODE = CODE.map((line) => {
-              this.mapcur = line.split(" ");
-              if (this.mapcur[1] === this.cur[1]) {
-                this.mapcur[1] = this.len;
-              } else if (this.mapcur[2] === this.cur[1]) {
-                this.mapcur[2] = this.len.toString();
-              } else if (this.mapcur[3] === this.cur[1]) {
-                this.mapcur[3] = this.len.toString();
-              }
-              return this.mapcur.join(" ");
-            });
-            this.cur[1] = this.len.toString();
-          }
+        }
+      }
+      for (let i = 0; i < CODE.length; i++) {
+        this.cur = CODE[i].split(" ");
+        this.cur = this.cur.concat(Array(4 - this.cur.length).fill("0"));
+        if (this.cur[0] === "setv") {
+          this.vars.push(this.cur[1]);
+          this.len = this.vars.length;
+          this.mapcur = [];
+          CODE = CODE.map((line) => {
+            this.mapcur = line.split(" ");
+            if (this.mapcur[1] === this.cur[1]) {
+              this.mapcur[1] = this.len;
+            } else if (this.mapcur[2] === this.cur[1]) {
+              this.mapcur[2] = this.len.toString();
+            } else if (this.mapcur[3] === this.cur[1]) {
+              this.mapcur[3] = this.len.toString();
+            }
+            return this.mapcur.join(" ");
+          });
+          this.cur[1] = this.len.toString();
         }
         this.cur[0] = (all_oasm_commands.indexOf(this.cur[0]) + 1).toString();
         this.commands = this.commands.concat(this.cur);
       }
-      if (this.vars.length > 0) {
-        this.item = ["1", this.vars.length.toString(), "", ""]; // totv
-        this.commands = this.item.concat(this.commands);
-      }
+      this.item = ["1", this.vars.length.toString(), "", ""]; // totv
+      this.commands = this.item.concat(this.commands);
       return JSON.stringify(this.commands);
     }
 
@@ -661,7 +659,7 @@
             this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
             break;
           case "bitwise.cileft":
-            this.spl[0] = "bcrs";
+            this.spl[0] = "bsrs";
             this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
             this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
             break;
