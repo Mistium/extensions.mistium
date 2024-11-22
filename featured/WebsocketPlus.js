@@ -1,6 +1,7 @@
 // Made by @mistium on discord,
 // this extension is for originOS :P
 // Thanks for using my extension :D
+// version 3 
 
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
@@ -24,7 +25,7 @@
       this.messageQueue = {};
       this.connectedServers = {};
       this.lastFrom = ""
-      this.lastDisconnected = ""
+      this.lastDisconnect = ""
     }
 
     getInfo() {
@@ -195,7 +196,7 @@
             isEdgeActivated: false,
           },
           {
-            opcode: 'recievedFrom',
+            opcode: 'receivedFrom',
             blockType: Scratch.BlockType.REPORTER,
             text: 'received last message from',
           },
@@ -258,7 +259,8 @@
     lastDisconnected() {
       return this.lastDisconnect;
     }
-    recievedFrom() {
+    
+    receivedFrom() {
       return this.lastFrom;
     }
 
