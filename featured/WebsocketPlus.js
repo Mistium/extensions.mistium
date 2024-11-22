@@ -1,7 +1,7 @@
 // Made by @mistium on discord,
 // this extension is for originOS :P
 // Thanks for using my extension :D
-// version 3 
+// version 3.1
 
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
@@ -19,13 +19,13 @@
   const Cast = Scratch.Cast;
 
   class WebSocketServer {
-    constructor(runtime) {
-      this.runtime = runtime;
+    constructor() {
+      this.runtime = Scratch.vm.runtime;
       this.wsServers = {};
       this.messageQueue = {};
       this.connectedServers = {};
-      this.lastFrom = ""
-      this.lastDisconnect = ""
+      this.lastFrom = "";
+      this.lastDisconnect = "";
     }
 
     getInfo() {
@@ -43,7 +43,7 @@
             blockType: Scratch.BlockType.REPORTER,
             text: 'connect to secure server [URL] on port [PORT]',
             arguments: {
-              URL: { type: Scratch.ArgumentType.STRING, defaultValue: 'echo.websocket.org' },
+              URL: { type: Scratch.ArgumentType.STRING, defaultValue: 'wss://echo.websocket.org' },
               PORT: { type: Scratch.ArgumentType.STRING, defaultValue: '443' }
             }
           },
@@ -222,7 +222,8 @@
     connectSecure({ URL, PORT }) {
       const serverId = this.generateRandomId();
       if (!this.wsServers[serverId]) {
-        const ws = new WebSocket(`wss://${Cast.toString(URL)}:${Cast.toString(PORT)}`);
+        let prepend = URL.startsWith("wss://") || URL.startsWith("ws://") ? "" : "wss://";
+        const ws = new WebSocket(prepend+`${Cast.toString(URL)}:${Cast.toString(PORT)}`);
         this.setupWebSocketHandlers(serverId, ws);
         return serverId;
       }
@@ -239,7 +240,7 @@
           this.messageQueue[serverId] = [];
         }
         this.messageQueue[serverId].push(event.data);
-        Scratch.vm.runtime.startHats('webSocketPlus_recievedMessage');
+        this.runtime.startHats('webSocketPlus_recievedMessage');
         this.lastFrom = serverId
       };
       ws.onerror = (error) => {
