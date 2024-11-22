@@ -8,7 +8,7 @@
 // Then you can obtain one at https://mozilla.org/MPL/2.0/
 
 (function (Scratch) {
-  function sendMessage(serverID, MESSAGE) {
+  async function sendMessage(serverID, MESSAGE) {
     const ws = serverID;
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(MESSAGE);
@@ -40,7 +40,7 @@
           {
             opcode: 'connectSecure',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'connect to secure server [url] on port [port]',
+            text: 'connect to secure server [URL] on port [PORT]',
             arguments: {
               URL: { type: Scratch.ArgumentType.STRING, defaultValue: 'echo.websocket.org' },
               PORT: { type: Scratch.ArgumentType.STRING, defaultValue: '443' }
@@ -49,7 +49,7 @@
           {
             opcode: 'send',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'send [message] to connection [id]',
+            text: 'send [MESSAGE] to connection [ID]',
             arguments: {
               MESSAGE: { type: Scratch.ArgumentType.STRING, defaultValue: 'Hello, Server!' },
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
@@ -58,7 +58,7 @@
           {
             opcode: 'getNextMessage',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'get next message from connection [id]',
+            text: 'get next message from connection [ID]',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -66,7 +66,7 @@
           {
             opcode: 'discardNextMessage',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'discard next message from connection [id]',
+            text: 'discard next message from connection [ID]',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -74,7 +74,7 @@
           {
             opcode: 'isConnected',
             blockType: Scratch.BlockType.BOOLEAN,
-            text: 'connection [id] connected?',
+            text: 'connection [ID] connected?',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -87,7 +87,7 @@
           {
             opcode: 'hasNewMessages',
             blockType: Scratch.BlockType.BOOLEAN,
-            text: 'new messages from connection [id]?',
+            text: 'new messages from connection [ID]?',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -95,7 +95,7 @@
           {
             opcode: 'getAllMessages',
             blockType: Scratch.BlockType.REPORTER,
-            text: 'get all messages from connection [id]',
+            text: 'get all messages from connection [ID]',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -103,7 +103,7 @@
           {
             opcode: 'disconnectFromConnection',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'disconnect from connection [id]',
+            text: 'disconnect from connection [ID]',
             arguments: {
               ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
             }
@@ -131,7 +131,7 @@
           {
             opcode: 'sendHandshake',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'send handshake on connection: [id]',
+            text: 'send handshake on connection: [ID]',
             arguments: {
               ID: {
                 type: Scratch.ArgumentType.STRING,
@@ -142,7 +142,7 @@
           {
             opcode: 'setusername',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'set username to [username] on connection: [id]',
+            text: 'set username to [USERNAME] on connection: [ID]',
             arguments: {
               USERNAME: {
                 type: Scratch.ArgumentType.STRING,
@@ -157,7 +157,7 @@
           {
             opcode: 'linkrooms',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'link rooms [rooms] on connection: [id]',
+            text: 'link rooms [ROOMS] on connection: [ID]',
             arguments: {
               ROOMS: {
                 type: Scratch.ArgumentType.STRING,
@@ -172,7 +172,7 @@
           {
             opcode: 'sendMessageCloudlink',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'send message [message] to [to] on connection: [id]',
+            text: 'send message [MESSAGE] to [TO] on connection: [ID]',
             arguments: {
               MESSAGE: {
                 type: Scratch.ArgumentType.STRING,
