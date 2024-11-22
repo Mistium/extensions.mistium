@@ -1,7 +1,7 @@
 // Made by @mistium on discord,
 // this extension is for originOS :P
 // Thanks for using my extension :D
-// version 3.1
+// version 3.2
 
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
@@ -222,8 +222,10 @@
     connectSecure({ URL, PORT }) {
       const serverId = this.generateRandomId();
       if (!this.wsServers[serverId]) {
+        URL = Cast.toString(URL);
+        PORT = Cast.toString(PORT);
         let prepend = URL.startsWith("wss://") || URL.startsWith("ws://") ? "" : "wss://";
-        const ws = new WebSocket(prepend+`${Cast.toString(URL)}:${Cast.toString(PORT)}`);
+        const ws = new WebSocket(prepend+`${URL}:${PORT}`);
         this.setupWebSocketHandlers(serverId, ws);
         return serverId;
       }
