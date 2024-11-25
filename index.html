@@ -159,19 +159,17 @@
     // Function to generate other extension gallery links
     function generateOtherGalleries() {
         const galleries = [
-            { name: "PenguinMod", url: "https://extensions.penguinmod.com/" },
-            { name: "Cally's Gallery", url: "https://cally-jt.github.io/ultimate-extension-gallery/" },
-            { name: "Surv's Gallery", url: "https://surv.is-a.dev/gallery/" },
-            { name: "Oeil de Lynx", url: "https://oeildelynx.top7box.com/extensions/en/" },
-            { name: "Sharkpool's Extensions", url: "https://sharkpools-extensions.vercel.app/" },
+            { name: "PenguinMod", url: "https://extensions.penguinmod.com" },
+            { name: "Cally's Gallery", url: "https://cally-jt.github.io/ultimate-extension-gallery" },
+            { name: "Miyo's Gallery >:3", url: "https://gallery.miyo.lol" },
+            { name: "Sharkpool's Extensions", url: "https://sharkpools-extensions.vercel.app" },
             { name: "Ruby Team Gallery", url: "https://rubyteam.tech/gallery" },
-            { name: "TurboWarp Extensions", url: "https://extensions.turbowarp.org/" },
+            { name: "TurboWarp Extensions", url: "https://extensions.turbowarp.org" },
             { name: "LDSJVG Webwave", url: "https://ldsjvg.webwave.dev/webpage_20" },
             { name: "LBGS Extensions", url: "https://lbgs-extensions.vercel.app/" },
             { name: "Goofy Warp", url: "https://goofywarp.github.io/extensions/" },
             { name: "Dino Mod :P", url: "https://github.com/GabsTheCuriousKid/FirstExtension/tree/main/extensions" },
             { name: "Pen Group", url: "https://pen-group.github.io/extensions" },
-            { name: "Mubi", url: "https://mubi.tech/gallery" },
             { name: "Lemon", url: "https://bludisanlemon.github.io/lemons-gallery" }
         ];
 
@@ -179,7 +177,7 @@
 
         galleries.forEach(gallery => {
             const galleryLink = document.createElement("a");
-            galleryLink.href = gallery.url;
+            galleryLink.href = gallery.url + "?ref=mistium";
             galleryLink.target = "_blank";
             galleryLink.rel = "noopener noreferrer";
             galleryLink.classList.add("gallery-link");
