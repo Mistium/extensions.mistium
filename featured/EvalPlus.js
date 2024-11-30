@@ -218,30 +218,33 @@
         reporterBlock({ CODE }) {
             CODE = cast.toString(CODE);
             try {
-                if (!this.enabled) return null;
+                if (!this.enabled) return "";
                 return eval(CODE);
             } catch (error) {
                 console.error("Error:", error);
-                return null;
+                return "";
             }
         }
 
         capturedReporter({ CODE }) {
             CODE = cast.toString(CODE);
             try {
-                if (!this.enabled) return null;
+                if (!this.enabled) return "";
                 this.consoleOutput = [];
                 const self = this;
-
+                const originalLog = console.log;
+                
                 console.log = function (...args) {
                     self.consoleOutput.push(args.join(' '));
                 };
                 eval(CODE)
-                delete console.log
+                
+                console.log = originalLog
+                
                 return this.consoleOutput.join('\n');
             } catch (error) {
                 console.error("Error:", error);
-                return null;
+                return "";
             }
         }
 
@@ -276,14 +279,14 @@
         restrictedReporterBlock({ CODE }) {
             CODE = cast.toString(CODE);
             try {
-                if (!this.enabled) return null;
+                if (!this.enabled) return "";
                 if (!/^[a-zA-Z0-9\s()\[\]{};.,\-+=*\/%]*$/.test(CODE)) {
                     throw new Error("Invalid characters detected.");
                 }
                 return eval(CODE);
             } catch (error) {
                 console.error("Error:", error);
-                return null;
+                return "";
             }
         }
 
