@@ -231,14 +231,13 @@
             try {
                 if (!this.enabled) return null;
                 this.consoleOutput = [];
-                const originalConsoleLog = console.log;
                 const self = this;
 
                 console.log = function (...args) {
                     self.consoleOutput.push(args.join(' '));
                 };
                 eval(CODE)
-                console.log = originalConsoleLog
+                delete console.log
                 return this.consoleOutput.join('\n');
             } catch (error) {
                 console.error("Error:", error);
