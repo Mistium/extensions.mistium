@@ -1,180 +1,358 @@
-class MistFetch {
-    constructor() {
-        this.requests = {};
-    }
+(function (Scratch) {
 
-    getInfo() {
-        return {
-            id: 'mistfetch',
-            name: 'Mist Fetch',
-            blocks: [
-                {
-                    opcode: 'fetchUrlWithId',
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: 'fetch [URL] with ID [ID]',
-                    arguments: {
-                        URL: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: 'https://extensions.turbowarp.org/hello.txt'
-                        },
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: 'request1'
-                        }
-                    }
-                },
-                {
-                    opcode: 'getBytesById',
-                    blockType: Scratch.BlockType.REPORTER,
-                    text: 'bytes downloaded for ID [ID]',
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: 'request1'
-                        }
-                    }
-                },
-                {
-                    opcode: 'getResponseBodyById',
-                    blockType: Scratch.BlockType.REPORTER,
-                    text: 'response body for ID [ID]',
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: 'request1'
-                        }
-                    }
-                },
-                {
-                    opcode: 'isRequestCompleted',
-                    blockType: Scratch.BlockType.BOOLEAN,
-                    text: 'is request [ID] completed?',
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: 'request1'
-                        }
-                    }
-                },
-                {
-                    opcode: 'deleteRequestById',
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: 'delete request with ID [ID]',
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: 'request1'
-                        }
-                    }
-                },
-                {
-                    opcode: 'whenIdRequestCompleted',
-                    blockType: Scratch.BlockType.EVENT,
-                    text: 'when request [ID] completed',
-                    isEdgeActivated: false,
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: 'request1'
-                        }
-                    }
-                },
-                {
-                    opcode: 'inProgress',
-                    blockType: Scratch.BlockType.REPORTER,
-                    text: 'all requests in progress',
-                }
-            ]
-        };
-    }
+    const Cast = Scratch.Cast;
 
-    fetchUrlWithId({ URL, ID }) {
-        if (this.requests[ID]) {
-            return `Request with ID ${ID} is already in progress.`;
+    class MistFetch {
+        constructor() {
+            this.requests = {};
         }
 
-        this.requests[ID] = { totalBytes: 0, response: '', completed: false };
-
-        fetch(URL)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.body.getReader();
-            })
-            .then(reader => {
-                let done = false;
-                const decoder = new TextDecoder();
-                const processStream = async () => {
-                    while (!done) {
-                        const { done: doneReading, value } = await reader.read();
-                        if (doneReading) {
-                            done = true;
-                            if (Scratch.extensions.unsandboxed) {
-                                Scratch.vm.runtime.startHats('mistfetch_whenIdRequestCompleted', { ID: ID });
+        getInfo() {
+            return {
+                id: 'mistfetch',
+                name: 'Mist Fetch',
+                color1: "#6fa6eb",
+                blocks: [
+                    {
+                        opcode: 'fetchUrlWithId',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: '[method] [URL] with ID [ID] headers [headers] body [body]',
+                        arguments: {
+                            URL: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'https://extensions.turbowarp.org/hello.txt'
+                            },
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'request1'
+                            },
+                            headers: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '{}'
+                            },
+                            method: {
+                                menu: "METHODS"
+                            },
+                            body: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '{}'
                             }
-                            this.requests[ID].completed = true;
-                        } else {
-                            this.requests[ID].totalBytes += value.length;
-                            this.requests[ID].response += decoder.decode(value, { stream: true });
                         }
+                    },
+                    {
+                        opcode: 'getBytesById',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'bytes downloaded for ID [ID]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'request1'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'getResponseBodyById',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'response body for ID [ID]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'request1'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'getInfoById',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: '[INFO] for ID [ID]',
+                        arguments: {
+                            INFO: {
+                                menu: "INFO"
+                            },
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'request1'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'getHeadersById',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'headers for ID [ID]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'request1'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'isRequestCompleted',
+                        blockType: Scratch.BlockType.BOOLEAN,
+                        text: 'is request [ID] completed?',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'request1'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'deleteRequestById',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'delete request with ID [ID]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'request1'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'deleteAllRequests',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'delete all requests',
+                    },
+                    {
+                        opcode: 'cancelRequestById',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'cancel request with ID [ID]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'request1'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'whenIdRequestCompleted',
+                        blockType: Scratch.BlockType.EVENT,
+                        text: 'when request [ID] completed',
+                        isEdgeActivated: false,
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'request1'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'inProgress',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'all requests in progress',
+                    },
+                    {
+                        opcode: 'all',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'full request object',
                     }
-                };
-                return processStream();
-            })
-            .catch(error => {
-                this.requests[ID].error = error.message;
-            });
+                ],
+                menus: {
+                    METHODS: {
+                        acceptReporters: true,
+                        items: ["GET", "POST", "HEAD", "OPTIONS", "TRACE", "PUT", "DELETE", "PATCH", "PURGE"]
+                    },
+                    INFO: {
+                        acceptReporters: true,
+                        items: ["PERCENT", "STATUS", "URL", "JSON", "METHOD"]
+                    }
+                },
+            };
+        }
 
-        return `Started fetching URL with ID: ${ID}`;
-    }
-
-    getBytesById({ ID }) {
-        if (this.requests[ID]) {
-            if (this.requests[ID].error) {
-                return `Error: ${this.requests[ID].error}`;
+        stringify(value) {
+            if (typeof value === 'object') {
+                return JSON.stringify(value);
             }
-            return this.requests[ID].totalBytes;
+            return value;
         }
-        return `No request found for ID: ${ID}`;
-    }
 
-    getResponseBodyById({ ID }) {
-        if (this.requests[ID]) {
-            if (this.requests[ID].error) {
-                return `Error: ${this.requests[ID].error}`;
+        fetchUrlWithId({ URL, ID, headers, method, body }) {
+            ID = Cast.toString(ID)
+            URL = Cast.toString(URL)
+
+            if (this.requests[ID]) {
+                return '';
             }
-            return  this.requests[ID].response;
-        }
-        return `No request found for ID: ${ID}`;
-    }
 
-    isRequestCompleted({ ID }) {
-        if (this.requests[ID]) {
-            return this.requests[ID].completed;
-        }
-        return `No request found for ID: ${ID}`;
-    }
+            if (headers) {
+                try {
+                    headers = JSON.parse(Cast.toString(headers));
+                } catch (e) {
+                    return `Error: ${e.message}`;
+                }
+            }
 
-    deleteRequestById({ ID }) {
-        if (this.requests[ID]) {
+            if (body) {
+                try {
+                    body = JSON.parse(Cast.toString(body));
+                } catch (e) {
+                    return `Error: ${e.message}`;
+                }
+            }
+
+            method ??= 'GET';
+            method = Cast.toString(method).toUpperCase();
+
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            this.requests[ID] = { totalBytes: 0, response: '', status: 0, completed: false, contentLength: 0, url: URL, controller: controller };
+
+            const fetchOptions = {
+                method: method,
+                headers: headers,
+                body: method !== 'GET' && method !== 'HEAD' ? this.stringify(body) : null,
+                signal: signal
+            };
+
+            fetch(URL, fetchOptions)
+                .then(response => {
+                    this.requests[ID].status = response.status;
+                    this.requests[ID].contentLength = parseInt(response.headers.get('Content-Length'), 10);
+                    this.requests[ID].headers = response.headers;
+                    return response.body.getReader();
+                })
+                .then(reader => {
+                    let done = false;
+                    const decoder = new TextDecoder();
+                    const processStream = async () => {
+                        while (!done) {
+                            const { done: doneReading, value } = await reader.read();
+                            if (doneReading) {
+                                done = true;
+                                Scratch.vm.runtime.startHats('mistfetch_whenIdRequestCompleted', { ID: Cast.toString(ID) });
+                                this.requests[ID].completed = true;
+                            } else {
+                                this.requests[ID].totalBytes += value.length;
+                                this.requests[ID].response += decoder.decode(value, { stream: true });
+                            }
+                        }
+                    };
+                    return processStream();
+                })
+                .catch(error => {
+                    if (error.name === 'AbortError') {
+                        this.requests[ID].error = 'Fetch aborted';
+                    } else {
+                        this.requests[ID].error = error.message;
+                    }
+                });
+        }
+
+        getBytesById({ ID }) {
+            ID = Cast.toString(ID)
+
+            if (this.requests[ID]) {
+                if (this.requests[ID].error) {
+                    return `Error: ${this.requests[ID].error}`;
+                }
+                return this.requests[ID].totalBytes;
+            }
+            return '';
+        }
+
+        getResponseBodyById({ ID }) {
+            ID = Cast.toString(ID)
+
+            if (this.requests[ID]) {
+                if (this.requests[ID].error) {
+                    return `Error: ${this.requests[ID].error}`;
+                }
+                return this.requests[ID].response;
+            }
+            return '';
+        }
+
+        isRequestCompleted({ ID }) {
+            ID = Cast.toString(ID)
+
+            if (this.requests[ID]) {
+                return this.requests[ID].completed;
+            }
+            return '';
+        }
+
+        deleteRequestById({ ID }) {
+            ID = Cast.toString(ID)
+
+            if (this.requests[ID]) {
+            this.requests[ID].controller.abort();
             delete this.requests[ID];
-            return `Request with ID ${ID} has been deleted.`;
+            }
         }
-        return `No request found for ID: ${ID}`;
-    }
 
-    whenIdRequestCompleted({ ID }) {
-        if (this.requests[ID] && this.requests[ID].completed) {
-            return true;
+        deleteAllRequests() {
+            for (const ID in this.requests) {
+            this.requests[ID].controller.abort();
+            }
+            this.requests = {};
         }
-        return false;
+
+        cancelRequestById({ ID }) {
+            ID = Cast.toString(ID)
+
+            if (this.requests[ID]) {
+                this.requests[ID].controller.abort();
+                this.requests[ID].completed = true;
+            }
+        }
+
+        whenIdRequestCompleted({ ID }) {
+            ID = Cast.toString(ID)
+
+            if (this.requests[ID] && this.requests[ID].completed) {
+                return true;
+            }
+            return false;
+        }
+
+        inProgress() {
+            return JSON.stringify(Object.keys(this.requests));
+        }
+
+        getInfoById({ INFO, ID }) {
+            ID = Cast.toString(ID)
+
+            if (!this.requests[ID]) return '';
+            if (this.requests[ID].error) return `Error: ${this.requests[ID].error}`;
+
+            const request = this.requests[ID];
+            switch (Cast.toString(INFO)) {
+                case "PERCENT":
+                    if (request.contentLength > 0) {
+                        return (request.totalBytes / request.contentLength) * 100;
+                    }
+                    return 0
+                case "STATUS":
+                    return request.status ?? 0;
+                case "URL":
+                    return request.url ?? "";
+                case "JSON":
+                    return JSON.stringify(request);
+                case "METHOD":
+                    return request.method ?? "";
+
+            }
+            return '';
+        }
+
+        getHeadersById({ ID }) {
+            ID = Cast.toString(ID)
+
+            if (!this.requests[ID]) return ''
+
+            if (this.requests[ID].error) {
+                return `Error: ${this.requests[ID].error}`;
+            }
+            return JSON.stringify(this.requests[ID].headers);
+        }
+
+        all() {
+            return JSON.stringify(this.requests)
+        }
     }
 
-    inProgress() {
-        return JSON.stringify(Object.keys(this.requests));
-    }
-}
-
-// Register the extension
-Scratch.extensions.register(new MistFetch());
+    // Register the extension
+    Scratch.extensions.register(new MistFetch());
+})(Scratch)
