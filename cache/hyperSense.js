@@ -1,416 +1,889 @@
-// Name: Hyper Sense
-// ID: HyperSenseSP
-// Description: Cool New Sensing Blocks
-// By: SharkPool
-
-// Version 2.4.3
-
-(function (Scratch) {
+(function(Scratch) {
   "use strict";
-
-  const menuIconURI =
-"data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSIxMzguMjE0IiBoZWlnaHQ9IjEzOC4yMTQiIHZpZXdCb3g9IjAsMCwxMzguMjE0LDEzOC4yMTQiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0xNzAuODkzLC0xMTAuODkzKSI+PGcgZGF0YS1wYXBlci1kYXRhPSJ7JnF1b3Q7aXNQYWludGluZ0xheWVyJnF1b3Q7OnRydWV9IiBmaWxsLXJ1bGU9Im5vbnplcm8iIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS1kYXNoYXJyYXk9IiIgc3Ryb2tlLWRhc2hvZmZzZXQ9IjAiIHN0eWxlPSJtaXgtYmxlbmQtbW9kZTogbm9ybWFsIj48cGF0aCBkPSJNMTcwLjg5MywxODBjMCwtMzguMTY2NzQgMzAuOTQwMjYsLTY5LjEwNyA2OS4xMDcsLTY5LjEwN2MzOC4xNjY3NCwwIDY5LjEwNywzMC45NDAyNiA2OS4xMDcsNjkuMTA3YzAsMzguMTY2NzQgLTMwLjk0MDI2LDY5LjEwNyAtNjkuMTA3LDY5LjEwN2MtMzguMTY2NzQsMCAtNjkuMTA3LC0zMC45NDAyNiAtNjkuMTA3LC02OS4xMDd6IiBmaWxsPSIjNWNiMWQ2IiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCIvPjxwYXRoIGQ9Ik0yNzMuNTY4MTMsMjE2LjIzNjU5Yy0wLjY4MjI5LDAgLTEuMzY0NTcsLTAuMjYwNzQgLTEuODg2MDYsLTAuNzgwMDZsLTY2LjU3ODkzLC02Ni41ODExYy0xLjA0MDgxLC0xLjA0MDgxIC0xLjA0MDgxLC0yLjczMTI5IDAsLTMuNzcyMWMxLjA0MDgxLC0xLjA0MDgxIDIuNzMxMjksLTEuMDQwODEgMy43NzIxLDBsNjYuNTc4OTMsNjYuNTc4OTNjMS4wNDA4MSwxLjA0MDgxIDEuMDQwODEsMi43MzEyOSAwLDMuNzcyMWMtMC41MjE0OSwwLjUxOTMyIC0xLjIwMzc4LDAuNzgyMjMgLTEuODg2MDYsMC43ODIyM3oiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PHBhdGggZD0iTTIzMy4xMDcxMSwxNTguNDM2MDZjMCw4LjEwMjY0IC02LjU2ODU5LDE0LjY3MTIzIC0xNC42NzEyMywxNC42NzEyM2MtOC4xMDI2NCwwIC0xNC42NzEyMywtNi41Njg1OSAtMTQuNjcxMjMsLTE0LjY3MTIzYzAsLTguMTAyNjQgNi41Njg1OSwtMTQuNjcxMjMgMTQuNjcxMjMsLTE0LjY3MTIzYzguMTAyNjQsMCAxNC42NzEyMyw2LjU2ODU5IDE0LjY3MTIzLDE0LjY3MTIzeiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiLz48cGF0aCBkPSJNMjMxLjA3MzQ3LDE4OC43MjQyNmMtNy44ODU4MywtMS44NjIwOSAtMTIuNzY5MDIsLTkuNzY0MzUgLTEwLjkwNjkyLC0xNy42NTAxN2MxLjg2MjA5LC03Ljg4NTgzIDkuNzY0MzUsLTEyLjc2OTAyIDE3LjY1MDE3LC0xMC45MDY5MmM3Ljg4NTgzLDEuODYyMDkgMTIuNzY5MDIsOS43NjQzNSAxMC45MDY5MiwxNy42NTAxN2MtMS44NjIwOSw3Ljg4NTgzIC05Ljc2NDM1LDEyLjc2OTAyIC0xNy42NTAxNywxMC45MDY5MnoiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PHBhdGggZD0iTTI2NS4xMjAwMSwxOTAuNDQ2NzljMCw4LjEwMjY0IC02LjU3MDc2LDE0LjY3MzM5IC0xNC42NzMzOSwxNC42NzMzOWMtOC4xMDI2NCwwIC0xNC42NzEyMywtNi41NzA3NiAtMTQuNjcxMjMsLTE0LjY3MzM5YzAsLTguMTAyNjQgNi41Njg1OSwtMTQuNjcxMjMgMTQuNjcxMjMsLTE0LjY3MTIzYzguMTAyNjQsMCAxNC42NzMzOSw2LjU3MDc2IDE0LjY3MzM5LDE0LjY3MTIzeiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiLz48cGF0aCBkPSJNMjczLjU2ODEzLDIxNi4yMzY1OWMtMC42ODIyOSwwIC0xLjM2NDU3LC0wLjI2MDc0IC0xLjg4NjA2LC0wLjc4MDA2bC0xNi4zMzk5OCwtMTYuMzM5OThjLTEuMDQyOTgsLTEuMDQwODEgLTEuMDQyOTgsLTIuNzMxMjkgMCwtMy43NzIxYzEuMDQyOTgsLTEuMDQwODEgMi43MjkxMiwtMS4wNDA4MSAzLjc3MjEsMGwxNi4zMzk5OCwxNi4zMzk5OGMxLjA0MDgxLDEuMDQwODEgMS4wNDA4MSwyLjczMTI5IDAsMy43NzIxYy0wLjUyMTQ5LDAuNTE3MTQgLTEuMjAzNzgsMC43ODAwNiAtMS44ODYwNiwwLjc4MDA2eiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiLz48ZyBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBkPSJNMTgyLjY2ODI2LDE4MGwxMi44MDY5MSwtMTIuODA2OTF2MjUuNjEzODF6Ii8+PHBhdGggZD0iTTI1Mi44MDY5LDEzNS40NzUxNmgtMjUuNjEzODFsMTIuODA2OSwtMTIuODA2OXoiIGRhdGEtcGFwZXItZGF0YT0ieyZxdW90O2luZGV4JnF1b3Q7Om51bGx9Ii8+PHBhdGggZD0iTTI5Ny4zMzE3NSwxODBsLTEyLjgwNjksMTIuODA2OXYtMjUuNjEzODF6IiBkYXRhLXBhcGVyLWRhdGE9InsmcXVvdDtpbmRleCZxdW90OzpudWxsfSIvPjxwYXRoIGQ9Ik0yMjcuMTkzMSwyMjQuNTI0ODRoMjUuNjEzODFsLTEyLjgwNjksMTIuODA2OXoiIGRhdGEtcGFwZXItZGF0YT0ieyZxdW90O2luZGV4JnF1b3Q7Om51bGx9Ii8+PC9nPjwvZz48L2c+PC9zdmc+";
-
-  let currentlyPressedKey = null;
-  let keyPressTime = 0;
-  const keyHitPass = {};
-
-  const renderer = Scratch.renderer;
-  const vm = Scratch.vm;
-  const runtime = vm.runtime;
+  if (!Scratch.extensions.unsandboxed)
+      throw new Error("Hyper Sense must run unsandboxed");
+  let currentlyPressedKey = null
+    , keyPressTime = 0;
+  const keyHitPass = {}
+    , renderer = Scratch.renderer
+    , vm = Scratch.vm
+    , runtime = vm.runtime;
   var timer = 0;
   let publicVars = {};
-
   class HyperSenseSP {
-    constructor() {
-      runtime.shouldExecuteStopClicked = true;
-      runtime.on("BEFORE_EXECUTE", () => {
-        timer++;
-        runtime.shouldExecuteStopClicked = false;
-      });
-      runtime.on("PROJECT_START", () => { timer = 0 });
-      runtime.on("PROJECT_STOP_ALL", () => { timer = 0 });
-      runtime.on("AFTER_EXECUTE", () => { runtime.shouldExecuteStopClicked = true });
-      runtime.on("ANSWER", () => { this.wait = [false, "sprite"] });
-      const originalGreenFlag = vm.greenFlag;
-      vm.greenFlag = function () {
-        runtime.shouldExecuteStopClicked = false;
-        originalGreenFlag.call(this);
-      };
-
-      this.scrollDistance = 0;
-      this.oldScroll = [0, 0];
-      window.addEventListener("wheel", this.handleScroll);
-      this.pressedKey = null;
-      this.wait = [false, "sprite"];
-      this.pressedKeys = {};
-
-      document.addEventListener("keydown", (event) => {
-        keyPressTime = keyPressTime + 0.1;
-        this.pressedKey = event.key.toUpperCase();
-        this.pressedKeys[this.pressedKey] = true;
-        this.pressedKey = this.pressedKey;
-        currentlyPressedKey = this.pressedKey;
-      });
-      document.addEventListener("keyup", (event) => {
-        keyHitPass[currentlyPressedKey] = 0;
-        const releasedKey = event.key.toUpperCase();
-        delete this.pressedKeys[releasedKey];
-        currentlyPressedKey = Object.keys(this.pressedKeys).pop() || null;
-        keyPressTime = 0;
-      });
-    }
-
-    getInfo() {
-      return {
-        id: "HyperSenseSP",
-        name: "Hyper Sense",
-        color1: "#5cb1d6",
-        color2: "#2e8eb8",
-        menuIconURI,
-        blocks: [
-          { blockType: Scratch.BlockType.LABEL, text: "Scrolling" },
-          {
-            opcode: "monitorScrollWheel",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "scroll wheel distance"
-          },
-          {
-            opcode: "scrollVel",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "scroll velocity"
-          },
-          {
-            opcode: "monitorScrollWheelLimited",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "scroll wheel distance limited from [MIN] to [MAX]",
-            arguments: {
-              MIN: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 0
-              },
-              MAX: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 100
-              }
-            },
-          },
-          {
-            opcode: "setScrollDistance",
-            blockType: Scratch.BlockType.COMMAND,
-            text: "set scroll wheel distance to [DISTANCE]",
-            arguments: {
-              DISTANCE: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 0
-              }
-            },
-          },
-          {
-            opcode: "changeScrollDistance",
-            blockType: Scratch.BlockType.COMMAND,
-            text: "change scroll wheel distance by [DISTANCE]",
-            arguments: {
-              DISTANCE: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 100
-              }
-            },
-          },
-          { blockType: Scratch.BlockType.LABEL, text: "Mouse Detection" },
-          {
-            opcode: "mouseClick",
-            blockType: Scratch.BlockType.BOOLEAN,
-            text: "is mouse [BUTTON] down?",
-            arguments: {
-              BUTTON: {
-                type: Scratch.ArgumentType.NUMBER,
-                menu: "mouseButtons"
-              }
-            }
-          },
-          { blockType: Scratch.BlockType.LABEL, text: "Key Detection" },
-          {
-            opcode: "whenKeyHit",
-            blockType: Scratch.BlockType.HAT,
-            text: "when [KEY] key hit",
-            arguments: {
-              KEY: {
-                type: Scratch.ArgumentType.STRING,
-                menu: "keys"
-              }
-            }
-          },
-          {
-            opcode: "isKeyHit",
-            blockType: Scratch.BlockType.BOOLEAN,
-            text: "is key [KEY] hit?",
-            arguments: {
-              KEY: {
-                type: Scratch.ArgumentType.STRING,
-                menu: "keys"
-              }
-            }
-          },
-          "---",
-          {
-            opcode: "currentKey",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "current key pressed"
-          },
-          {
-            opcode: "currentKeys",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "current keys pressed"
-          },
-          {
-            opcode: "timeKeyPressed",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "seconds [KEY] key pressed",
-            arguments: {
-              KEY: {
-                type: Scratch.ArgumentType.STRING,
-                menu: "keys",
-                defaultValue: "A"
-              }
-            }
-          },
-          {
-            opcode: "colorAtPosition",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "color at x [x] y [y]",
-            arguments: {
-              x: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 0
-              },
-              y: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 0
-              }
-            }
-          },
-          { blockType: Scratch.BlockType.LABEL, text: "Strings" },
-          {
-            opcode: "getAllString",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "get [TEXT] in string [STRING]",
-            arguments: {
-              STRING: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: "rotating a 6 makes a 9!"
-              },
-              TEXT: {
-                type: Scratch.ArgumentType.STRING,
-                menu: "string_types",
-              }
-            }
-          },
-          { blockType: Scratch.BlockType.LABEL, text: "Miscellaneous" },
-          {
-            opcode: "getSpriteName",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "my sprite name"
-          },
-          {
-            opcode: "allLayers",
-            blockType: Scratch.BlockType.REPORTER,
-            text: "max sprite layers"
-          },
-        ],
-        menus: {
-          SCREENS: ["fullscreen", "smallscreen"],
-          INPUTS: ["text", "password", "number", "color"],
-          TARGETS: { acceptReporters: true, items: this._getTargets(true, false) },
-          TARGETS2: { acceptReporters: true, items: this._getTargets(true, true) },
-          TARGETS3: { acceptReporters: true, items: this._getTargets(false, true) },
-          TARGETS4: { acceptReporters: true, items: this._getTargets(false, false) },
-          LISTS: { acceptReporters: true, items: this.getLists() },
-          Asking: ["stage", "sprite"],
-          shouldWait: ["wait", "continue"],
-          SCROLL_EVENTS: ["up", "down"],
-          keys: {
-            acceptReporters: true,
-            items: [
-              "Any", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-              "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-              "U", "V", "W", "X", "Y", "Z",
-              "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-              "Up Arrow", "Down Arrow", "Left Arrow", "Right Arrow",
-              "Space", "Enter", "Shift", "Control", "Alt", "Escape",
-              "Backspace", "Tab", "Caps Lock",
-              "Insert", "Page Up", "Page Down"
-            ],
-          },
-          DRAG_MODES: {
-            acceptReporters: true,
-            items: ["draggable", "not draggable"],
-          },
-          string_types: {
-            acceptReporters: true,
-            items: ["numbers", "letters", "special characters"],
-          },
-          mouseButtons: {
-            acceptReporters: true,
-            items: [
-              { text: "left", value: "0" },
-              { text: "scroll wheel", value: "1" },
-              { text: "right", value: "2" },
-              { text: "back", value: "3" }, { text: "foward", value: "4" }
-            ],
+      constructor() {
+          runtime.shouldExecuteStopClicked = !0,
+          runtime.on("BEFORE_EXECUTE", ( () => {
+              timer++,
+              runtime.shouldExecuteStopClicked = !1,
+              runtime.startHats("HyperSenseSP_whenKeyPressed")
           }
-        }
-      };
-    }
+          )),
+          runtime.on("PROJECT_START", ( () => {
+              timer = 0
+          }
+          )),
+          runtime.on("PROJECT_STOP_ALL", ( () => {
+              timer = 0
+          }
+          )),
+          runtime.on("AFTER_EXECUTE", ( () => {
+              runtime.shouldExecuteStopClicked = !0
+          }
+          )),
+          runtime.on("ANSWER", ( () => {
+              this.wait = [!1, "sprite"]
+          }
+          ));
+          const e = vm.greenFlag;
+          vm.greenFlag = function() {
+              runtime.shouldExecuteStopClicked = !1,
+              e.call(this)
+          }
+          ,
+          this.scrollDistance = 0,
+          this.oldScroll = [0, 0],
+          this.scrollDistanceX = 0,
+          this.oldScrollX = [0, 0],
 
-    allLayers() { return renderer._drawList.length - 1 }
-
-    getSpriteName(_, util) { return util.target.getName() }
-
-    monitorScrollWheel() { return this.scrollDistance }
-
-    scrollVel() { return this.oldScroll[1] * -1 }
-
-    monitorScrollWheelLimited(args) {
-      const min = Scratch.Cast.toNumber(args.MIN);
-      const max = Scratch.Cast.toNumber(args.MAX);
-      return Math.max(Math.min(this.scrollDistance, max), min);
-    }
-
-    setScrollDistance(args) { this.scrollDistance = Scratch.Cast.toNumber(args.DISTANCE) }
-
-    changeScrollDistance(args) { this.scrollDistance = this.scrollDistance + Scratch.Cast.toNumber(args.DISTANCE) }
-
-    handleScroll = (event) => {
-      this.scrollDistance += event.deltaY;
-      this.oldScroll[1] = event.deltaY;
-      // Resets the velocity after 100ms
-      clearTimeout(this.scrollTimer);
-      this.scrollTimer = setTimeout(() => {
-        this.oldScroll[1] = 0;
-      }, 100);
-    };
-
-    handleKeyPress(key, loop) {
-      if (key === "Any") {
-        if (currentlyPressedKey === null) return false;
-        key = currentlyPressedKey;
+          this.loudnessArray = [],
+          window.addEventListener("wheel", this.handleScroll),
+          this.isMicrophoneEnabled = !1,
+          this.pressedKey = null,
+          this.wait = [!1, "sprite"],
+          this.pressedKeys = {},
+          document.addEventListener("keydown", (e => {
+              keyPressTime += .1,
+              this.pressedKey = e.key.toUpperCase(),
+              this.pressedKeys[this.pressedKey] = !0,
+              this.pressedKey = this.pressedKey,
+              currentlyPressedKey = this.pressedKey
+          }
+          )),
+          document.addEventListener("keyup", (e => {
+              keyHitPass[currentlyPressedKey] = 0;
+              const t = e.key.toUpperCase();
+              delete this.pressedKeys[t],
+              currentlyPressedKey = Object.keys(this.pressedKeys).pop() || null,
+              keyPressTime = 0
+          }
+          )),
+          document.addEventListener("mousemove", (e => {
+              window.mouseX = e.clientX,
+              window.mouseY = e.clientY
+          }
+          ))
       }
-      if (isNaN(parseFloat(key))) key = key.toUpperCase();
-      let pressedKey = this.currentKey().toUpperCase();
-      if (pressedKey !== " ") pressedKey = pressedKey.replaceAll(" ", "");
-      if (
-        ((key === "SPACE" && pressedKey === " ") ||
-        (key === pressedKey) ||
-        (key.startsWith("DIGIT") && key.slice(5) === pressedKey))
-      ) {
-        key = (key === "SPACE") ? " " : key;
-        if (isNaN(keyHitPass[key])) keyHitPass[key] = 0;
-        keyHitPass[key] = keyHitPass[key] + 1;
-        return (loop) ? true : (keyHitPass[key] < 2);
+      getInfo() {
+          return {
+              id: "HyperSenseSP",
+              name: "Hyper Sense",
+              color1: "#5cb1d6",
+              color2: "#2e8eb8",
+              blocks: [{
+                  blockType: Scratch.BlockType.LABEL,
+                  text: "Scrolling"
+              }, {
+                  opcode: "monitorScrollWheel",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "scroll wheel distance"
+              }, {
+                  opcode: "scrollVel",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "scroll velocity"
+              }, {
+                opcode: "monitorScrollWheelX",
+                blockType: Scratch.BlockType.REPORTER,
+                text: "scroll wheel distance x"
+              }, {
+                opcode: "scrollVelX",
+                blockType: Scratch.BlockType.REPORTER,
+                text: "scroll velocity x"
+              }, {
+                  opcode: "monitorScrollWheelLimited",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "scroll wheel distance limited from [MIN] to [MAX]",
+                  arguments: {
+                      MIN: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 0
+                      },
+                      MAX: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 100
+                      }
+                  }
+              }, {
+                  opcode: "setScrollDistance",
+                  blockType: Scratch.BlockType.COMMAND,
+                  text: "set scroll wheel distance to [DISTANCE]",
+                  arguments: {
+                      DISTANCE: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 0
+                      }
+                  }
+              }, {
+                  opcode: "changeScrollDistance",
+                  blockType: Scratch.BlockType.COMMAND,
+                  text: "change scroll wheel distance by [DISTANCE]",
+                  arguments: {
+                      DISTANCE: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 100
+                      }
+                  }
+              }, {
+                  opcode: "scrollWheelHat",
+                  blockType: Scratch.BlockType.EVENT,
+                  text: "when scrolled up",
+                  isEdgeActivated: !1,
+                  arguments: {
+                      EVENT: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "SCROLL_EVENTS"
+                      }
+                  }
+              }, {
+                  opcode: "scrollWheelHat2",
+                  blockType: Scratch.BlockType.EVENT,
+                  text: "when scrolled down",
+                  isEdgeActivated: !1
+              }, {
+                  opcode: "scrollWheelBool",
+                  blockType: Scratch.BlockType.BOOLEAN,
+                  text: "is scrolling [EVENT]?",
+                  arguments: {
+                      EVENT: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "SCROLL_EVENTS"
+                      }
+                  }
+              }, {
+                  blockType: Scratch.BlockType.LABEL,
+                  text: "Mouse Detection"
+              }, {
+                  opcode: "mouseClick",
+                  blockType: Scratch.BlockType.BOOLEAN,
+                  text: "is mouse [BUTTON] down?",
+                  arguments: {
+                      BUTTON: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          menu: "mouseButtons"
+                      }
+                  }
+              }, {
+                  opcode: "realX",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "real mouse x"
+              }, {
+                  opcode: "realY",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "real mouse y"
+              }, {
+                  blockType: Scratch.BlockType.LABEL,
+                  text: "Key Detection"
+              }, {
+                  opcode: "whenKeyHit",
+                  blockType: Scratch.BlockType.HAT,
+                  text: "when [KEY] key hit",
+                  arguments: {
+                      KEY: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "keys"
+                      }
+                  }
+              }, {
+                  opcode: "isKeyHit",
+                  blockType: Scratch.BlockType.BOOLEAN,
+                  text: "is key [KEY] hit?",
+                  arguments: {
+                      KEY: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "keys"
+                      }
+                  }
+              }, "---", {
+                  opcode: "whenKeyPressed",
+                  blockType: Scratch.BlockType.HAT,
+                  text: "when [KEY] pressed",
+                  isEdgeActivated: !1,
+                  arguments: {
+                      KEY: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "keys",
+                          defaultValue: "Tab"
+                      }
+                  }
+              }, {
+                  opcode: "isKeyPressed",
+                  blockType: Scratch.BlockType.BOOLEAN,
+                  text: "key [KEY] pressed?",
+                  arguments: {
+                      KEY: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "keys",
+                          defaultValue: "Tab"
+                      }
+                  }
+              }, "---", {
+                  opcode: "currentKey",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "current key pressed"
+              }, {
+                  opcode: "currentKeys",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "current keys pressed"
+              }, {
+                  opcode: "timeKeyPressed",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "seconds [KEY] key pressed",
+                  arguments: {
+                      KEY: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "keys",
+                          defaultValue: "A"
+                      }
+                  }
+              }, {
+                  blockType: Scratch.BlockType.LABEL,
+                  text: "Touching Expanded"
+              }, {
+                  opcode: "spriteTouchingSprite",
+                  blockType: Scratch.BlockType.BOOLEAN,
+                  text: "is [SPRITE1] touching [SPRITE2]?",
+                  arguments: {
+                      SPRITE1: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "TARGETS"
+                      },
+                      SPRITE2: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "TARGETS3"
+                      }
+                  }
+              }, {
+                  opcode: "spriteCurrentTouching",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "sprites touching [SPRITE]",
+                  arguments: {
+                      SPRITE: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "TARGETS2"
+                      }
+                  }
+              }, {
+                  opcode: "getNeighbors",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "get neighbors of [SPRITE] with diameter [DIAMETER]",
+                  arguments: {
+                      SPRITE: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "TARGETS4"
+                      },
+                      DIAMETER: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 200
+                      }
+                  }
+              }, "---", {
+                  opcode: "colorTouchingSprite",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "color touching [SPRITE]",
+                  arguments: {
+                      SPRITE: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "TARGETS2"
+                      }
+                  }
+              }, {
+                  opcode: "colorAtPosition",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "color at x [x] y [y]",
+                  arguments: {
+                      x: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 0
+                      },
+                      y: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 0
+                      }
+                  }
+              }, {
+                  blockType: Scratch.BlockType.LABEL,
+                  text: "Strings"
+              }, {
+                  opcode: "boolean",
+                  blockType: Scratch.BlockType.BOOLEAN,
+                  text: "is [STRING] real?",
+                  arguments: {
+                      STRING: {
+                          type: Scratch.ArgumentType.STRING,
+                          defaultValue: ""
+                      }
+                  }
+              }, {
+                  opcode: "getAllString",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "get [TEXT] in string [STRING]",
+                  arguments: {
+                      STRING: {
+                          type: Scratch.ArgumentType.STRING,
+                          defaultValue: "rotating a 6 makes a 9!"
+                      },
+                      TEXT: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "string_types"
+                      }
+                  }
+              }, {
+                  blockType: Scratch.BlockType.LABEL,
+                  text: "Asking"
+              }, {
+                  opcode: "advancedAsk",
+                  blockType: Scratch.BlockType.COMMAND,
+                  text: "ask [QUESTION] as [THING] and [WAIT]",
+                  arguments: {
+                      THING: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "Asking"
+                      },
+                      QUESTION: {
+                          type: Scratch.ArgumentType.STRING,
+                          defaultValue: "what is your name?"
+                      },
+                      WAIT: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "shouldWait"
+                      }
+                  }
+              }, {
+                  opcode: "advancedAskReporter",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "ask [QUESTION] as [THING]",
+                  arguments: {
+                      THING: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "Asking"
+                      },
+                      QUESTION: {
+                          type: Scratch.ArgumentType.STRING,
+                          defaultValue: "what is your name?"
+                      }
+                  }
+              }, {
+                  opcode: "stopAsking",
+                  blockType: Scratch.BlockType.COMMAND,
+                  text: "stop asking question"
+              }, {
+                  opcode: "currentTyped",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "typed answer"
+              }, {
+                  opcode: "setAtt",
+                  blockType: Scratch.BlockType.COMMAND,
+                  text: "set ask monitor x: [x] y: [y] width: [width]",
+                  arguments: {
+                      x: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 0
+                      },
+                      y: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 0
+                      },
+                      width: {
+                          type: Scratch.ArgumentType.NUMBER,
+                          defaultValue: 480
+                      }
+                  }
+              }, {
+                  opcode: "setAskType",
+                  blockType: Scratch.BlockType.COMMAND,
+                  text: "set ask monitor input to [TYPE]",
+                  arguments: {
+                      TYPE: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "INPUTS"
+                      }
+                  }
+              }, {
+                  opcode: "setAskType2",
+                  blockType: Scratch.BlockType.COMMAND,
+                  text: "set ask monitor input to dropdown with options from [TYPE]",
+                  arguments: {
+                      TYPE: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "LISTS"
+                      }
+                  }
+              }, {
+                  blockType: Scratch.BlockType.LABEL,
+                  text: "Miscellaneous"
+              }, {
+                  opcode: "isScreen",
+                  blockType: Scratch.BlockType.BOOLEAN,
+                  text: "is [SCREEN] ?",
+                  disableMonitor: !0,
+                  arguments: {
+                      SCREEN: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "SCREENS"
+                      }
+                  }
+              }, {
+                  opcode: "screenOff",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "stage size offset"
+              }, "---", {
+                  opcode: "averageMicrophoneLoudness",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "average loudness"
+              }, {
+                  opcode: "getSpriteName",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "my sprite name"
+              }, {
+                  opcode: "allLayers",
+                  blockType: Scratch.BlockType.REPORTER,
+                  text: "max sprite layers"
+              }, "---", {
+                  opcode: "spriteDragMode",
+                  blockType: Scratch.BlockType.COMMAND,
+                  text: "set drag mode of [SPRITE] to [DRAG]",
+                  arguments: {
+                      SPRITE: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "TARGETS4"
+                      },
+                      DRAG: {
+                          type: Scratch.ArgumentType.STRING,
+                          menu: "DRAG_MODES"
+                      }
+                  }
+              }, {
+                  opcode: "toggleMicrophone",
+                  blockType: Scratch.BlockType.COMMAND,
+                  text: "toggle microphone to [STATE]",
+                  hideFromPalette: !0,
+                  arguments: {
+                      STATE: {
+                          type: Scratch.ArgumentType.STRING
+                      }
+                  }
+              }],
+              menus: {
+                  SCREENS: ["fullscreen", "smallscreen"],
+                  INPUTS: ["text", "password", "number", "color"],
+                  TARGETS: {
+                      acceptReporters: !0,
+                      items: this._getTargets(!0, !1)
+                  },
+                  TARGETS2: {
+                      acceptReporters: !0,
+                      items: this._getTargets(!0, !0)
+                  },
+                  TARGETS3: {
+                      acceptReporters: !0,
+                      items: this._getTargets(!1, !0)
+                  },
+                  TARGETS4: {
+                      acceptReporters: !0,
+                      items: this._getTargets(!1, !1)
+                  },
+                  LISTS: {
+                      acceptReporters: !0,
+                      items: this.getLists()
+                  },
+                  Asking: ["stage", "sprite"],
+                  shouldWait: ["wait", "continue"],
+                  SCROLL_EVENTS: ["up", "down"],
+                  keys: {
+                      acceptReporters: !0,
+                      items: ["Any", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Up Arrow", "Down Arrow", "Left Arrow", "Right Arrow", "Space", "Enter", "Shift", "Control", "Alt", "Escape", "Backspace", "Tab", "Caps Lock", "Insert", "Page Up", "Page Down"]
+                  },
+                  DRAG_MODES: {
+                      acceptReporters: !0,
+                      items: ["draggable", "not draggable"]
+                  },
+                  string_types: {
+                      acceptReporters: !0,
+                      items: ["numbers", "letters", "special characters"]
+                  },
+                  mouseButtons: {
+                      acceptReporters: !0,
+                      items: [{
+                          text: "left",
+                          value: "0"
+                      }, {
+                          text: "scroll wheel",
+                          value: "1"
+                      }, {
+                          text: "right",
+                          value: "2"
+                      }, {
+                          text: "back",
+                          value: "3"
+                      }, {
+                          text: "foward",
+                          value: "4"
+                      }]
+                  }
+              }
+          }
       }
-      return false;
-    }
-
-    isKeyHit(args) {
-      const key = Scratch.Cast.toString(args.KEY).replace(" ", "");
-      return this.handleKeyPress(key, false);
-    }
-
-    whenKeyHit(args) {
-      const key = Scratch.Cast.toString(args.KEY).replace(" ", "");
-      return this.handleKeyPress(key, false);
-    }
-
-    isKeyPressed(args) {
-      const key = Scratch.Cast.toString(args.KEY).replace(" ", "");
-      return this.handleKeyPress(key, true);
-    }
-
-    currentKey() {
-      if (currentlyPressedKey === null) {
-        return "No Keys Pressed";
-      } else if (currentlyPressedKey.includes("ARROW") || currentlyPressedKey === "CAPSLOCK") {
-        return (currentlyPressedKey === "CAPSLOCK") ? "Caps Lock" : `${ currentlyPressedKey.charAt(5).toUpperCase() + currentlyPressedKey.slice(6).toLowerCase() } Arrow`;
+      allLayers() {
+          return renderer._drawList.length - 1
       }
-      return currentlyPressedKey.charAt(0).toUpperCase() + currentlyPressedKey.slice(1).toLowerCase();
-    }
-
-    currentKeys() {
-      let pressedKeysArray = Object.keys(this.pressedKeys);
-      pressedKeysArray = pressedKeysArray.map((key) => {
-        if (key.includes("ARROW") || key === "CAPSLOCK") {
-          return (key === "CAPSLOCK") ? "Caps Lock" : `${ key.charAt(5).toUpperCase() + key.slice(6).toLowerCase() } Arrow`;
-        }
-        return key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
-      });
-      return JSON.stringify(pressedKeysArray);
-    }
-
-    timeKeyPressed(args) {
-      let key = Scratch.Cast.toString(args.KEY).replace(" ", "");
-      if (isNaN(parseFloat(key))) key = key.toUpperCase();
-      if (key === "SPACE") key = " ";
-      return key === this.pressedKey || args.KEY === "Any" ? keyPressTime : 0;
-    }
-
-    colorAtPosition(args) { return this.colorTouching(Scratch.Cast.toNumber(args.x), Scratch.Cast.toNumber(args.y)) }
-
-    colorTouching(x, y) {
-      const clientX = Math.round((((runtime.stageWidth / 2) + x) / runtime.stageWidth) * renderer._gl.canvas.clientWidth);
-      const clientY = Math.round((((runtime.stageHeight / 2) - y) / runtime.stageHeight) * renderer._gl.canvas.clientHeight);
-      const colorInfo = renderer.extractColor(clientX, clientY, 20);
-      const r = colorInfo.color.r.toString(16).padStart(2, "0");
-      const g = colorInfo.color.g.toString(16).padStart(2, "0");
-      const b = colorInfo.color.b.toString(16).padStart(2, "0");
-      return `#${r}${g}${b}`;
-    }
-
-    getAllString(args) {
-      let regex;
-      switch (args.TEXT) {
-        case "numbers": {regex = /[^0-9]/g; break }
-        case "special characters": {regex = /[A-Za-z0-9]/g; break }
-        default: regex = /[^A-Za-z]/g;
+      getSpriteName(e, t) {
+          return t.target.getName()
       }
-      return args.STRING.replace(regex, "");
-    }
-
-    _getTargets(mouse, myself) {
-      const spriteNames = [];
-      if (mouse) { spriteNames.push({ text: "mouse-pointer", value: "_mouse_" }) }
-      if (myself) { spriteNames.push({ text: "myself", value: "_myself_" }) }
-      const targets = Scratch.vm.runtime.targets;
-      for (let index = 1; index < targets.length; index++) {
-        const target = targets[index];
-        if (target.isOriginal) {
-          const targetName = target.getName();
-          spriteNames.push({ text: targetName, value: targetName });
-        }
+      monitorScrollWheel() {
+          return this.scrollDistance
       }
-      return spriteNames.length > 0 ? spriteNames : [""];
-    }
-
-    getLists() {
-      try {
-        const globalLists = Object.values(vm.runtime.getTargetForStage().variables).filter((x) => x.type == "list");
-        const localLists = Object.values(vm.editingTarget.variables).filter((x) => x.type == "list");
-        const uniqueLists = [...new Set([...globalLists, ...localLists])];
-        if (uniqueLists.length === 0) return [{ text: "make a list", value: "make a list" }];
-        return uniqueLists.map((i) => ({ text: i.name, value: i.id }));
-      } catch { return ["make a list"] }
-    }
-
-    look4List(list, util) {
-      const id = util.target.lookupVariableById(list);
-      if (id && id.type === "list") {
-        return id.value;
-      } else {
-        const name = util.target.lookupVariableByNameAndType(list, "list");
-        return name ? name.value : ["undefined list"];
+      scrollVel() {
+          return -1 * this.oldScroll[1]
       }
-    }
+      monitorScrollWheelX() {
+          return this.scrollDistanceX
+      }
+      scrollVelX() {
+          return -1 * this.oldScrollX[1]
+      }
+      
+      monitorScrollWheelLimited(e) {
+          const t = Scratch.Cast.toNumber(e.MIN)
+            , r = Scratch.Cast.toNumber(e.MAX);
+          return Math.max(Math.min(this.scrollDistance, r), t)
+      }
+
+      setScrollDistance(e) {
+          this.scrollDistance = Scratch.Cast.toNumber(e.DISTANCE)
+      }
+
+      changeScrollDistance(e) {
+          this.scrollDistance = this.scrollDistance + Scratch.Cast.toNumber(e.DISTANCE)
+      }
+
+      handleScroll = e => {
+          this.scrollDistance += e.deltaY,
+          this.oldScroll[1] = e.deltaY,
+          this.scrollDistanceX += e.deltaX,
+          this.oldScrollX[1] = e.deltaX,
+          this.scrollWheelBool({
+              EVENT: "up"
+          }),
+          this.scrollWheelBool({
+              EVENT: "down"
+          }),
+          clearTimeout(this.scrollTimer),
+          this.scrollTimer = setTimeout(( () => {
+              this.oldScroll[1] = 0
+              this.oldScrollX[1] = 0
+          }
+          ), 100)
+      }
+      ;
+      scrollWheelBool(args, fromHat) {
+          const status = eval(`this.scrollDistance ${"down" === args.EVENT ? ">" : "<"} this.oldScroll[0]`);
+          return status && (this.oldScroll[0] = this.scrollDistance),
+          !!status
+      }
+      averageMicrophoneLoudness() {
+          this.loudnessArray.length >= 30 && (this.loudnessArray = []),
+          this.loudnessArray.push(vm.runtime.ext_scratch3_sensing.getLoudness());
+          let e = this.loudnessArray.reduce(( (e, t) => e + t), 0);
+          return Math.round(e / this.loudnessArray.length * 100) / 100
+      }
+      toggleMicrophone(e) {
+          console.warn("Depreciated Block")
+      }
+      handleKeyPress(e, t) {
+          if ("Any" === e) {
+              if (null === currentlyPressedKey)
+                  return !1;
+              e = currentlyPressedKey
+          }
+          isNaN(parseFloat(e)) && (e = e.toUpperCase());
+          let r = this.currentKey().toUpperCase();
+          return " " !== r && (r = r.replaceAll(" ", "")),
+          !!("SPACE" === e && " " === r || e === r || e.startsWith("DIGIT") && e.slice(5) === r) && (e = "SPACE" === e ? " " : e,
+          isNaN(keyHitPass[e]) && (keyHitPass[e] = 0),
+          keyHitPass[e] = keyHitPass[e] + 1,
+          !!t || keyHitPass[e] < 2)
+      }
+      isKeyHit(e) {
+          const t = Scratch.Cast.toString(e.KEY).replace(" ", "");
+          return this.handleKeyPress(t, !1)
+      }
+      whenKeyHit(e) {
+          const t = Scratch.Cast.toString(e.KEY).replace(" ", "");
+          return this.handleKeyPress(t, !1)
+      }
+      whenKeyPressed(e) {
+          const t = Scratch.Cast.toString(e.KEY).replace(" ", "");
+          return this.handleKeyPress(t, !0)
+      }
+      isKeyPressed(e) {
+          const t = Scratch.Cast.toString(e.KEY).replace(" ", "");
+          return this.handleKeyPress(t, !0)
+      }
+      currentKey() {
+          return null === currentlyPressedKey ? "No Keys Pressed" : currentlyPressedKey.includes("ARROW") || "CAPSLOCK" === currentlyPressedKey ? "CAPSLOCK" === currentlyPressedKey ? "Caps Lock" : `${currentlyPressedKey.charAt(5).toUpperCase() + currentlyPressedKey.slice(6).toLowerCase()} Arrow` : currentlyPressedKey.charAt(0).toUpperCase() + currentlyPressedKey.slice(1).toLowerCase()
+      }
+      currentKeys() {
+          let e = Object.keys(this.pressedKeys);
+          return e = e.map((e => e.includes("ARROW") || "CAPSLOCK" === e ? "CAPSLOCK" === e ? "Caps Lock" : `${e.charAt(5).toUpperCase() + e.slice(6).toLowerCase()} Arrow` : e.charAt(0).toUpperCase() + e.slice(1).toLowerCase())),
+          JSON.stringify(e)
+      }
+      timeKeyPressed(e) {
+          let t = Scratch.Cast.toString(e.KEY).replace(" ", "");
+          return isNaN(parseFloat(t)) && (t = t.toUpperCase()),
+          "SPACE" === t && (t = " "),
+          t === this.pressedKey || "Any" === e.KEY ? keyPressTime : 0
+      }
+      spriteTouchingSprite(e, t) {
+          const r = e.SPRITE2
+            , s = "_myself_" === r ? t.target : runtime.getSpriteTargetByName(r);
+          return !!s && s.isTouchingObject(e.SPRITE1)
+      }
+      spriteCurrentTouching(e, t) {
+          const r = []
+            , s = this._getTargets();
+          if ("_myself_" === e.SPRITE)
+              return this.spriteCurrentTouchingMyself(t);
+          const c = "_mouse_" === e.SPRITE ? "_mouse_" : e.SPRITE;
+          if (!c)
+              return "[]";
+          for (let e = 0; e < s.length; e++) {
+              runtime.getSpriteTargetByName(s[e].value).isTouchingObject(c) && s[e].value !== c && r.push(s[e].value)
+          }
+          return JSON.stringify(r)
+      }
+      spriteCurrentTouchingMyself(e) {
+          const t = []
+            , r = this._getTargets();
+          for (let s = 0; s < r.length; s++) {
+              const c = r[s].value;
+              let o;
+              o = e.target.isTouchingObject(c),
+              o && t.push(r[s].value)
+          }
+          return JSON.stringify(t)
+      }
+      getNeighbors(e) {
+          const t = []
+            , r = this._getTargets()
+            , s = runtime.getSpriteTargetByName(e.SPRITE);
+          if (!s)
+              return "[]";
+          const c = [s.size, s.direction];
+          s.setDirection(-179),
+          s.setSize(Math.abs(Scratch.Cast.toNumber(e.DIAMETER)));
+          for (let e = 0; e < 90; e++) {
+              for (let e = 0; e < r.length; e++) {
+                  const c = r[e].value;
+                  s.isTouchingObject(c) && !t.includes(c) && s.sprite.name !== c && t.push(r[e].value)
+              }
+              s.setDirection(s.direction + 2)
+          }
+          const o = JSON.stringify(t);
+          return s.setSize(c[0]),
+          s.setDirection(c[1]),
+          o
+      }
+      colorAtPosition(e) {
+          return this.colorTouching(Scratch.Cast.toNumber(e.x), Scratch.Cast.toNumber(e.y))
+      }
+      colorTouchingSprite(e, t) {
+          let r;
+          if ("_mouse_" === e.SPRITE)
+              r = this.colorTouching(t.ioQuery("mouse", "getScratchX"), t.ioQuery("mouse", "getScratchY"));
+          else {
+              const s = "_myself_" === e.SPRITE ? t.target : runtime.getSpriteTargetByName(e.SPRITE)
+                , c = s.visible;
+              s.setVisible(!1),
+              r = this.colorTouching(s.x, s.y),
+              s.setVisible(c)
+          }
+          return r
+      }
+      colorTouching(e, t) {
+          const r = Math.round((runtime.stageWidth / 2 + e) / runtime.stageWidth * renderer._gl.canvas.clientWidth)
+            , s = Math.round((runtime.stageHeight / 2 - t) / runtime.stageHeight * renderer._gl.canvas.clientHeight)
+            , c = renderer.extractColor(r, s, 20);
+          return `#${c.color.r.toString(16).padStart(2, "0")}${c.color.g.toString(16).padStart(2, "0")}${c.color.b.toString(16).padStart(2, "0")}`
+      }
+      spriteDragMode(e) {
+          runtime.getSpriteTargetByName(e.SPRITE).setDraggable("draggable" === e.DRAG)
+      }
+      boolean(e) {
+          return !!Scratch.Cast.toString(e.STRING) && void 0 !== e.STRING
+      }
+      setAtt(e) {
+          let t = document.querySelectorAll('[class*="question"]')[0];
+          if (!t)
+              return void (publicVars.askStuff = e);
+          const r = getComputedStyle(document.querySelector("canvas"));
+          if (e.width && (t.style.width = e.width * (parseInt(r.width) / 480) + "px"),
+          "" !== e.x && "" !== e.y) {
+              const s = e.x + parseInt(r.width) / 2 - e.width * (parseInt(r.width) / 480) / 2
+                , c = e.y + parseInt(r.height) / 2 - ("stage" === this.wait[1] ? 53 : 39);
+              t.style.transform = `translate(${s}px, ${-1 * c}px)`
+          }
+      }
+      advancedAsk(e, t) {
+          const r = t.target.visible;
+          if (t.target.isStage || "stage" !== e.THING || t.target.setVisible(!1),
+          this.wait = [!0, e.THING],
+          runtime.ext_scratch3_sensing.askAndWait(e, t),
+          !t.target.isStage && r && t.target.setVisible(!0),
+          publicVars.askStuff && this.setAtt(publicVars.askStuff),
+          publicVars.askType && this.setAskType(publicVars.askType),
+          "wait" === e.WAIT || void 0 === e.WAIT)
+              return new Promise((e => {
+                  const t = () => this.wait[0] ? setTimeout(t, 100) : e();
+                  t()
+              }
+              ))
+      }
+      setAskType(e) {
+          let t = document.querySelector(runtime.isPackaged ? '[class="sc-question-input"]' : '[class*="question"] [class^="input_input-form"]');
+          if (!t)
+              return void (publicVars.askType = e);
+          const r = document.getElementById("SP-input_select");
+          if (r && t.parentNode.removeChild(r),
+          "dropdown" === e.TYPE) {
+              const r = t.parentNode.getBoundingClientRect().width;
+              let s = document.createElement("select");
+              s.id = "SP-input_select",
+              s.setAttribute("style", `background: #fff; color: #505050; width: ${r - 40}px; display: block; border-width: 2px; border-color: #D9D9D9; transform: translate(0px,3px);`),
+              e.LIST.forEach((e => {
+                  let t = document.createElement("option");
+                  t.value = e,
+                  t.text = e,
+                  s.appendChild(t)
+              }
+              )),
+              t.parentNode.appendChild(s),
+              t.style.display = "none",
+              t.value = s.value,
+              s.addEventListener("change", (function() {
+                  t.value = s.value
+              }
+              ));
+              document.querySelector('[class*="question-submit-button"]').addEventListener("click", (function() {
+                  setTimeout((function() {
+                      runtime.ext_scratch3_sensing._answer = t.value
+                  }
+                  ), 10)
+              }
+              ))
+          } else
+              t.type = e.TYPE,
+              t.pattern = "number" === e.TYPE ? "[0-9]*" : "none",
+              t.style.display = "block"
+      }
+      setAskType2(e, t) {
+          this.setAskType({
+              ...e,
+              TYPE: "dropdown",
+              LIST: this.look4List(e.TYPE, t)
+          })
+      }
+      advancedAskReporter(e, t) {
+          return this.advancedAsk(e, t).then(( () => runtime.ext_scratch3_sensing.getAnswer()))
+      }
+      stopAsking() {
+          let e = document.querySelector('[class*="question-submit-button"]');
+          e && (runtime.ext_scratch3_sensing._answer = e.value,
+          e.click())
+      }
+      currentTyped() {
+          let e = document.querySelector(runtime.isPackaged ? '[class="sc-question-input"]' : '[class*="question"] [class^="input_input-form"]');
+          return e ? e.value : ""
+      }
+      mouseClick(e, t) {
+          return t.ioQuery("mouse", "getButtonIsDown", [Scratch.Cast.toNumber(e.BUTTON)])
+      }
+      realX() {
+          return window.mouseX
+      }
+      realY() {
+          return window.mouseY
+      }
+      getAllString(e) {
+          let t;
+          switch (e.TEXT) {
+          case "numbers":
+              t = /[^0-9]/g;
+              break;
+          case "special characters":
+              t = /[A-Za-z0-9]/g;
+              break;
+          default:
+              t = /[^A-Za-z]/g
+          }
+          return e.STRING.replace(t, "")
+      }
+      screenOff() {
+          return Scratch.vm.renderer.canvas.width / Scratch.vm.runtime.stageWidth
+      }
+      isScreen(e) {
+          const t = [parseFloat(Scratch.vm.renderer.canvas.style.width), Scratch.vm.runtime.stageWidth];
+          return "fullscreen" === e.SCREEN ? t[0] > t[1] : t[0] < t[1]
+      }
+      _getTargets(e, t) {
+          const r = [];
+          e && r.push({
+              text: "mouse-pointer",
+              value: "_mouse_"
+          }),
+          t && r.push({
+              text: "myself",
+              value: "_myself_"
+          });
+          const s = Scratch.vm.runtime.targets;
+          for (let e = 1; e < s.length; e++) {
+              const t = s[e];
+              if (t.isOriginal) {
+                  const e = t.getName();
+                  r.push({
+                      text: e,
+                      value: e
+                  })
+              }
+          }
+          return r.length > 0 ? r : [""]
+      }
+      getLists() {
+          try {
+              const e = Object.values(vm.runtime.getTargetForStage().variables).filter((e => "list" == e.type))
+                , t = Object.values(vm.editingTarget.variables).filter((e => "list" == e.type))
+                , r = [...new Set([...e, ...t])];
+              return 0 === r.length ? [{
+                  text: "make a list",
+                  value: "make a list"
+              }] : r.map((e => ({
+                  text: e.name,
+                  value: e.id
+              })))
+          } catch {
+              return ["make a list"]
+          }
+      }
+      look4List(e, t) {
+          const r = t.target.lookupVariableById(e);
+          if (r && "list" === r.type)
+              return r.value;
+          {
+              const r = t.target.lookupVariableByNameAndType(e, "list");
+              return r ? r.value : ["undefined list"]
+          }
+      }
   }
-
-  Scratch.extensions.register(new HyperSenseSP());
-})(Scratch);
+  Scratch.extensions.register(new HyperSenseSP)
+}
+)(Scratch),
+unsandboxed;
