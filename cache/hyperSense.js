@@ -1,3 +1,7 @@
+// This extension by Sharkpool has been minified and modified by "Mistium" to remove code that goes unused within originOS
+// DO NOT USE THIS
+// Go here: https://sharkpool-sp.github.io/SharkPools-Extensions/
+
 (function(Scratch) {
   "use strict";
   if (!Scratch.extensions.unsandboxed)
