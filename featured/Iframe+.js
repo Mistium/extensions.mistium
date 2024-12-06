@@ -548,10 +548,6 @@
 
             // Update iframe attributes
             this.updateFrameAttributes(iframesMap.get(ID));
-            console.log("Map Data:");
-            iframesMap.forEach((value, key) => {
-                console.log("Key:", key, "Value:", value);
-            });
         }
 
 
