@@ -1,1 +1,185 @@
-!function(e){"use strict";if(!e.extensions.unsandboxed)throw new Error("'Key History' needs to be run unsandboxed.");e.extensions.register(new class{constructor(){this.keyHistory=[],this.max_key_history=100,this.keybinds=["Ctrl","Shift","Alt"],this.keysDown=[],this.keysHit=[],this.keyHitTimes=[],this.pause=!1,document.addEventListener("keydown",(e=>this.onKeyDown(e))),document.addEventListener("keyup",(e=>this.onKeyUp(e))),document.addEventListener("paste",(e=>this.onPaste(e))),console.log("Key History Extension Loaded")}getInfo(){return{id:"MistKeyHistoryExtension",name:"Key History",color1:"#36644E",blocks:[{opcode:"getRecentKeys",blockType:e.BlockType.REPORTER,text:"get recent keys"},{opcode:"getKeysDown",blockType:e.BlockType.REPORTER,text:"keys down"},{opcode:"getFirstKey",blockType:e.BlockType.REPORTER,text:"get first key"},{opcode:"lastKeyPressed",blockType:e.BlockType.REPORTER,text:"get last key"},"---",{opcode:"iskeyPressed",blockType:e.BlockType.BOOLEAN,text:"key [KEY] pressed?",arguments:{KEY:{type:e.ArgumentType.STRING,defaultValue:"a"}}},{opcode:"iskeyhit",blockType:e.BlockType.BOOLEAN,text:"key [KEY] hit?",arguments:{KEY:{type:e.ArgumentType.STRING,defaultValue:"a"}}},"---",{opcode:"deleteFirstKey",blockType:e.BlockType.COMMAND,text:"delete the first key from history"},{opcode:"deleteAllKeys",blockType:e.BlockType.COMMAND,text:"delete all keys from history"},{opcode:"AddKey",blockType:e.BlockType.COMMAND,text:"add [KEY] to key history",arguments:{KEY:{type:e.ArgumentType.STRING,defaultValue:"a"}}},"---",{opcode:"setMaxQueueSize",blockType:e.BlockType.COMMAND,text:"limit key history to [LENGTH] keys",arguments:{LENGTH:{type:e.ArgumentType.NUMBER,defaultValue:100}}},{opcode:"ignoreKeybinds",blockType:e.BlockType.COMMAND,text:"ignore keys [KEYS]",arguments:{KEYS:{type:e.ArgumentType.STRING,defaultValue:'["Ctrl", "Shift", "Alt"]'}}},"---",{opcode:"enableKeyHistory",blockType:e.BlockType.COMMAND,text:"enable key history"},{opcode:"disableKeyHistory",blockType:e.BlockType.COMMAND,text:"disable key history"},"---",{opcode:"recentKeysAsRawJs",blockType:e.BlockType.REPORTER,text:"recent keys as raw object"}]}}getRecentKeys(){return JSON.stringify(this.keyHistory)}getFirstKey(){let t=this.keyHistory[0];return"object"==typeof t?JSON.stringify(t??""):e.Cast.toString(t??"")}deleteFirstKey(){this.keyHistory.length>0&&this.keyHistory.shift()}deleteAllKeys(){this.keyHistory=[]}setMaxQueueSize({LENGTH:t}){this.max_key_history=e.Cast.toNumber(t)}AddKey({KEY:e}){this.addKeyToHistory(e)}onKeyDown(t){const s=e.Cast.toString(t.key??""),y=s.toLowerCase();this.keysHit.includes(y)||(this.keysHit.push(y),this.keyHitTimes.push(Date.now())),this.keysDown.includes(y)||this.keysDown.push(y),t.metaKey||t.ctrlKey||this.isKeybind(s)||this.pause||this.addKeyToHistory(s)}onKeyUp(t){const s=e.Cast.toString(t.key??"").toLowerCase().toLowerCase(),y=this.keysDown.indexOf(s);-1!==y&&this.keysDown.splice(y,1);let i=this.keysHit.indexOf(s);-1!==i&&(this.keysHit.splice(i,1),this.keyHitTimes.splice(i,1))}onPaste(t){const s=t.clipboardData.getData("text/plain");let y={type:"paste",data:e.Cast.toString(s)};this.addKeyToHistory(y)}ignoreKeybinds({KEYS:e}){try{this.keybinds=JSON.parse(e)}catch(e){}}isKeybind(t){return this.keybinds.includes(e.Cast.toString(t))}addKeyToHistory(t){this.keyHistory.length>=this.max_key_history&&this.keyHistory.shift(),"object"!=typeof t&&(t=t.length>1?{type:"special",data:t}:{type:"key",data:e.Cast.toString(t)}),this.keyHistory.push(t)}enableKeyHistory(){this.pause=!1}disableKeyHistory(){this.pause=!0}lastKeyPressed(){let t=this.keyHistory[this.keyHistory.length-1]??"";return"object"==typeof t?JSON.stringify(t):e.Cast.toString(t)}iskeyPressed({KEY:t}){return this.keysDown.includes(e.Cast.toString(t))}iskeyhit({KEY:t}){t=e.Cast.toString(t);let s=this.keysHit.indexOf(t);if(-1!==s){let e=!1;return e=Date.now()-this.keyHitTimes[s]<100,this.keyHitTimes[s]=0,e}return!1}getKeysDown(){return JSON.stringify(this.keysDown)}recentKeysAsRawJs(){return this.keyHistory}})}(Scratch);
+(function(Scratch) {
+  "use strict";
+
+  if (!Scratch.extensions.unsandboxed) {
+    throw new Error("'Key History' needs to be run unsandboxed.");
+  }
+
+  class KeyHistoryExtension {
+    constructor() {
+      this.keyHistory = [];
+      this.max_key_history = 100;
+      this.keybinds = ["Ctrl", "Shift", "Alt"];
+      this.keysDown = [];
+      this.keysHit = [];
+      this.keyHitTimes = [];
+      this.pause = false;
+
+      document.addEventListener("keydown", (e) => this.onKeyDown(e));
+      document.addEventListener("keyup", (e) => this.onKeyUp(e));
+      document.addEventListener("paste", (e) => this.onPaste(e));
+
+      console.log("Key History Extension Loaded");
+    }
+
+    getInfo() {
+      return {
+        id: "MistKeyHistoryExtension",
+        name: "Key History",
+        color1: "#36644E",
+        blocks: [
+          { opcode: "getRecentKeys", blockType: Scratch.BlockType.REPORTER, text: "get recent keys" },
+          { opcode: "getKeysDown", blockType: Scratch.BlockType.REPORTER, text: "keys down" },
+          { opcode: "getFirstKey", blockType: Scratch.BlockType.REPORTER, text: "get first key" },
+          { opcode: "lastKeyPressed", blockType: Scratch.BlockType.REPORTER, text: "get last key" },
+          "---",
+          { opcode: "iskeyPressed", blockType: Scratch.BlockType.BOOLEAN, text: "key [KEY] pressed?", arguments: { KEY: { type: Scratch.ArgumentType.STRING, defaultValue: "a" } } },
+          { opcode: "iskeyhit", blockType: Scratch.BlockType.BOOLEAN, text: "key [KEY] hit?", arguments: { KEY: { type: Scratch.ArgumentType.STRING, defaultValue: "a" } } },
+          "---",
+          { opcode: "deleteFirstKey", blockType: Scratch.BlockType.COMMAND, text: "delete the first key from history" },
+          { opcode: "deleteAllKeys", blockType: Scratch.BlockType.COMMAND, text: "delete all keys from history" },
+          { opcode: "AddKey", blockType: Scratch.BlockType.COMMAND, text: "add [KEY] to key history", arguments: { KEY: { type: Scratch.ArgumentType.STRING, defaultValue: "a" } } },
+          "---",
+          { opcode: "setMaxQueueSize", blockType: Scratch.BlockType.COMMAND, text: "limit key history to [LENGTH] keys", arguments: { LENGTH: { type: Scratch.ArgumentType.NUMBER, defaultValue: 100 } } },
+          { opcode: "ignoreKeybinds", blockType: Scratch.BlockType.COMMAND, text: "ignore keys [KEYS]", arguments: { KEYS: { type: Scratch.ArgumentType.STRING, defaultValue: '["Ctrl", "Shift", "Alt"]' } } },
+          "---",
+          { opcode: "enableKeyHistory", blockType: Scratch.BlockType.COMMAND, text: "enable key history" },
+          { opcode: "disableKeyHistory", blockType: Scratch.BlockType.COMMAND, text: "disable key history" },
+          "---",
+          { opcode: "recentKeysAsRawJs", blockType: Scratch.BlockType.REPORTER, text: "recent keys as raw object" }
+        ]
+      };
+    }
+
+    getRecentKeys() {
+      return JSON.stringify(this.keyHistory);
+    }
+
+    getFirstKey() {
+      let firstKey = this.keyHistory[0];
+      return typeof firstKey === "object" ? JSON.stringify(firstKey ?? "") : Scratch.Cast.toString(firstKey ?? "");
+    }
+
+    deleteFirstKey() {
+      if (this.keyHistory.length > 0) {
+        this.keyHistory.shift();
+      }
+    }
+
+    deleteAllKeys() {
+      this.keyHistory = [];
+    }
+
+    setMaxQueueSize({ LENGTH }) {
+      this.max_key_history = Scratch.Cast.toNumber(LENGTH);
+    }
+
+    AddKey({ KEY }) {
+      this.addKeyToHistory(KEY);
+    }
+
+    onKeyDown(event) {
+      const key = Scratch.Cast.toString(event.key ?? "");
+      const lowerKey = key.toLowerCase();
+
+      if (!this.keysHit.includes(lowerKey)) {
+        this.keysHit.push(lowerKey);
+        this.keyHitTimes.push(Date.now());
+      }
+
+      if (!this.keysDown.includes(lowerKey)) {
+        this.keysDown.push(lowerKey);
+      }
+
+      if (!event.metaKey && !event.ctrlKey && !this.isKeybind(key) && !this.pause) {
+        this.addKeyToHistory(key);
+      }
+    }
+
+    onKeyUp(event) {
+      const key = Scratch.Cast.toString(event.key ?? "").toLowerCase();
+      const downIndex = this.keysDown.indexOf(key);
+
+      if (downIndex !== -1) {
+        this.keysDown.splice(downIndex, 1);
+      }
+
+      const hitIndex = this.keysHit.indexOf(key);
+      if (hitIndex !== -1) {
+        this.keysHit.splice(hitIndex, 1);
+        this.keyHitTimes.splice(hitIndex, 1);
+      }
+    }
+
+    onPaste(event) {
+      const pastedData = event.clipboardData.getData("text/plain");
+      const pasteObject = { type: "paste", data: Scratch.Cast.toString(pastedData) };
+      this.addKeyToHistory(pasteObject);
+    }
+
+    ignoreKeybinds({ KEYS }) {
+      try {
+        this.keybinds = JSON.parse(KEYS);
+      } catch (error) {
+        // Handle parsing error
+      }
+    }
+
+    isKeybind(key) {
+      return this.keybinds.includes(Scratch.Cast.toString(key));
+    }
+
+    addKeyToHistory(key) {
+      if (this.keyHistory.length >= this.max_key_history) {
+        this.keyHistory.shift();
+      }
+
+      if (typeof key !== "object") {
+        key = key.length > 1 ? { type: "special", data: key } : { type: "key", data: Scratch.Cast.toString(key) };
+      }
+
+      this.keyHistory.push(key);
+    }
+
+    enableKeyHistory() {
+      this.pause = false;
+    }
+
+    disableKeyHistory() {
+      this.pause = true;
+    }
+
+    lastKeyPressed() {
+      let lastKey = this.keyHistory[this.keyHistory.length - 1] ?? "";
+      return typeof lastKey === "object" ? JSON.stringify(lastKey) : Scratch.Cast.toString(lastKey);
+    }
+
+    iskeyPressed({ KEY }) {
+      return this.keysDown.includes(Scratch.Cast.toString(KEY));
+    }
+
+    iskeyhit({ KEY }) {
+      const key = Scratch.Cast.toString(KEY);
+      const hitIndex = this.keysHit.indexOf(key);
+
+      if (hitIndex !== -1) {
+        let recentlyHit = false;
+        recentlyHit = Date.now() - this.keyHitTimes[hitIndex] < 100;
+        this.keyHitTimes[hitIndex] = 0;
+        return recentlyHit;
+      }
+
+      return false;
+    }
+
+    getKeysDown() {
+      return JSON.stringify(this.keysDown);
+    }
+
+    recentKeysAsRawJs() {
+      return this.keyHistory;
+    }
+  }
+
+  Scratch.extensions.register(new KeyHistoryExtension());
+})(Scratch);
