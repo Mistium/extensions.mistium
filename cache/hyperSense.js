@@ -56,6 +56,13 @@
           this.pressedKey = null,
           this.wait = [!1, "sprite"],
           this.pressedKeys = {},
+            
+          window.addEventListener("blur", () => {
+            this.pressedKeys = {}
+            this.pressedKey = ""
+            currentlyPressedKey = ""
+          });
+        
           document.addEventListener("keydown", (e => {
               keyPressTime += .1,
               this.pressedKey = e.key.toUpperCase(),
