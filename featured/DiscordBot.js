@@ -359,16 +359,33 @@
       NAME = Scratch.Cast.toString(NAME);
       DESCRIPTION = Scratch.Cast.toString(DESCRIPTION);
 
-      fetch(`https://proxy.milosantos.com/turbowarpbot/registerslash.php?id=${this.client_data.application.id}&name=${encodeURIComponent(NAME)}&description=${encodeURIComponent(DESCRIPTION)}&token=${this.token}`)
-        .then(response => response.json())
-        .then(data => {
+      const url = `https://discord.com/api/v10/applications/${this.client_data.application.id}/commands`;
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bot ${this.token}`,
+      };
+
+      const commandData = {
+        name: NAME,
+        description: DESCRIPTION,
+        contexts: [0, 1, 2],
+        integration_types: [0, 1],
+      };
+
+      fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(commandData),
+      })
+        .then((response) => response.json())
+        .then((data) => {
           if (data.id) {
             console.log(`Slash command "${NAME}" registered successfully.`);
           } else {
             console.error('Failed to register slash command:', data);
           }
         })
-        .catch(error => console.error('Failed to register slash command:', error));
+        .catch((error) => console.error('Failed to register slash command:', error));
     }
 
     newInteraction() {
