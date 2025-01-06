@@ -1,5 +1,7 @@
 (function (Scratch) {
 
+  let bot_data = '';
+  
   class DiscordBot {
     getInfo() {
       return {
@@ -33,6 +35,11 @@
             opcode: 'connected',
             blockType: Scratch.BlockType.BOOLEAN,
             text: 'connected to discord',
+          },
+          {
+            opcode: 'botinfo',
+            blockType: Scratch.BlockType.STRING,
+            text: 'bot information',
           },
           "---",
           {
@@ -264,7 +271,7 @@
 
         if (data.t === 'READY') {
           console.log('Ready!');
-          this.client_data = data.d
+          bot_data = data.d
         }
 
         if (data.op === 10) {
@@ -297,6 +304,10 @@
 
     connected() {
       return this.client.readyState === WebSocket.OPEN;
+    }
+
+    botinfo() {
+      return JSON.stringify(bot_data)
     }
 
     sendMessage({ MESSAGE, CHANNEL }) {
@@ -359,7 +370,7 @@
       NAME = Scratch.Cast.toString(NAME);
       DESCRIPTION = Scratch.Cast.toString(DESCRIPTION);
 
-      const url = `https://discord.com/api/v10/applications/${this.client_data.application.id}/commands`;
+      const url = `https://discord.com/api/v10/applications/${bot_data.application.id}/commands`;
       const headers = {
         'Content-Type': 'application/json',
         Authorization: `Bot ${this.token}`,
