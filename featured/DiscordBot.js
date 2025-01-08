@@ -1,7 +1,7 @@
 (function (Scratch) {
 
   let bot_data = '';
-  
+
   class DiscordBot {
     getInfo() {
       return {
@@ -275,6 +275,16 @@
         }
 
         if (data.op === 10) {
+          // Start heartbeat
+          const heartbeatInterval = data.d.heartbeat_interval;
+          this.heartbeat = setInterval(() => {
+            this.client.send(JSON.stringify({
+              "op": 1,
+              "d": null
+            }));
+          }, heartbeatInterval);
+
+          // Send initial heartbeat
           this.client.send(JSON.stringify({
             "op": 1,
             "d": null
@@ -294,6 +304,13 @@
 
       this.client.onerror = (error) => {
         console.error('WebSocket error:', error);
+      };
+
+      this.client.onclose = () => {
+        if (this.heartbeat) {
+          clearInterval(this.heartbeat);
+          this.heartbeat = null;
+        }
       };
     }
 
