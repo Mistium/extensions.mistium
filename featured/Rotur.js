@@ -1,4 +1,171 @@
-MD5=function(r){function n(r,n){var t,o,e,u,f;return e=2147483648&r,u=2147483648&n,f=(1073741823&r)+(1073741823&n),(t=1073741824&r)&(o=1073741824&n)?2147483648^f^e^u:t|o?1073741824&f?3221225472^f^e^u:1073741824^f^e^u:f^e^u}function t(r,t,o,e,u,f,a){return r=n(r,n(n(t&o|~t&e,u),a)),n(r<<f|r>>>32-f,t)}function o(r,t,o,e,u,f,a){return r=n(r,n(n(t&e|o&~e,u),a)),n(r<<f|r>>>32-f,t)}function e(r,t,o,e,u,f,a){return r=n(r,n(n(t^o^e,u),a)),n(r<<f|r>>>32-f,t)}function u(r,t,o,e,u,f,a){return r=n(r,n(n(o^(t|~e),u),a)),n(r<<f|r>>>32-f,t)}function f(r){var n,t="",o="";for(n=0;3>=n;n++)t+=(o="0"+(o=r>>>8*n&255).toString(16)).substr(o.length-2,2);return t}var a,i,C,c,g,h,d,v,S;for(r=function(r){r=r.replace(/\r\n/g,"\n");for(var n="",t=0;t<r.length;t++){var o=r.charCodeAt(t);128>o?n+=String.fromCharCode(o):(127<o&&2048>o?n+=String.fromCharCode(o>>6|192):(n+=String.fromCharCode(o>>12|224),n+=String.fromCharCode(o>>6&63|128)),n+=String.fromCharCode(63&o|128))}return n}(r),a=function(r){for(var n,t=r.length,o=16*(((n=t+8)-n%64)/64+1),e=Array(o-1),u=0,f=0;f<t;)u=f%4*8,e[n=(f-f%4)/4]|=r.charCodeAt(f)<<u,f++;return e[n=(f-f%4)/4]|=128<<f%4*8,e[o-2]=t<<3,e[o-1]=t>>>29,e}(r),h=1732584193,d=4023233417,v=2562383102,S=271733878,r=0;r<a.length;r+=16)i=h,C=d,c=v,g=S,h=t(h,d,v,S,a[r+0],7,3614090360),S=t(S,h,d,v,a[r+1],12,3905402710),v=t(v,S,h,d,a[r+2],17,606105819),d=t(d,v,S,h,a[r+3],22,3250441966),h=t(h,d,v,S,a[r+4],7,4118548399),S=t(S,h,d,v,a[r+5],12,1200080426),v=t(v,S,h,d,a[r+6],17,2821735955),d=t(d,v,S,h,a[r+7],22,4249261313),h=t(h,d,v,S,a[r+8],7,1770035416),S=t(S,h,d,v,a[r+9],12,2336552879),v=t(v,S,h,d,a[r+10],17,4294925233),d=t(d,v,S,h,a[r+11],22,2304563134),h=t(h,d,v,S,a[r+12],7,1804603682),S=t(S,h,d,v,a[r+13],12,4254626195),v=t(v,S,h,d,a[r+14],17,2792965006),h=o(h,d=t(d,v,S,h,a[r+15],22,1236535329),v,S,a[r+1],5,4129170786),S=o(S,h,d,v,a[r+6],9,3225465664),v=o(v,S,h,d,a[r+11],14,643717713),d=o(d,v,S,h,a[r+0],20,3921069994),h=o(h,d,v,S,a[r+5],5,3593408605),S=o(S,h,d,v,a[r+10],9,38016083),v=o(v,S,h,d,a[r+15],14,3634488961),d=o(d,v,S,h,a[r+4],20,3889429448),h=o(h,d,v,S,a[r+9],5,568446438),S=o(S,h,d,v,a[r+14],9,3275163606),v=o(v,S,h,d,a[r+3],14,4107603335),d=o(d,v,S,h,a[r+8],20,1163531501),h=o(h,d,v,S,a[r+13],5,2850285829),S=o(S,h,d,v,a[r+2],9,4243563512),v=o(v,S,h,d,a[r+7],14,1735328473),h=e(h,d=o(d,v,S,h,a[r+12],20,2368359562),v,S,a[r+5],4,4294588738),S=e(S,h,d,v,a[r+8],11,2272392833),v=e(v,S,h,d,a[r+11],16,1839030562),d=e(d,v,S,h,a[r+14],23,4259657740),h=e(h,d,v,S,a[r+1],4,2763975236),S=e(S,h,d,v,a[r+4],11,1272893353),v=e(v,S,h,d,a[r+7],16,4139469664),d=e(d,v,S,h,a[r+10],23,3200236656),h=e(h,d,v,S,a[r+13],4,681279174),S=e(S,h,d,v,a[r+0],11,3936430074),v=e(v,S,h,d,a[r+3],16,3572445317),d=e(d,v,S,h,a[r+6],23,76029189),h=e(h,d,v,S,a[r+9],4,3654602809),S=e(S,h,d,v,a[r+12],11,3873151461),v=e(v,S,h,d,a[r+15],16,530742520),h=u(h,d=e(d,v,S,h,a[r+2],23,3299628645),v,S,a[r+0],6,4096336452),S=u(S,h,d,v,a[r+7],10,1126891415),v=u(v,S,h,d,a[r+14],15,2878612391),d=u(d,v,S,h,a[r+5],21,4237533241),h=u(h,d,v,S,a[r+12],6,1700485571),S=u(S,h,d,v,a[r+3],10,2399980690),v=u(v,S,h,d,a[r+10],15,4293915773),d=u(d,v,S,h,a[r+1],21,2240044497),h=u(h,d,v,S,a[r+8],6,1873313359),S=u(S,h,d,v,a[r+15],10,4264355552),v=u(v,S,h,d,a[r+6],15,2734768916),d=u(d,v,S,h,a[r+13],21,1309151649),h=u(h,d,v,S,a[r+4],6,4149444226),S=u(S,h,d,v,a[r+11],10,3174756917),v=u(v,S,h,d,a[r+2],15,718787259),d=u(d,v,S,h,a[r+9],21,3951481745),h=n(h,i),d=n(d,C),v=n(v,c),S=n(S,g);return(f(h)+f(d)+f(v)+f(S)).toLowerCase()};
+MD5 = function (e) {
+  function h(a, b) {
+    var c, d, e, f, g;
+    e = a & 2147483648;
+    f = b & 2147483648;
+    c = a & 1073741824;
+    d = b & 1073741824;
+    g = (a & 1073741823) + (b & 1073741823);
+    return c & d
+      ? g ^ 2147483648 ^ e ^ f
+      : c | d
+        ? g & 1073741824
+          ? g ^ 3221225472 ^ e ^ f
+          : g ^ 1073741824 ^ e ^ f
+        : g ^ e ^ f;
+  }
+
+  function k(a, b, c, d, e, f, g) {
+    a = h(a, h(h((b & c) | (~b & d), e), g));
+    return h((a << f) | (a >>> (32 - f)), b);
+  }
+
+  function l(a, b, c, d, e, f, g) {
+    a = h(a, h(h((b & d) | (c & ~d), e), g));
+    return h((a << f) | (a >>> (32 - f)), b);
+  }
+
+  function m(a, b, d, c, e, f, g) {
+    a = h(a, h(h(b ^ d ^ c, e), g));
+    return h((a << f) | (a >>> (32 - f)), b);
+  }
+
+  function n(a, b, d, c, e, f, g) {
+    a = h(a, h(h(d ^ (b | ~c), e), g));
+    return h((a << f) | (a >>> (32 - f)), b);
+  }
+
+  function p(a) {
+    var b = "",
+      d = "",
+      c;
+    for (c = 0; 3 >= c; c++)
+      (d = (a >>> (8 * c)) & 255),
+        (d = "0" + d.toString(16)),
+        (b += d.substr(d.length - 2, 2));
+    return b;
+  }
+  var f = [],
+    q,
+    r,
+    s,
+    t,
+    a,
+    b,
+    c,
+    d;
+  e = (function (a) {
+    a = a.replace(/\r\n/g, "\n");
+    for (var b = "", d = 0; d < a.length; d++) {
+      var c = a.charCodeAt(d);
+      128 > c
+        ? (b += String.fromCharCode(c))
+        : (127 < c && 2048 > c
+          ? (b += String.fromCharCode((c >> 6) | 192))
+          : ((b += String.fromCharCode((c >> 12) | 224)),
+            (b += String.fromCharCode(((c >> 6) & 63) | 128))),
+          (b += String.fromCharCode((c & 63) | 128)));
+    }
+    return b;
+  })(e);
+  f = (function (b) {
+    var a,
+      c = b.length;
+    a = c + 8;
+    for (
+      var d = 16 * ((a - (a % 64)) / 64 + 1), e = Array(d - 1), f = 0, g = 0;
+      g < c;
+
+    )
+      (a = (g - (g % 4)) / 4),
+        (f = (g % 4) * 8),
+        (e[a] |= b.charCodeAt(g) << f),
+        g++;
+    a = (g - (g % 4)) / 4;
+    e[a] |= 128 << ((g % 4) * 8);
+    e[d - 2] = c << 3;
+    e[d - 1] = c >>> 29;
+    return e;
+  })(e);
+  a = 1732584193;
+  b = 4023233417;
+  c = 2562383102;
+  d = 271733878;
+  for (e = 0; e < f.length; e += 16)
+    (q = a),
+      (r = b),
+      (s = c),
+      (t = d),
+      (a = k(a, b, c, d, f[e + 0], 7, 3614090360)),
+      (d = k(d, a, b, c, f[e + 1], 12, 3905402710)),
+      (c = k(c, d, a, b, f[e + 2], 17, 606105819)),
+      (b = k(b, c, d, a, f[e + 3], 22, 3250441966)),
+      (a = k(a, b, c, d, f[e + 4], 7, 4118548399)),
+      (d = k(d, a, b, c, f[e + 5], 12, 1200080426)),
+      (c = k(c, d, a, b, f[e + 6], 17, 2821735955)),
+      (b = k(b, c, d, a, f[e + 7], 22, 4249261313)),
+      (a = k(a, b, c, d, f[e + 8], 7, 1770035416)),
+      (d = k(d, a, b, c, f[e + 9], 12, 2336552879)),
+      (c = k(c, d, a, b, f[e + 10], 17, 4294925233)),
+      (b = k(b, c, d, a, f[e + 11], 22, 2304563134)),
+      (a = k(a, b, c, d, f[e + 12], 7, 1804603682)),
+      (d = k(d, a, b, c, f[e + 13], 12, 4254626195)),
+      (c = k(c, d, a, b, f[e + 14], 17, 2792965006)),
+      (b = k(b, c, d, a, f[e + 15], 22, 1236535329)),
+      (a = l(a, b, c, d, f[e + 1], 5, 4129170786)),
+      (d = l(d, a, b, c, f[e + 6], 9, 3225465664)),
+      (c = l(c, d, a, b, f[e + 11], 14, 643717713)),
+      (b = l(b, c, d, a, f[e + 0], 20, 3921069994)),
+      (a = l(a, b, c, d, f[e + 5], 5, 3593408605)),
+      (d = l(d, a, b, c, f[e + 10], 9, 38016083)),
+      (c = l(c, d, a, b, f[e + 15], 14, 3634488961)),
+      (b = l(b, c, d, a, f[e + 4], 20, 3889429448)),
+      (a = l(a, b, c, d, f[e + 9], 5, 568446438)),
+      (d = l(d, a, b, c, f[e + 14], 9, 3275163606)),
+      (c = l(c, d, a, b, f[e + 3], 14, 4107603335)),
+      (b = l(b, c, d, a, f[e + 8], 20, 1163531501)),
+      (a = l(a, b, c, d, f[e + 13], 5, 2850285829)),
+      (d = l(d, a, b, c, f[e + 2], 9, 4243563512)),
+      (c = l(c, d, a, b, f[e + 7], 14, 1735328473)),
+      (b = l(b, c, d, a, f[e + 12], 20, 2368359562)),
+      (a = m(a, b, c, d, f[e + 5], 4, 4294588738)),
+      (d = m(d, a, b, c, f[e + 8], 11, 2272392833)),
+      (c = m(c, d, a, b, f[e + 11], 16, 1839030562)),
+      (b = m(b, c, d, a, f[e + 14], 23, 4259657740)),
+      (a = m(a, b, c, d, f[e + 1], 4, 2763975236)),
+      (d = m(d, a, b, c, f[e + 4], 11, 1272893353)),
+      (c = m(c, d, a, b, f[e + 7], 16, 4139469664)),
+      (b = m(b, c, d, a, f[e + 10], 23, 3200236656)),
+      (a = m(a, b, c, d, f[e + 13], 4, 681279174)),
+      (d = m(d, a, b, c, f[e + 0], 11, 3936430074)),
+      (c = m(c, d, a, b, f[e + 3], 16, 3572445317)),
+      (b = m(b, c, d, a, f[e + 6], 23, 76029189)),
+      (a = m(a, b, c, d, f[e + 9], 4, 3654602809)),
+      (d = m(d, a, b, c, f[e + 12], 11, 3873151461)),
+      (c = m(c, d, a, b, f[e + 15], 16, 530742520)),
+      (b = m(b, c, d, a, f[e + 2], 23, 3299628645)),
+      (a = n(a, b, c, d, f[e + 0], 6, 4096336452)),
+      (d = n(d, a, b, c, f[e + 7], 10, 1126891415)),
+      (c = n(c, d, a, b, f[e + 14], 15, 2878612391)),
+      (b = n(b, c, d, a, f[e + 5], 21, 4237533241)),
+      (a = n(a, b, c, d, f[e + 12], 6, 1700485571)),
+      (d = n(d, a, b, c, f[e + 3], 10, 2399980690)),
+      (c = n(c, d, a, b, f[e + 10], 15, 4293915773)),
+      (b = n(b, c, d, a, f[e + 1], 21, 2240044497)),
+      (a = n(a, b, c, d, f[e + 8], 6, 1873313359)),
+      (d = n(d, a, b, c, f[e + 15], 10, 4264355552)),
+      (c = n(c, d, a, b, f[e + 6], 15, 2734768916)),
+      (b = n(b, c, d, a, f[e + 13], 21, 1309151649)),
+      (a = n(a, b, c, d, f[e + 4], 6, 4149444226)),
+      (d = n(d, a, b, c, f[e + 11], 10, 3174756917)),
+      (c = n(c, d, a, b, f[e + 2], 15, 718787259)),
+      (b = n(b, c, d, a, f[e + 9], 21, 3951481745)),
+      (a = h(a, q)),
+      (b = h(b, r)),
+      (c = h(c, s)),
+      (d = h(d, t));
+  return (p(a) + p(b) + p(c) + p(d)).toLowerCase();
+};
 
 randomString = function (length) {
   var result = "";
@@ -40,7 +207,7 @@ class RoturExtension {
     this.lastJoined = "";
     this.lastLeft = "";
 
-    this.version = 4;
+    this.version = 5;
     this.outdated = false;
 
     fetch("https://raw.githubusercontent.com/Mistium/Origin-OS/main/Resources/info.json")
@@ -74,6 +241,7 @@ class RoturExtension {
         })
         .then((data) => {
           this.outdated = this.version < parseInt(data);
+          Scratch.vm.extensionManager.refreshBlocks();
         })
     }
   }
@@ -101,642 +269,642 @@ class RoturExtension {
       name: "RoturV5",
       color1: "#403041",
       blocks: [
-      {
-        blockType: Scratch.BlockType.BUTTON,
-        text: "new update available",
-        func: "openUpdate",
-        hideFromPalette: !this.outdated,
-      },
-      {
-        opcode: "connectToServer",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "connect to server with designation: [DESIGNATION], system: [SYSTEM] and version: [VERSION]",
-        arguments: {
-        DESIGNATION: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "rtr",
-        },
-        SYSTEM: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "rotur",
-        },
-        VERSION: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "v5",
-        },
-        },
-      },
-      {
-        opcode: "serverOnline",
-        blockType: Scratch.BlockType.BOOLEAN,
-        text: "account server online",
-      },
-      {
-        opcode: "disconnect",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "disconnect from server",
-      },
-      {
-        opcode: "connected",
-        blockType: Scratch.BlockType.BOOLEAN,
-        text: "connected to server",
-      },
-      "---",
-      {
-        opcode: "whenConnected",
-        blockType: Scratch.BlockType.EVENT,
-        text: "when connected to server",
-        isEdgeActivated: false,
-      },
-      {
-        opcode: "whenDisconnected",
-        blockType: Scratch.BlockType.EVENT,
-        text: "when disconnected from server",
-        isEdgeActivated: false,
-      },
-      "---",
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "authentication",
-      },
-      {
-        opcode: "login",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "login with username: [USERNAME] and password: [PASSWORD]",
-        arguments: {
-        USERNAME: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "test",
-        },
-        PASSWORD: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "password",
-        },
-        },
-      },
-      {
-        opcode: "loginToken",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "login with token: [TOKEN]",
-        arguments: {
-        TOKEN: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "token",
-        },
-        },
-        hideFromPalette: true,
-      },
-      {
-        opcode: "register",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "register with username: [USERNAME] and password: [PASSWORD]",
-        arguments: {
-        USERNAME: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "test",
-        },
-        PASSWORD: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "password",
-        },
-        },
-      },
-      {
-        opcode: "logout",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "logout",
-      },
-      {
-        opcode: "loggedIn",
-        blockType: Scratch.BlockType.BOOLEAN,
-        text: "authenticated",
-      },
-      {
-        opcode: "firstLogin",
-        blockType: Scratch.BlockType.BOOLEAN,
-        text: "is this the first login of today?",
-      },
-      {
-        opcode: "whenAuthenticated",
-        blockType: Scratch.BlockType.EVENT,
-        text: "when authenticated",
-        isEdgeActivated: false,
-      },
-      "---",
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "account information",
-      },
-      {
-        blockType: Scratch.BlockType.BUTTON,
-        text: "account docs",
-        func: "openAccountDocs",
-      },
-      {
-        opcode: "getToken",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "user token",
-      },
-      {
-        opcode: "getkey",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get [KEY]",
-        arguments: {
-        KEY: {
-          menu: "keys",
-        },
-        },
-      },
-      {
-        opcode: "setkey",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "set [KEY] to [VALUE]",
-        arguments: {
-        KEY: {
-          menu: "keys",
-        },
-        VALUE: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "value",
-        },
-        },
-      },
-      {
-        opcode: "keyExists",
-        blockType: Scratch.BlockType.BOOLEAN,
-        text: "key [KEY] exists",
-        arguments: {
-        KEY: {
-          menu: "keys",
-        },
-        },
-      },
-      {
-        opcode: "getkeys",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get all keys",
-      },
-      {
-        opcode: "getvalues",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get all values",
-      },
-      {
-        opcode: "getAccount",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get account object",
-      },
-      {
-        opcode: "whenAccountUpdate",
-        blockType: Scratch.BlockType.EVENT,
-        text: "when account updated",
-        isEdgeActivated: false,
-      },
-      "---",
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "data storage",
-      },
-      {
-        blockType: Scratch.BlockType.BUTTON,
-        text: "data storage docs",
-        func: "openStorageDocs",
-      },
-      {
-        opcode: "setStorageID",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "set storage id to [ID]",
-        arguments: {
-        ID: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "id",
-        },
-        },
-      },
-      {
-        opcode: "storageIdExists",
-        blockType: Scratch.BlockType.BOOLEAN,
-        text: "storage id has been set",
-      },
-      {
-        opcode: "getStorageID",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "storage id",
-      },
-      {
-        opcode: "getStorageKey",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get key from storage [KEY]",
-        arguments: {
-        KEY: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "key",
-        },
-        },
-      },
-      {
-        opcode: "setStorageKey",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "set key [KEY] to [VALUE] in storage",
-        arguments: {
-        KEY: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "key",
-        },
-        VALUE: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "value",
-        },
-        },
-      },
-      {
-        opcode: "existsStorageKey",
-        blockType: Scratch.BlockType.BOOLEAN,
-        text: "key [KEY] exists in storage",
-        arguments: {
-        KEY: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "key",
-        },
-        },
-      },
-      {
-        opcode: "deleteStorageKey",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "delete key [KEY] from storage",
-        arguments: {
-        KEY: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "key",
-        },
-        },
-      },
-      {
-        opcode: "getStorageKeys",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get all keys from storage",
-      },
-      {
-        opcode: "getStorageValues",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get all values from storage",
-      },
-      {
-        opcode: "clearStorage",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "clear storage",
-      },
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "storage information",
-      },
-      {
-        opcode: "storageUsage",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "storage usage (characters)",
-      },
-      {
-        opcode: "storageLimit",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "storage limit (characters)",
-      },
-      {
-        opcode: "storageRemaining",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "storage remaining (characters)",
-      },
-      {
-        opcode: "accountStorageUsage",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "account storage usage (characters)",
-      },
-      {
-        opcode: "accountStorageLimit",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "account storage limit (characters)",
-      },
-      {
-        opcode: "accountStorageRemaining",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "account storage remaining (characters)",
-      },
-      "---",
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "messaging",
-      },
-      {
-        opcode: "sendMessage",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "send message [PAYLOAD] to user [USER] on port: [TARGET] from port: [SOURCE]",
-        arguments: {
-        PAYLOAD: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "hello",
-        },
-        USER: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "targetUser",
-        },
-        TARGET: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "port",
-        },
-        SOURCE: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "port",
-        },
-        },
-      },
-      {
-        opcode: "whenMessageReceived",
-        blockType: Scratch.BlockType.EVENT,
-        text: "when message received",
-        isEdgeActivated: false,
-      },
-      {
-        opcode: "getPacketsFromTarget",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get packets from port [TARGET]",
-        arguments: {
-        TARGET: {
-          menu: "targets",
-        },
-        },
-      },
-      {
-        opcode: "getFirstPacketOnTarget",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "first packet on port [TARGET]",
-        arguments: {
-        TARGET: {
-          menu: "targets",
-        },
-        },
-      },
-      {
-        opcode: "dataOfFirstPacketOnTarget",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "[DATA] of first packet on port [TARGET]",
-        arguments: {
-        DATA: {
-          menu: "packetData",
-        },
-        TARGET: {
-          menu: "targets",
-        },
-        },
-      },
-      {
-        opcode: "numberOfPacketsOnTarget",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "number of packets on port [TARGET]",
-        arguments: {
-        TARGET: {
-          menu: "targets",
-        },
-        },
-      },
-      {
-        opcode: "getAllTargets",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "all open targets",
-      },
-      {
-        opcode: "getAllPackets",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "all packets",
-      },
-      {
-        opcode: "deleteFirstPacketOnTarget",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "pop first of port [TARGET]",
-        arguments: {
-        TARGET: {
-          menu: "targets",
-        },
-        },
-      },
-      {
-        opcode: "deletePacketsOnTarget",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "delete all packets on port [TARGET]",
-        arguments: {
-        TARGET: {
-          menu: "targets",
-        },
-        },
-      },
-      {
-        opcode: "deleteAllPackets",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "delete all packets",
-      },
-      "---",
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "raw packet queue",
-      },
-      {
-        opcode: "RAWgetAllPackets",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get all raw packets",
-      },
-      {
-        opcode: "RAWgetFirstPacket",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "first raw packet",
-      },
-      {
-        opcode: "RAWdeleteFirstPacket",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "pop first raw packet",
-      },
-      {
-        opcode: "RAWdeleteAllPackets",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "delete all raw packets",
-      },
-      "---",
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "client information",
-      },
-      {
-        opcode: "clientIP",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "client ip",
-      },
-      {
-        opcode: "clientUsername",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "client username",
-      },
-      "---",
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "users",
-      },
-      {
-        opcode: "clientUsers",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "connected users",
-      },
-      {
-        opcode: "usernameConnected",
-        blockType: Scratch.BlockType.BOOLEAN,
-        text: "username [USER] connected on any designation",
-        arguments: {
-        USER: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "user",
-        },
-        },
-      },
-      {
-        opcode: "userConnected",
-        blockType: Scratch.BlockType.BOOLEAN,
-        text: "user [USER] connected on designation: [DESIGNATION]",
-        arguments: {
-        USER: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "user",
-        },
-        DESIGNATION: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "rtr",
-        },
-        },
-      },
-      {
-        opcode: "getUserDesignation",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get all users on designation: [DESIGNATION]",
-        arguments: {
-        DESIGNATION: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "rtr",
-        },
-        },
-      },
-      {
-        opcode: "findID",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "find all connections of username: [USER]",
-        arguments: {
-        USER: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "user",
-        },
-        },
-      },
-      {
-        opcode: "onJoin",
-        blockType: Scratch.BlockType.EVENT,
-        text: "when a user connects",
-        isEdgeActivated: false,
-      },
-      {
-        opcode: "onLeave",
-        blockType: Scratch.BlockType.EVENT,
-        text: "when a user disconnects",
-        isEdgeActivated: false,
-      },
-      {
-        opcode: "onJoinUser",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "last user to join",
-      },
-      {
-        opcode: "onLeaveUser",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "last user to leave",
-      },
-      "---",
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "synced variables"
-      },
-      {
-        opcode: "setSyncedVariable",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "sync variable with [USER] of [KEY] to [VALUE]",
-        arguments: {
-        USER: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "user",
-        },
-        KEY: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "key",
-        },
-        VALUE: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "value",
-        },
-        },
-      },
-      {
-        opcode: "getSyncedVariable",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get synced variable with [USER] of [KEY]",
-        arguments: {
-        USER: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "user",
-        },
-        KEY: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "key",
-        },
-        },
-      },
-      {
-        opcode: "deleteSyncedVariable",
-        blockType: Scratch.BlockType.COMMAND,
-        text: "delete synced variable with [USER] of [KEY]",
-        arguments: {
-        USER: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "user",
-        },
-        KEY: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "key",
-        },
-        },
-      },
-      {
-        opcode: "getSyncedVariables",
-        blockType: Scratch.BlockType.REPORTER,
-        text: "get synced variables with [USER]",
-        arguments: {
-        USER: {
-          type: Scratch.ArgumentType.STRING,
-          defaultValue: "user",
-        },
-        },
-      },
-      "---",
-      {
-        blockType: Scratch.BlockType.LABEL,
-        text: "rmail",
-      },
-      {
-        blockType: Scratch.BlockType.BUTTON,
-        text: "mail docs",
-        func: "openMailDocs",
-      },
-      {
-        opcode: "whenMailReceived",
-        blockType: Scratch.BlockType.EVENT,
-        text: "when mail received",
-        isEdgeActivated: false,
-      },
-      {
-        opcode: "sendMail",
+        {
+          blockType: Scratch.BlockType.BUTTON,
+          text: "New Update Available",
+          func: "openUpdate",
+          hideFromPalette: !this.outdated,
+        },
+        {
+          opcode: "connectToServer",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Connect To Server With Designation: [DESIGNATION], System: [SYSTEM] And Version: [VERSION]",
+          arguments: {
+            DESIGNATION: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "rtr",
+            },
+            SYSTEM: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "rotur",
+            },
+            VERSION: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "v5",
+            },
+          },
+        },
+        {
+          opcode: "serverOnline",
+          blockType: Scratch.BlockType.BOOLEAN,
+          text: "Account Server Online",
+        },
+        {
+          opcode: "disconnect",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Disconnect From Server",
+        },
+        {
+          opcode: "connected",
+          blockType: Scratch.BlockType.BOOLEAN,
+          text: "Connected To Server",
+        },
+        "---",
+        {
+          opcode: "whenConnected",
+          blockType: Scratch.BlockType.EVENT,
+          text: "When Connected To Server",
+          isEdgeActivated: false,
+        },
+        {
+          opcode: "whenDisconnected",
+          blockType: Scratch.BlockType.EVENT,
+          text: "When Disconnected From Server",
+          isEdgeActivated: false,
+        },
+        "---",
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "Authentication",
+        },
+        {
+          opcode: "login",
           blockType: Scratch.BlockType.REPORTER,
-          text: "send mail with subject: [SUBJECT] and message: [MESSAGE] to: [TO]",
+          text: "Login With Username: [USERNAME] And Password: [PASSWORD]",
+          arguments: {
+            USERNAME: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "test",
+            },
+            PASSWORD: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "password",
+            },
+          },
+        },
+        {
+          opcode: "loginToken",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Login With Token: [TOKEN]",
+          arguments: {
+            TOKEN: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "token",
+            },
+          },
+          hideFromPalette: true,
+        },
+        {
+          opcode: "register",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Register With Username: [USERNAME] And Password: [PASSWORD]",
+          arguments: {
+            USERNAME: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "test",
+            },
+            PASSWORD: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "password",
+            },
+          },
+        },
+        {
+          opcode: "logout",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Logout",
+        },
+        {
+          opcode: "loggedIn",
+          blockType: Scratch.BlockType.BOOLEAN,
+          text: "Authenticated",
+        },
+        {
+          opcode: "firstLogin",
+          blockType: Scratch.BlockType.BOOLEAN,
+          text: "Is This The First Login Of Today?",
+        },
+        {
+          opcode: "whenAuthenticated",
+          blockType: Scratch.BlockType.EVENT,
+          text: "When Authenticated",
+          isEdgeActivated: false,
+        },
+        "---",
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "Account Information",
+        },
+        {
+          blockType: Scratch.BlockType.BUTTON,
+          text: "Account Docs",
+          func: "openAccountDocs",
+        },
+        {
+          opcode: "getToken",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "User Token",
+        },
+        {
+          opcode: "getkey",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get [KEY]",
+          arguments: {
+            KEY: {
+              menu: "keys",
+            },
+          },
+        },
+        {
+          opcode: "setkey",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Set [KEY] To [VALUE]",
+          arguments: {
+            KEY: {
+              menu: "keys",
+            },
+            VALUE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "value",
+            },
+          },
+        },
+        {
+          opcode: "keyExists",
+          blockType: Scratch.BlockType.BOOLEAN,
+          text: "Key [KEY] Exists",
+          arguments: {
+            KEY: {
+              menu: "keys",
+            },
+          },
+        },
+        {
+          opcode: "getkeys",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get All Keys",
+        },
+        {
+          opcode: "getvalues",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get All Values",
+        },
+        {
+          opcode: "getAccount",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get Account Object",
+        },
+        {
+          opcode: "whenAccountUpdate",
+          blockType: Scratch.BlockType.EVENT,
+          text: "When Account Updated",
+          isEdgeActivated: false,
+        },
+        "---",
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "Data Storage",
+        },
+        {
+          blockType: Scratch.BlockType.BUTTON,
+          text: "Data Storage Docs",
+          func: "openStorageDocs",
+        },
+        {
+          opcode: "setStorageID",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Set Storage Id To [ID]",
+          arguments: {
+            ID: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "id",
+            },
+          },
+        },
+        {
+          opcode: "storageIdExists",
+          blockType: Scratch.BlockType.BOOLEAN,
+          text: "Storage ID Has Been Set",
+        },
+        {
+          opcode: "getStorageID",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Storage ID",
+        },
+        {
+          opcode: "getStorageKey",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get Key From Storage [KEY]",
+          arguments: {
+            KEY: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "key",
+            },
+          },
+        },
+        {
+          opcode: "setStorageKey",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Set Key [KEY] To [VALUE] In Storage",
+          arguments: {
+            KEY: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "key",
+            },
+            VALUE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "value",
+            },
+          },
+        },
+        {
+          opcode: "existsStorageKey",
+          blockType: Scratch.BlockType.BOOLEAN,
+          text: "Key [KEY] Exists In Storage",
+          arguments: {
+            KEY: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "key",
+            },
+          },
+        },
+        {
+          opcode: "deleteStorageKey",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Delete Key [KEY] From Storage",
+          arguments: {
+            KEY: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "key",
+            },
+          },
+        },
+        {
+          opcode: "getStorageKeys",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get All Keys From Storage",
+        },
+        {
+          opcode: "getStorageValues",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get All Values From Storage",
+        },
+        {
+          opcode: "clearStorage",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Clear Storage",
+        },
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "Storage Information",
+        },
+        {
+          opcode: "storageUsage",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Storage Usage (Characters)",
+        },
+        {
+          opcode: "storageLimit",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Storage Limit (Characters)",
+        },
+        {
+          opcode: "storageRemaining",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Storage Remaining (Characters)",
+        },
+        {
+          opcode: "accountStorageUsage",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Account Storage Usage (Characters)",
+        },
+        {
+          opcode: "accountStorageLimit",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Account Storage Limit (Characters)",
+        },
+        {
+          opcode: "accountStorageRemaining",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Account Storage Remaining (Characters)",
+        },
+        "---",
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "Messaging",
+        },
+        {
+          opcode: "sendMessage",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Send Message [PAYLOAD] To User [USER] On Port: [TARGET] From Port: [SOURCE]",
+          arguments: {
+            PAYLOAD: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "Hello",
+            },
+            USER: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "targetUser",
+            },
+            TARGET: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "port",
+            },
+            SOURCE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "port",
+            },
+          },
+        },
+        {
+          opcode: "whenMessageReceived",
+          blockType: Scratch.BlockType.EVENT,
+          text: "When Message Received",
+          isEdgeActivated: false,
+        },
+        {
+          opcode: "getPacketsFromTarget",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get Packets From Port [TARGET]",
+          arguments: {
+            TARGET: {
+              menu: "targets",
+            },
+          },
+        },
+        {
+          opcode: "getFirstPacketOnTarget",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "First Packet On Port [TARGET]",
+          arguments: {
+            TARGET: {
+              menu: "targets",
+            },
+          },
+        },
+        {
+          opcode: "dataOfFirstPacketOnTarget",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "[DATA] Of First Packet On Port [TARGET]",
+          arguments: {
+            DATA: {
+              menu: "packetData",
+            },
+            TARGET: {
+              menu: "targets",
+            },
+          },
+        },
+        {
+          opcode: "numberOfPacketsOnTarget",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Number Of Packets On Port [TARGET]",
+          arguments: {
+            TARGET: {
+              menu: "targets",
+            },
+          },
+        },
+        {
+          opcode: "getAllTargets",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "All Open Targets",
+        },
+        {
+          opcode: "getAllPackets",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "All Packets",
+        },
+        {
+          opcode: "deleteFirstPacketOnTarget",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Pop First Of Port [TARGET]",
+          arguments: {
+            TARGET: {
+              menu: "targets",
+            },
+          },
+        },
+        {
+          opcode: "deletePacketsOnTarget",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Delete All Packets On Port [TARGET]",
+          arguments: {
+            TARGET: {
+              menu: "targets",
+            },
+          },
+        },
+        {
+          opcode: "deleteAllPackets",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Delete All Packets",
+        },
+        "---",
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "Raw Packet Queue",
+        },
+        {
+          opcode: "RAWgetAllPackets",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get All RAW Packets",
+        },
+        {
+          opcode: "RAWgetFirstPacket",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "First RAW Packet",
+        },
+        {
+          opcode: "RAWdeleteFirstPacket",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Pop First RAW Packet",
+        },
+        {
+          opcode: "RAWdeleteAllPackets",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Delete All RAW Packets",
+        },
+        "---",
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "Client Information",
+        },
+        {
+          opcode: "clientIP",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Client IP",
+        },
+        {
+          opcode: "clientUsername",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Client Username",
+        },
+        "---",
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "Users",
+        },
+        {
+          opcode: "clientUsers",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Connected Users",
+        },
+        {
+          opcode: "usernameConnected",
+          blockType: Scratch.BlockType.BOOLEAN,
+          text: "Username [USER] Connected On Any Designation",
+          arguments: {
+            USER: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "user",
+            },
+          },
+        },
+        {
+          opcode: "userConnected",
+          blockType: Scratch.BlockType.BOOLEAN,
+          text: "User [USER] Connected On Designation: [DESIGNATION]",
+          arguments: {
+            USER: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "user",
+            },
+            DESIGNATION: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "rtr",
+            },
+          },
+        },
+        {
+          opcode: "getUserDesignation",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get All Users On Designation: [DESIGNATION]",
+          arguments: {
+            DESIGNATION: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "rtr",
+            },
+          },
+        },
+        {
+          opcode: "findID",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Find All Connections Of Username: [USER]",
+          arguments: {
+            USER: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "user",
+            },
+          },
+        },
+        {
+          opcode: "onJoin",
+          blockType: Scratch.BlockType.EVENT,
+          text: "When A User Connects",
+          isEdgeActivated: false,
+        },
+        {
+          opcode: "onLeave",
+          blockType: Scratch.BlockType.EVENT,
+          text: "When A User Disconnects",
+          isEdgeActivated: false,
+        },
+        {
+          opcode: "onJoinUser",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Last User To Join",
+        },
+        {
+          opcode: "onLeaveUser",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Last User To Leave",
+        },
+        "---",
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "Synced Variables"
+        },
+        {
+          opcode: "setSyncedVariable",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Sync Variable With [USER] Of [KEY] To [VALUE]",
+          arguments: {
+            USER: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "user",
+            },
+            KEY: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "key",
+            },
+            VALUE: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "value",
+            },
+          },
+        },
+        {
+          opcode: "getSyncedVariable",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get Synced Variable With [USER] Of [KEY]",
+          arguments: {
+            USER: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "user",
+            },
+            KEY: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "key",
+            },
+          },
+        },
+        {
+          opcode: "deleteSyncedVariable",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "Delete Synced Variable With [USER] Of [KEY]",
+          arguments: {
+            USER: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "user",
+            },
+            KEY: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "key",
+            },
+          },
+        },
+        {
+          opcode: "getSyncedVariables",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Get Synced Variables With [USER]",
+          arguments: {
+            USER: {
+              type: Scratch.ArgumentType.STRING,
+              defaultValue: "user",
+            },
+          },
+        },
+        "---",
+        {
+          blockType: Scratch.BlockType.LABEL,
+          text: "rMail",
+        },
+        {
+          blockType: Scratch.BlockType.BUTTON,
+          text: "Mail Docs",
+          func: "openMailDocs",
+        },
+        {
+          opcode: "whenMailReceived",
+          blockType: Scratch.BlockType.EVENT,
+          text: "When Mail Received",
+          isEdgeActivated: false,
+        },
+        {
+          opcode: "sendMail",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "Send Mail With Subject: [SUBJECT] And Message: [MESSAGE] To: [TO]",
           arguments: {
             SUBJECT: {
               type: Scratch.ArgumentType.STRING,
@@ -755,12 +923,12 @@ class RoturExtension {
         {
           opcode: "getAllMail",
           blockType: Scratch.BlockType.REPORTER,
-          text: "get mail list",
+          text: "Get Mail List",
         },
         {
           opcode: "getMail",
           blockType: Scratch.BlockType.REPORTER,
-          text: "get body of mail at index [ID]",
+          text: "Get Body Of Mail At Index [ID]",
           arguments: {
             ID: {
               type: Scratch.ArgumentType.STRING,
@@ -771,7 +939,7 @@ class RoturExtension {
         {
           opcode: "deleteMail",
           blockType: Scratch.BlockType.COMMAND,
-          text: "delete mail at index [ID]",
+          text: "Delete Mail At Index [ID]",
           arguments: {
             ID: {
               type: Scratch.ArgumentType.STRING,
@@ -782,7 +950,7 @@ class RoturExtension {
         {
           opcode: "deleteAllMail",
           blockType: Scratch.BlockType.COMMAND,
-          text: "delete all mail",
+          text: "Delete All Mail",
         },
         "---",
         {
@@ -797,12 +965,12 @@ class RoturExtension {
         {
           opcode: "getFriendList",
           blockType: Scratch.BlockType.REPORTER,
-          text: "get friend list",
+          text: "Get Friend List",
         },
         {
           opcode: "removeFriend",
           blockType: Scratch.BlockType.REPORTER,
-          text: "remove friend [FRIEND]",
+          text: "Remove Friend [FRIEND]",
           arguments: {
             FRIEND: {
               menu: "friends",
@@ -812,7 +980,7 @@ class RoturExtension {
         {
           opcode: "acceptFriendRequest",
           blockType: Scratch.BlockType.REPORTER,
-          text: "accept friend request from [FRIEND]",
+          text: "Accept Friend Request From [FRIEND]",
           arguments: {
             FRIEND: {
               menu: "requests",
@@ -822,7 +990,7 @@ class RoturExtension {
         {
           opcode: "declineFriendRequest",
           blockType: Scratch.BlockType.REPORTER,
-          text: "decline friend request from [FRIEND]",
+          text: "Decline Friend Request From [FRIEND]",
           arguments: {
             FRIEND: {
               menu: "requests",
@@ -832,7 +1000,7 @@ class RoturExtension {
         {
           opcode: "sendFriendRequest",
           blockType: Scratch.BlockType.REPORTER,
-          text: "send friend request to [FRIEND]",
+          text: "Send Friend Request To [FRIEND]",
           arguments: {
             FRIEND: {
               type: Scratch.ArgumentType.STRING,
@@ -843,24 +1011,24 @@ class RoturExtension {
         {
           opcode: "whenFriendRequestReceived",
           blockType: Scratch.BlockType.EVENT,
-          text: "when friend request received",
+          text: "When Friend Request Received",
           isEdgeActivated: false,
         },
         {
           opcode: "whenFriendRequestAccepted",
           blockType: Scratch.BlockType.EVENT,
-          text: "when friend request accepted",
+          text: "When Friend Request Accepted",
           isEdgeActivated: false,
         },
         {
           opcode: "getFriendRequests",
           blockType: Scratch.BlockType.REPORTER,
-          text: "get friend requests",
+          text: "Get Friend Requests",
         },
         {
           opcode: "getFriendStatus",
           blockType: Scratch.BlockType.REPORTER,
-          text: "get friend status of [FRIEND]",
+          text: "Get Friend Status Of [FRIEND]",
           arguments: {
             FRIEND: {
               type: Scratch.ArgumentType.STRING,
@@ -885,12 +1053,12 @@ class RoturExtension {
         {
           opcode: "getBalance",
           blockType: Scratch.BlockType.REPORTER,
-          text: "get balance",
+          text: "Get Balance",
         },
         {
           opcode: "tranferCurrency",
           blockType: Scratch.BlockType.REPORTER,
-          text: "transfer [AMOUNT] to [USER]",
+          text: "Transfer [AMOUNT] To [USER]",
           arguments: {
             AMOUNT: {
               type: Scratch.ArgumentType.STRING,
@@ -921,12 +1089,12 @@ class RoturExtension {
         {
           opcode: "getMyOwnedItems",
           blockType: Scratch.BlockType.REPORTER,
-          text: "items owned by me",
+          text: "Items Owned By Me",
         },
         {
           opcode: "itemData",
           blockType: Scratch.BlockType.REPORTER,
-          text: "data of item (ID) [ITEM]",
+          text: "Data Of Item (ID) [ITEM]",
           arguments: {
             ITEM: {
               type: Scratch.ArgumentType.STRING,
@@ -937,7 +1105,7 @@ class RoturExtension {
         {
           opcode: "purchaseItem",
           blockType: Scratch.BlockType.REPORTER,
-          text: "purchase item (ID) [ITEM]",
+          text: "Purchase Item (ID) [ITEM]",
           arguments: {
             ITEM: {
               type: Scratch.ArgumentType.STRING,
@@ -948,7 +1116,7 @@ class RoturExtension {
         {
           opcode: "itemInfo",
           blockType: Scratch.BlockType.REPORTER,
-          text: "info of item (ID) [ITEM]",
+          text: "Info Of Item (ID) [ITEM]",
           arguments: {
             ITEM: {
               type: Scratch.ArgumentType.STRING,
@@ -959,7 +1127,7 @@ class RoturExtension {
         {
           opcode: "ownsItem",
           blockType: Scratch.BlockType.BOOLEAN,
-          text: "do i own item (ID) [ITEM]",
+          text: "Do I Own Item (ID) [ITEM]",
           arguments: {
             ITEM: {
               type: Scratch.ArgumentType.STRING,
@@ -970,7 +1138,7 @@ class RoturExtension {
         {
           opcode: "getPublicItems",
           blockType: Scratch.BlockType.REPORTER,
-          text: "public items, page: [PAGE]",
+          text: "Public Items, Page: [PAGE]",
           arguments: {
             PAGE: {
               type: Scratch.ArgumentType.STRING,
@@ -981,7 +1149,8 @@ class RoturExtension {
         {
           opcode: "getPublicItemPages",
           blockType: Scratch.BlockType.REPORTER,
-          text: "public item pages",
+          text: "Public Item Pages",
+          disableMonitor: true
         },
         "---",
         {
@@ -996,12 +1165,12 @@ class RoturExtension {
         {
           opcode: "getMyCreatedItems",
           blockType: Scratch.BlockType.REPORTER,
-          text: "ITEMS - by me",
+          text: "ITEMS - By Me",
         },
         {
           opcode: "createItem",
           blockType: Scratch.BlockType.REPORTER,
-          text: "ITEMS - create with name: [NAME] and description: [DESCRIPTION] and price: [PRICE] and data: [CODE] and transferable: [TRADABLE]",
+          text: "ITEMS - Create With Name: [NAME] And Description: [DESCRIPTION] And Price: [PRICE] And Data: [CODE] And Transferable: [TRADABLE]",
           arguments: {
             NAME: {
               type: Scratch.ArgumentType.STRING,
@@ -1028,7 +1197,7 @@ class RoturExtension {
         {
           opcode: "updateItem",
           blockType: Scratch.BlockType.REPORTER,
-          text: "ITEMS - update [KEY] to [DATA] for id: [ITEM]",
+          text: "ITEMS - Update [KEY] To [DATA] for id: [ITEM]",
           arguments: {
             ITEM: {
               type: Scratch.ArgumentType.STRING,
@@ -1047,7 +1216,7 @@ class RoturExtension {
         {
           opcode: "deleteItem",
           blockType: Scratch.BlockType.REPORTER,
-          text: "ITEMS - delete (ID) [ITEM]",
+          text: "ITEMS - Delete (ID) [ITEM]",
           arguments: {
             ITEM: {
               type: Scratch.ArgumentType.STRING,
@@ -1058,7 +1227,7 @@ class RoturExtension {
         {
           opcode: "hideItem",
           blockType: Scratch.BlockType.REPORTER,
-          text: "ITEMS - disable purchases on (ID) [ITEM]",
+          text: "ITEMS - Disable Purchases On (ID) [ITEM]",
           arguments: {
             ITEM: {
               type: Scratch.ArgumentType.STRING,
@@ -1069,7 +1238,7 @@ class RoturExtension {
         {
           opcode: "showItem",
           blockType: Scratch.BlockType.REPORTER,
-          text: "ITEMS - enable purchases on (ID) [ITEM]",
+          text: "ITEMS - Enable Purchases on (ID) [ITEM]",
           arguments: {
             ITEM: {
               type: Scratch.ArgumentType.STRING,
@@ -1090,22 +1259,22 @@ class RoturExtension {
         {
           opcode: "gotBadgesSuccessfully",
           blockType: Scratch.BlockType.BOOLEAN,
-          text: "badges loaded successfully",
+          text: "Badges Loaded Successfully",
         },
         {
           opcode: "userBadges",
           blockType: Scratch.BlockType.REPORTER,
-          text: "user badges",
+          text: "User Badges",
         },
         {
           opcode: "userBadgeCount",
           blockType: Scratch.BlockType.REPORTER,
-          text: "user badge count",
+          text: "User Badge Count",
         },
         {
           opcode: "hasBadge",
           blockType: Scratch.BlockType.BOOLEAN,
-          text: "user has badge [BADGE]",
+          text: "User Has Badge [BADGE]",
           arguments: {
             BADGE: {
               type: Scratch.ArgumentType.STRING,
@@ -1116,7 +1285,7 @@ class RoturExtension {
         {
           opcode: "badgeInfo",
           blockType: Scratch.BlockType.REPORTER,
-          text: "badge info [BADGE]",
+          text: "Badge Info [BADGE]",
           arguments: {
             BADGE: {
               type: Scratch.ArgumentType.STRING,
@@ -1127,12 +1296,12 @@ class RoturExtension {
         {
           opcode: "allBadges",
           blockType: Scratch.BlockType.REPORTER,
-          text: "all badges",
+          text: "All Badges",
         },
         {
           opcode: "redownloadBadges",
           blockType: Scratch.BlockType.COMMAND,
-          text: "redownload badges",
+          text: "Redownload Badges",
         },
         "---",
         {
@@ -1142,7 +1311,7 @@ class RoturExtension {
         {
           opcode: "callUser",
           blockType: Scratch.BlockType.COMMAND,
-          text: "call user [USERNAME]",
+          text: "Call User [USERNAME]",
           arguments: {
             USERNAME: {
               type: Scratch.ArgumentType.STRING,
@@ -1153,7 +1322,7 @@ class RoturExtension {
         {
           opcode: "answerCall",
           blockType: Scratch.BlockType.COMMAND,
-          text: "answer call from [USERNAME]",
+          text: "Answer Call From [USERNAME]",
           arguments: {
             USERNAME: {
               type: Scratch.ArgumentType.STRING,
@@ -1164,7 +1333,7 @@ class RoturExtension {
         {
           opcode: "declineCall",
           blockType: Scratch.BlockType.COMMAND,
-          text: "decline call from [USERNAME]",
+          text: "Decline Call From [USERNAME]",
           arguments: {
             USERNAME: {
               type: Scratch.ArgumentType.STRING,
@@ -1175,27 +1344,27 @@ class RoturExtension {
         {
           opcode: "endCall",
           blockType: Scratch.BlockType.COMMAND,
-          text: "end call",
+          text: "End Call",
         },
         {
           opcode: "allIncomingCalls",
           blockType: Scratch.BlockType.REPORTER,
-          text: "all incoming calls",
+          text: "All Incoming Calls",
         },
         {
           opcode: "callStatus",
           blockType: Scratch.BlockType.REPORTER,
-          text: "call status", // 0 = no call, 1 = incoming call, 2 = outgoing call, 3 = call in progress, 4 = call disconnected
+          text: "Call Status", // 0 = no call, 1 = incoming call, 2 = outgoing call, 3 = call in progress, 4 = call disconnected
         },
         {
           opcode: "callConnected",
           blockType: Scratch.BlockType.BOOLEAN,
-          text: "call connected",
+          text: "Call Connected",
         },
         {
           opcode: "callInfo",
           blockType: Scratch.BlockType.REPORTER,
-          text: "call info [INFO]",
+          text: "Call Info [INFO]",
           arguments: {
             INFO: {
               menu: "callInfo",
@@ -1205,31 +1374,31 @@ class RoturExtension {
         {
           opcode: "whenCallReceived",
           blockType: Scratch.BlockType.EVENT,
-          text: "when call received",
+          text: "When Call Received",
           isEdgeActivated: false,
         },
         {
           opcode: "whenCallEnded",
           blockType: Scratch.BlockType.EVENT,
-          text: "when call ended",
+          text: "When Call Ended",
           isEdgeActivated: false,
         },
         {
           opcode: "whenCallAnswered",
           blockType: Scratch.BlockType.EVENT,
-          text: "when call answered",
+          text: "When Call Answered",
           isEdgeActivated: false,
         },
         {
           opcode: "whenCallDeclined",
           blockType: Scratch.BlockType.EVENT,
-          text: "when call declined",
+          text: "When Call Declined",
           isEdgeActivated: false,
         },
         {
           opcode: "whenCallDisconnected",
           blockType: Scratch.BlockType.EVENT,
-          text: "when call failed",
+          text: "When Call Failed",
           isEdgeActivated: false,
         },
         "---",
@@ -1252,8 +1421,9 @@ class RoturExtension {
         {
           opcode: "deleteAccount",
           blockType: Scratch.BlockType.REPORTER,
-          text: "delete account",
+          text: "Delete Account",
           hideFromPalette: !this.showDangerous,
+          disableMonitor: true
         },
       ],
       menus: {
@@ -1350,7 +1520,7 @@ class RoturExtension {
       }, 1000);
       return;
     }
-    if (this.ws) { wsClose; }
+    if (this.ws) { this.disconnect(); }
     this.designation = args.DESIGNATION;
     this.username = randomString(32);
     this.my_client = {
@@ -1424,6 +1594,9 @@ class RoturExtension {
   }
 
   connectToWebsocket() {
+
+    if (this.ws) this.disconnect();
+
     this.ws = new WebSocket(this.server);
     this.ws.onopen = () => {
       this.sendHandshake();
@@ -1555,6 +1728,7 @@ class RoturExtension {
   disconnect() {
     if (this.ws) {
       this.ws.close();
+      this.ws = null;
     }
   }
 
