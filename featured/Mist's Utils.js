@@ -6,6 +6,7 @@
  * Do not remove this comment
  */
 
+
 (function(Scratch) {
   'use strict';
   if (!Scratch.extensions.unsandboxed) {

@@ -1,3 +1,12 @@
+// Name: USB
+// Author: Mistium
+// Description: Just some blocks for the web usb api
+
+// License: MPL-2.0
+// This Source Code is subject to the terms of the Mozilla Public License, v2.0,
+// If a copy of the MPL was not distributed with this file,
+// Then you can obtain one at https://mozilla.org/MPL/2.0/
+
 (function (Scratch) {
   const { Cast, ArgumentType, BlockType } = Scratch;
   const vm = Scratch.vm;

@@ -1,5 +1,11 @@
-// Made by @mistium
-// epic files shit stuff :sunglasses:
+// Name: VFS
+// Author: Mistium
+// Description: in memory file system as an ext goes pretty crazy :sunglasses:
+
+// License: MPL-2.0
+// This Source Code is subject to the terms of the Mozilla Public License, v2.0,
+// If a copy of the MPL was not distributed with this file,
+// Then you can obtain one at https://mozilla.org/MPL/2.0/
 
 class VirtualFileSystem {
     constructor() {
