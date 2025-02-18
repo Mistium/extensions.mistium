@@ -1,6 +1,6 @@
 // Name: Rotur.js
 // Author: Mistium
-// Description: Utilise rotur in yout projects
+// Description: Utilise rotur in your projects
 
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
