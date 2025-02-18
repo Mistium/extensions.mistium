@@ -1,5 +1,474 @@
-// This extension by Sharkpool has been minified and modified by "Mistium" to remove code that goes unused within originOS
-// DO NOT USE THIS
-// Go here: https://sharkpool-sp.github.io/SharkPools-Extensions/
+// Name: Image Editor
+// ID: SPimgEditor
+// Description: Create and Edit the Pixel Data of Images
+// By: SharkPool
+// License: MIT
 
-!function(e){"use strict";if(!e.extensions.unsandboxed)throw new Error("Image Editor must run unsandboxed!");const t=e.vm,a=t.runtime;let o={};const i=["SPimgEditor_pixelHex","SPimgEditor_pixelIndex","SPimgEditor_setPixel"];function n(){if(!window.ScratchBlocks)return;t.removeListener("EXTENSION_ADDED",n),t.removeListener("BLOCKSINFO_UPDATE",n);const e=ScratchBlocks.scratchBlocksUtils.isShadowArgumentReporter;ScratchBlocks.scratchBlocksUtils.isShadowArgumentReporter=function(t){return!!e(t)||t.isShadow()&&i.includes(t.type)}}t.on("EXTENSION_ADDED",n),t.on("BLOCKSINFO_UPDATE",n),n();e.extensions.register(new class{getInfo(){return{id:"SPimgEditor",name:"Image Editor",color1:"#4756b3",color2:"#1f254d",color3:"#333d80",blocks:[{func:"rectExts",blockType:e.BlockType.BUTTON,text:"Recommended Extensions"},{blockType:e.BlockType.LABEL,text:"Image Bank"},{opcode:"makeImg",blockType:e.BlockType.COMMAND,text:"make new image named [NAME] width [W] height [H] fill [COLOR]",arguments:{NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"},W:{type:e.ArgumentType.NUMBER,defaultValue:100},H:{type:e.ArgumentType.NUMBER,defaultValue:100},COLOR:{type:e.ArgumentType.COLOR}}},{opcode:"modifyImg",blockType:e.BlockType.COMMAND,text:"[TYPE] image named [NAME] to width [W] height [H] fill [COLOR]",arguments:{TYPE:{type:e.ArgumentType.STRING,menu:"MOD_TYPE"},NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"},W:{type:e.ArgumentType.NUMBER,defaultValue:200},H:{type:e.ArgumentType.NUMBER,defaultValue:200},COLOR:{type:e.ArgumentType.COLOR}}},{opcode:"imgAtts",blockType:e.BlockType.REPORTER,text:"[TYPE] of image named [NAME] ",arguments:{TYPE:{type:e.ArgumentType.STRING,menu:"IMG_ATTS"},NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"}}},"---",{opcode:"imgExists",blockType:e.BlockType.BOOLEAN,text:"image named [NAME] exists?",arguments:{NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"}}},{opcode:"allImgs",blockType:e.BlockType.REPORTER,text:"all images"},{opcode:"deleteImg",blockType:e.BlockType.COMMAND,text:"delete image named [NAME]",arguments:{NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"}}},{opcode:"deleteAllImgs",blockType:e.BlockType.COMMAND,text:"delete all images"},{blockType:e.BlockType.LABEL,text:"Image Editing"},{opcode:"setHex",blockType:e.BlockType.COMMAND,text:"set pixel # [INDEX] to [COLOR] in image [NAME]",arguments:{INDEX:{type:e.ArgumentType.NUMBER,defaultValue:1},COLOR:{type:e.ArgumentType.COLOR},NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"}}},{opcode:"getHex",blockType:e.BlockType.REPORTER,text:"get pixel # [INDEX] in image [NAME]",arguments:{INDEX:{type:e.ArgumentType.NUMBER,defaultValue:1},NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"}}},"---",{opcode:"rotateImg",blockType:e.BlockType.COMMAND,text:"point image named [NAME] in direction [DIR] fill [COLOR]",arguments:{NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"},DIR:{type:e.ArgumentType.ANGLE,defaultValue:90},COLOR:{type:e.ArgumentType.COLOR}}},{opcode:"addTexture",blockType:e.BlockType.COMMAND,text:"add texture [IMAGE] to image [NAME] at x [x] y [y]",arguments:{IMAGE:{type:e.ArgumentType.STRING,defaultValue:"https://extensions.turbowarp.org/dango.png"},NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"},x:{type:e.ArgumentType.NUMBER,defaultValue:0},y:{type:e.ArgumentType.NUMBER,defaultValue:0}}},"---",{opcode:"onEditCall",blockType:e.BlockType.HAT,isEdgeActivated:!1,hideFromPalette:!0,text:"on [NAME] editor call pixel [PIXEL] [INDEX]",arguments:{NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"},PIXEL:{},INDEX:{}}},{opcode:"editLoop",blockType:e.BlockType.LOOP,hideFromPalette:!0,text:"for each pixel [PIXEL] [INDEX] in [NAME]",arguments:{NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"},PIXEL:{},INDEX:{}}},{opcode:"pixelHex",blockType:e.BlockType.REPORTER,hideFromPalette:!0,text:"hex"},{opcode:"pixelIndex",blockType:e.BlockType.REPORTER,hideFromPalette:!0,text:"index"},{opcode:"setPixel",blockType:e.BlockType.COMMAND,isTerminal:!0,hideFromPalette:!0,text:"set this pixel to [COLOR]",arguments:{COLOR:{type:e.ArgumentType.COLOR}}},{blockType:e.BlockType.XML,xml:'\n <block type="SPimgEditor_editLoop">\n <value name="NAME"><shadow type="text"><field name="TEXT">image-1</field></shadow></value>\n <value name="PIXEL"><shadow type="SPimgEditor_pixelHex"></shadow></value>\n <value name="INDEX"><shadow type="SPimgEditor_pixelIndex"></shadow></value>\n </block>\n <sep gap="36"/>\n <block type="SPimgEditor_onEditCall">\n <value name="NAME"><shadow type="text"><field name="TEXT">image-1</field></shadow></value>\n <value name="PIXEL"><shadow type="SPimgEditor_pixelHex"></shadow></value>\n <value name="INDEX"><shadow type="SPimgEditor_pixelIndex"></shadow></value>\n <next><block type="SPimgEditor_setPixel">\n <value name="COLOR"><shadow type="colour_picker"></shadow></value>\n </block></next>\n </block>\n '},{opcode:"callImgEdit",blockType:e.BlockType.REPORTER,text:"call image editor for [NAME]",arguments:{NAME:{type:e.ArgumentType.STRING,defaultValue:"image-1"}}}],menus:{MOD_TYPE:["expand","stretch"],IMG_ATTS:{acceptReporters:!0,items:["width","height","pixel count","data"]}}}}rectExts(){alert('This Extension works best with the Additional Extensions:\n"Image Effects" and "Color Master"\nThey can be Found at "https://sharkpools-extensions.vercel.app/"')}callEditor(e){let t=[];return a.allScriptsByOpcodeDo("SPimgEditor_onEditCall",((o,i)=>{o.blockId;const n=a._pushThread(o.blockId,i);n.SPimgData=e,t.push(n)})),t}getPixelData(e){const t=e.canvas.width,a=e.canvas.height,o=e.context.getImageData(0,0,t,a).data,i=[];for(let e=0;e<o.length;e+=4){const t=o[e],a=o[e+1],n=o[e+2],l=o[e+3],r=Math.round(l).toString(16).padStart(2,"0");i.push(`#${((1<<24)+(t<<16)+(a<<8)+n).toString(16).slice(1)}${r}`)}return i}pixels2Img(e){const t=e.canvas.width,a=e.canvas.height,o=document.createElement("canvas");o.width=t,o.height=a;const i=o.getContext("2d"),n=i.createImageData(t,a);for(let t=0;t<e.pixels.length;t++){const a=e.pixels[t]??"#000000";n.data[4*t+0]=parseInt(a.substring(1,3),16),n.data[4*t+1]=parseInt(a.substring(3,5),16),n.data[4*t+2]=parseInt(a.substring(5,7),16),n.data[4*t+3]=9===a.length?parseInt(a.substring(7,9),16):255}return i.putImageData(n,0,0),o.toDataURL()}makeImg(t){const a=e.Cast.toNumber(t.W),i=e.Cast.toNumber(t.H),n=document.createElement("canvas");n.width=a,n.height=i;const l=n.getContext("2d");l.fillStyle=t.COLOR,l.fillRect(0,0,a,i),o[t.NAME]={data:n.toDataURL(),canvas:n,context:l,pixels:[]}}modifyImg(t){if(void 0===o[t.NAME])this.makeImg(t);else{const a=e.Cast.toNumber(t.W),i=e.Cast.toNumber(t.H),n=o[t.NAME],l=document.createElement("canvas");l.width=a,l.height=i;const r=l.getContext("2d");if("stretch"===t.TYPE)r.drawImage(n.canvas,0,0,a,i);else{r.fillStyle=t.COLOR,r.fillRect(0,0,a,i);const e=(a-n.canvas.width)/2,o=(i-n.canvas.height)/2;r.drawImage(n.canvas,e,o)}o[t.NAME]={data:l.toDataURL(),canvas:l,context:r,pixels:[]}}}imgAtts(e){const t=o[e.NAME];if(void 0===t)return 0;const a=t.canvas;switch(e.TYPE){case"width":return a.width;case"height":return a.height;case"pixel count":return a.width*a.height;default:return t.data}}imgExists(e){return void 0!==o[e.NAME]}allImgs(){return JSON.stringify(Object.keys(o))}deleteImg(e){delete o[e.NAME]}deleteAllImgs(){o={}}callImgEdit(e,t){const i=o[e.NAME];if(void 0===i)return"";if(void 0!==t.stackFrame.newThreads)return t.stackFrame.newThreads.some((e=>-1!==a.threads.indexOf(e)))&&(t.stackFrame.newThreads.every((e=>a.isWaitingThread(e)))?t.yieldTick():t.yield()),i.data=this.pixels2Img(i),i.data;{i.pixels=this.getPixelData(i);let a=[];for(var n=0;n<i.pixels.length;n++)a=[...a,...this.callEditor({name:e.NAME,index:n,hex:i.pixels[n]})];t.stackFrame.newThreads=a,t.yield()}}editLoop(e,t){const a=o[e.NAME];if(void 0===a)return"";void 0===t.stackFrame.loopCounter&&(a.pixels=this.getPixelData(a),t.stackFrame.loopCounter=a.pixels.length);const i=Math.abs(t.stackFrame.loopCounter-a.pixels.length);t.thread.SPimgData={name:e.NAME,index:i,hex:a.pixels[i]},t.stackFrame.loopCounter--,t.stackFrame.loopCounter>=0?t.startBranch(1,!0):(a.data=this.pixels2Img(a),delete t.thread.SPimgData)}onEditCall(e,t){return t.thread.SPimgData?.name===e.NAME}pixelHex(e,t){return t.thread.SPimgData?.hex||""}pixelIndex(e,t){return t.thread.SPimgData?.index+1||""}setPixel(e,t){const a=t.thread.SPimgData;void 0!==a&&(this.setHex({REFRESH:!1,NAME:a.name,COLOR:e.COLOR,INDEX:a.index+1}),t.thread.stopThisScript())}setHex(t){const a=o[t.NAME];if(void 0===a)return"";0===a.pixels.length&&(a.pixels=this.getPixelData(a)),a.pixels[e.Cast.toNumber(t.INDEX)-1]=t.COLOR,void 0===t.REFRESH&&(a.data=this.pixels2Img(a))}getHex(t){const a=o[t.NAME];return void 0===a?"":(0===a.pixels.length&&(a.pixels=this.getPixelData(a)),a.pixels[e.Cast.toNumber(t.INDEX)-1]||"")}rotateImg(t){if(void 0===o[t.NAME])this.makeImg(t);else{const a=o[t.NAME],i=a.canvas,n=a.context,l=document.createElement("canvas");l.width=i.width,l.height=i.height;l.getContext("2d").drawImage(i,0,0),n.clearRect(0,0,i.width,i.height),n.fillStyle=t.COLOR,n.fillRect(0,0,i.width,i.height),n.save(),n.translate(i.width/2,i.height/2),n.rotate(e.Cast.toNumber(t.DIR)*(Math.PI/180)),n.drawImage(l,-l.width/2,-l.height/2),n.restore(),o[t.NAME]={data:i.toDataURL(),canvas:i,context:n,pixels:[]}}}addTexture(t){return new Promise((a=>{const i=o[t.NAME];if(void 0===i||!t.IMAGE)return a();const n=new Image;n.crossOrigin="Anonymous",n.onload=()=>{try{const o=(i.canvas.width-n.width)/2,l=(i.canvas.height-n.height)/2;i.context.drawImage(n,e.Cast.toNumber(t.x)+o,-1*e.Cast.toNumber(t.y)+l),i.data=i.canvas.toDataURL(),a()}catch(e){console.error(e),a(new Error("Failed to apply texture. Image may be tainted"))}},n.onerror=e=>{console.error(e)},n.src=t.IMAGE}))}})}(Scratch);
+// Version V.1.1.21
+
+(function (Scratch) {
+  "use strict";
+  if (!Scratch.extensions.unsandboxed) throw new Error("Image Editor must run unsandboxed!");
+
+  const menuIconURI =
+"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4NC45NzUiIGhlaWdodD0iODQuOTc1IiB2aWV3Qm94PSIwIDAgODQuOTc1IDg0Ljk3NSI+PGcgc3Ryb2tlLXdpZHRoPSIwIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiPjxwYXRoIGQ9Ik0wIDQyLjQ4OEMwIDE5LjAyMyAxOS4wMjMgMCA0Mi40ODggMHM0Mi40ODggMTkuMDIzIDQyLjQ4OCA0Mi40ODgtMTkuMDIzIDQyLjQ4OC00Mi40ODggNDIuNDg4UzAgNjUuOTUzIDAgNDIuNDg4IiBmaWxsPSIjMzMzZDgwIi8+PHBhdGggZD0iTTUuMjY0IDQyLjQ4OGMwLTIwLjU1OCAxNi42NjYtMzcuMjI0IDM3LjIyNC0zNy4yMjRTNzkuNzEyIDIxLjkzIDc5LjcxMiA0Mi40ODggNjMuMDQ2IDc5LjcxMiA0Mi40ODggNzkuNzEyIDUuMjY0IDYzLjA0NiA1LjI2NCA0Mi40ODgiIGZpbGw9IiM0NzU2YjMiLz48cGF0aCBkPSJtNDguNzY4IDY0Ljk5OC04LjEwNS0yMy4yMjNjLS40MzMtMS4yNC40MDQtMS45OTQgMS42OTMtMS41NDRsMjIuNzUxIDcuOTRjMS44MTguNjM1IDIuMTk0IDEuODA4Ljk3NiAzLjAyNmwtMy4xMyAzLjEzIDMuMjggMy4yOGE0LjI4IDQuMjggMCAwIDEgMCA2LjA1M2wtMi4xMDIgMi4xMDJhNC4yOCA0LjI4IDAgMCAxLTYuMDUzIDBsLTMuMjgtMy4yOC0zLjUwOSAzLjUxYy0uODIuODItMS45Ni42MTQtMi41Mi0uOTk0IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTI0LjUzNCA2Mi43NDJhMy45NCAzLjk0IDAgMCAxLTQuMjQ1LTMuNjFsLTIuNzg3LTM0LjQ4NWEzLjk0IDMuOTQgMCAwIDEgMy42MTEtNC4yNDZsMzAuMDUzLTIuNDI4YTMuOTQgMy45NCAwIDAgMSA0LjI0NiAzLjYxMWwxLjUwNiAxOC42NDQtNC45NDUtMS43MjYtMS4yMzMtMTUuOTc3LTI4LjYyNCAyLjI5NCAyLjIxMSAyOC42MzQgMTQuNTQyLTEuMTY1IDMuMTU2IDkuMDQxeiIgZmlsbD0iI2ZmZiIvPjwvZz48L3N2Zz4=";
+
+  const vm = Scratch.vm;
+  const runtime = vm.runtime;
+  let imageBank = {};
+
+  const regenReporters = ["SPimgEditor_pixelHex", "SPimgEditor_pixelIndex", "SPimgEditor_setPixel"];
+  if (Scratch.gui) Scratch.gui.getBlockly().then(SB => {
+    const originalCheck = SB.scratchBlocksUtils.isShadowArgumentReporter;
+    SB.scratchBlocksUtils.isShadowArgumentReporter = function (block) {
+      const result = originalCheck(block);
+      if (result) return true;
+      return block.isShadow() && regenReporters.includes(block.type);
+    };
+  });
+
+  class SPimgEditor {
+    getInfo() {
+      return {
+        id: "SPimgEditor",
+        name: "Image Editor",
+        color1: "#4756b3",
+        color2: "#1f254d",
+        color3: "#333d80",
+        menuIconURI,
+        blocks: [
+          {
+            func: "rectExts",
+            blockType: Scratch.BlockType.BUTTON,
+            text: "Recommended Extensions"
+          },
+          { blockType: Scratch.BlockType.LABEL, text: "Image Bank" },
+          {
+            opcode: "makeImg",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "make new image named [NAME] width [W] height [H] fill [COLOR]",
+            arguments: {
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" },
+              W: { type: Scratch.ArgumentType.NUMBER, defaultValue: 100 },
+              H: { type: Scratch.ArgumentType.NUMBER, defaultValue: 100 },
+              COLOR: { type: Scratch.ArgumentType.COLOR }
+            },
+          },
+          {
+            opcode: "makeImgImg",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "make image named [NAME] from [IMAGE] width [W] height [H] x [x] y [y]",
+            arguments: {
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" },
+              IMAGE: { type: Scratch.ArgumentType.STRING, defaultValue: "https://extensions.turbowarp.org/dango.png" },
+              W: { type: Scratch.ArgumentType.NUMBER, defaultValue: 100 },
+              H: { type: Scratch.ArgumentType.NUMBER, defaultValue: 100 },
+              x: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }
+            },
+          },
+          {
+            opcode: "modifyImg",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "[TYPE] image named [NAME] to width [W] height [H] fill [COLOR]",
+            arguments: {
+              TYPE: { type: Scratch.ArgumentType.STRING, menu: "MOD_TYPE" },
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" },
+              W: { type: Scratch.ArgumentType.NUMBER, defaultValue: 200 },
+              H: { type: Scratch.ArgumentType.NUMBER, defaultValue: 200 },
+              COLOR: { type: Scratch.ArgumentType.COLOR }
+            },
+          },
+          {
+            opcode: "imgAtts",
+            blockType: Scratch.BlockType.REPORTER,
+            text: "[TYPE] of image named [NAME] ",
+            arguments: {
+              TYPE: { type: Scratch.ArgumentType.STRING, menu: "IMG_ATTS" },
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" }
+            },
+          },
+          "---",
+          {
+            opcode: "imgExists",
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: "image named [NAME] exists?",
+            arguments: { NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" } },
+          },
+          {
+            opcode: "allImgs",
+            blockType: Scratch.BlockType.REPORTER,
+            text: "all images"
+          },
+          {
+            opcode: "deleteImg",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "delete image named [NAME]",
+            arguments: { NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" } },
+          },
+          {
+            opcode: "deleteAllImgs",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "delete all images"
+          },
+          { blockType: Scratch.BlockType.LABEL, text: "Image Editing" },
+          {
+            opcode: "setHex",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "set pixel # [INDEX] to [COLOR] in image [NAME]",
+            arguments: {
+              INDEX: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 },
+              COLOR: { type: Scratch.ArgumentType.COLOR },
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" }
+            },
+          },
+          {
+            opcode: "getHex",
+            blockType: Scratch.BlockType.REPORTER,
+            text: "get pixel # [INDEX] in image [NAME]",
+            arguments: {
+              INDEX: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 },
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" }
+            },
+          },
+          "---",
+          {
+            opcode: "rotateImg",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "point image named [NAME] in direction [DIR] fill [COLOR]",
+            arguments: {
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" },
+              DIR: { type: Scratch.ArgumentType.ANGLE, defaultValue: 90 },
+              COLOR: { type: Scratch.ArgumentType.COLOR }
+            },
+          },
+          {
+            opcode: "addTexture",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "add texture [IMAGE] to image [NAME] at x [x] y [y]",
+            arguments: {
+              IMAGE: { type: Scratch.ArgumentType.STRING, defaultValue: "https://extensions.turbowarp.org/dango.png" },
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" },
+              x: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }
+            },
+          },
+          "---",
+          {
+            opcode: "onEditCall", blockType: Scratch.BlockType.HAT,
+            isEdgeActivated: false, hideFromPalette: true,
+            text: "on [NAME] editor call pixel [PIXEL] [INDEX]",
+            arguments: { NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" }, PIXEL: {}, INDEX: {} },
+          },
+          {
+            opcode: "editLoop", blockType: Scratch.BlockType.LOOP,
+            hideFromPalette: true,
+            text: "for each pixel [PIXEL] [INDEX] in [NAME]",
+            arguments: { NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" }, PIXEL: {}, INDEX: {} },
+          },
+          {
+            opcode: "pixelHex", blockType: Scratch.BlockType.REPORTER,
+            hideFromPalette: true, text: "hex"
+          },
+          {
+            opcode: "pixelIndex", blockType: Scratch.BlockType.REPORTER,
+            hideFromPalette: true, text: "index"
+          },
+          {
+            opcode: "setPixel", blockType: Scratch.BlockType.COMMAND,
+            isTerminal: true, hideFromPalette: true,
+            text: "set this pixel to [COLOR]",
+            arguments: { COLOR: { type: Scratch.ArgumentType.COLOR } },
+          },
+          { blockType: Scratch.BlockType.XML,
+            xml: `
+              <block type="SPimgEditor_editLoop">
+                <value name="NAME"><shadow type="text"><field name="TEXT">image-1</field></shadow></value>
+                <value name="PIXEL"><shadow type="SPimgEditor_pixelHex"></shadow></value>
+                <value name="INDEX"><shadow type="SPimgEditor_pixelIndex"></shadow></value>
+              </block>
+              <sep gap="36"/>
+              <block type="SPimgEditor_onEditCall">
+                <value name="NAME"><shadow type="text"><field name="TEXT">image-1</field></shadow></value>
+                <value name="PIXEL"><shadow type="SPimgEditor_pixelHex"></shadow></value>
+                <value name="INDEX"><shadow type="SPimgEditor_pixelIndex"></shadow></value>
+                <next><block type="SPimgEditor_setPixel">
+                  <value name="COLOR"><shadow type="colour_picker"></shadow></value>
+                </block></next>
+              </block>
+            `
+          },
+          {
+            opcode: "callImgEdit",
+            blockType: Scratch.BlockType.REPORTER,
+            text: "call image editor for [NAME]",
+            arguments: { NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "image-1" } },
+          }
+        ],
+        menus: {
+          MOD_TYPE: ["expand", "stretch"],
+          IMG_ATTS: {
+            acceptReporters: true,
+            items: ["width", "height", "pixel count", "data"]
+          }
+        },
+      };
+    }
+
+    // Helper Funcs
+    rectExts() {
+      alert(`This Extension works best with the Additional Extensions:\n"Image Effects" and "Color Master"\nThey can be Found at "https://sharkpools-extensions.vercel.app/"`);
+    }
+
+    createCanvasCtx(w, h) {
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      return { canvas, ctx };
+    }
+
+    callEditor(data) {
+      let newThreads = [];
+      runtime.allScriptsByOpcodeDo("SPimgEditor_onEditCall", (script, target) => {
+        const thread = runtime._pushThread(script.blockId, target);
+        thread.SPimgData = data;
+        newThreads.push(thread);
+      });
+      return newThreads;
+    }
+
+    getPixelData(storedImg) {
+      const { width, height } = storedImg.canvas;
+      const imageData = storedImg.ctx.getImageData(0, 0, width, height).data;
+      const pixelData = [];
+      for (let i = 0; i < imageData.length; i += 4) {
+        const r = imageData[i];
+        const g = imageData[i + 1];
+        const b = imageData[i + 2];
+        const a = imageData[i + 3];
+        const alphaHex = Math.round(a).toString(16).padStart(2, "0");
+        pixelData.push(`#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}${alphaHex}`);
+      }
+      return pixelData;
+    }
+
+    pixels2Img(storedImg) {
+      const { width, height } = storedImg.canvas;
+      const { canvas, ctx } = this.createCanvasCtx(width, height);
+      const imageData = ctx.createImageData(width, height);
+      for (let i = 0; i < storedImg.pixels.length; i++) {
+        const hex = storedImg.pixels[i] ?? "#000000";
+        imageData.data[i * 4 + 0] = parseInt(hex.substring(1, 3), 16);
+        imageData.data[i * 4 + 1] = parseInt(hex.substring(3, 5), 16);
+        imageData.data[i * 4 + 2] = parseInt(hex.substring(5, 7), 16);
+        imageData.data[i * 4 + 3] = hex.length === 9 ?  parseInt(hex.substring(7, 9), 16) : 255;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      return canvas.toDataURL();
+    }
+
+    // Block Funcs (Bank Manager)
+    makeImg(args) {
+      const width = Scratch.Cast.toNumber(args.W);
+      const height = Scratch.Cast.toNumber(args.H);
+      const { canvas, ctx } = this.createCanvasCtx(width, height);
+      ctx.fillStyle = args.COLOR;
+      ctx.fillRect(0, 0, width, height);
+      imageBank[args.NAME] = { data: canvas.toDataURL(), canvas, ctx, pixels: [], needsRefresh: false }
+    }
+
+    makeImgImg(args) {
+      return new Promise((resolve) => {
+        if (!args.IMAGE) return resolve();
+        let width = Scratch.Cast.toNumber(args.W);
+        let height = Scratch.Cast.toNumber(args.H);
+        const { canvas, ctx } = this.createCanvasCtx(Math.abs(width), Math.abs(height));
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = () => {
+          try {
+            ctx.save();
+            if (width === 0 || height === 0) {
+              width = img.width; height = img.height;
+              canvas.width = width; canvas.height = height;
+            }
+            ctx.scale(width < 0 ? -1 : 1, height < 0 ? -1 : 1);
+            const x = Scratch.Cast.toNumber(args.x) - (width < 0 ? Math.abs(width) : 0);
+            const y = (Scratch.Cast.toNumber(args.y) * -1) - (height < 0 ? Math.abs(height) : 0);
+            ctx.drawImage(img, x, y, Math.abs(width), Math.abs(height));
+            ctx.restore();
+            imageBank[args.NAME] = { data: canvas.toDataURL(), canvas, ctx, pixels: [], needsRefresh: false };
+            resolve();
+          } catch (e) {
+            console.warn(e);
+            resolve();
+          }
+        };
+        img.onerror = (e) => { console.warn(e); resolve() };
+        img.src = args.IMAGE;
+      });
+    }
+
+    modifyImg(args) {
+      if (imageBank[args.NAME] === undefined) this.makeImg(args);
+      else {
+        const width = Scratch.Cast.toNumber(args.W);
+        const height = Scratch.Cast.toNumber(args.H);
+        const storedImg = imageBank[args.NAME];
+        const { canvas, ctx } = this.createCanvasCtx(Math.abs(width), Math.abs(height));
+        if (args.TYPE === "stretch") {
+          ctx.save();
+          ctx.scale(width < 0 ? -1 : 1, height < 0 ? -1 : 1);
+          ctx.drawImage(storedImg.canvas, width < 0 ? -Math.abs(width) : 0, height < 0 ? -Math.abs(height) : 0, Math.abs(width), Math.abs(height));
+          ctx.restore();
+        } else {
+          ctx.fillStyle = args.COLOR;
+          ctx.fillRect(0, 0, width, height);
+          const xOffset = (width - storedImg.canvas.width) / 2;
+          const yOffset = (height - storedImg.canvas.height) / 2;
+          ctx.drawImage(storedImg.canvas, xOffset, yOffset);
+        }
+        imageBank[args.NAME] = { data: canvas.toDataURL(), canvas, ctx, pixels: [], needsRefresh: false };
+      }
+    }
+
+    imgAtts(args) {
+      const storedImg = imageBank[args.NAME];
+      if (storedImg === undefined) return 0;
+      const canvas = storedImg.canvas;
+      switch (args.TYPE) {
+        case "width": return canvas.width;
+        case "height": return canvas.height;
+        case "pixel count": return canvas.width * canvas.height;
+        default: {
+          if (storedImg.needsRefresh) {
+            storedImg.data = this.pixels2Img(storedImg);
+            storedImg.needsRefresh = false;
+          }
+          return storedImg.data;
+        }
+      }
+    }
+
+    imgExists(args) { return imageBank[args.NAME] !== undefined }
+    allImgs() { return JSON.stringify(Object.keys(imageBank)) }
+
+    deleteImg(args) { delete imageBank[args.NAME] }
+    deleteAllImgs() { imageBank = {} }
+
+    // Block Funcs (Editing)
+    callImgEdit(args, util) {
+      const storedImg = imageBank[args.NAME];
+      if (storedImg === undefined) return "";
+      if (util.stackFrame.newThreads === undefined) {
+        storedImg.pixels = this.getPixelData(storedImg);
+        let newThreads = [];
+        // We shouldnt rely on runtime.startHats since we WANT to have multiple threads for pixel manipulation
+        for (var index = 0; index < storedImg.pixels.length; index++) {
+          newThreads = [...newThreads, ...this.callEditor({ name : args.NAME, index, hex : storedImg.pixels[index] })];
+        }
+        util.stackFrame.newThreads = newThreads;
+        util.yield();
+      } else {
+        if (util.stackFrame.newThreads.some((thread) => runtime.threads.indexOf(thread) !== -1)) {
+          if (util.stackFrame.newThreads.every((thread) => runtime.isWaitingThread(thread))) util.yieldTick();
+          else util.yield();
+        }
+        storedImg.data = this.pixels2Img(storedImg);
+        return storedImg.data;
+      }
+    }
+
+    editLoop(args, util) {
+      const storedImg = imageBank[args.NAME];
+      if (storedImg === undefined) return "";
+      if (util.stackFrame.loopCounter === undefined) {
+        storedImg.pixels = this.getPixelData(storedImg);
+        util.stackFrame.loopCounter = storedImg.pixels.length;
+      }
+      const index = Math.abs(util.stackFrame.loopCounter - storedImg.pixels.length);
+      util.thread.SPimgData = { name : args.NAME, index, hex : storedImg.pixels[index] }
+      util.stackFrame.loopCounter--;
+      if (util.stackFrame.loopCounter >= 0) util.startBranch(1, true);
+      else {
+        storedImg.data = this.pixels2Img(storedImg);
+        delete util.thread.SPimgData;
+      }
+    }
+
+    onEditCall(args, util) { return util.thread.SPimgData?.name === args.NAME }
+
+    pixelHex(args, util) { return util.thread.SPimgData?.hex || "" }
+    pixelIndex(args, util) { return util.thread.SPimgData?.index + 1 || "" }
+    setPixel(args, util) {
+      const data = util.thread.SPimgData;
+      if (data !== undefined) {
+        this.setHex({ REFRESH : false, NAME : data.name, COLOR : args.COLOR, INDEX : data.index + 1 });
+        util.thread.stopThisScript();
+      }
+    }
+    setHex(args) {
+      const storedImg = imageBank[args.NAME];
+      if (storedImg === undefined) return;
+      if (storedImg.pixels.length === 0) storedImg.pixels = this.getPixelData(storedImg);
+      storedImg.pixels[Scratch.Cast.toNumber(args.INDEX) - 1] = args.COLOR;
+      if (args.REFRESH === undefined) storedImg.needsRefresh = true;
+    }
+    getHex(args) {
+      const storedImg = imageBank[args.NAME];
+      if (storedImg === undefined) return "";
+      if (storedImg.pixels.length === 0) storedImg.pixels = this.getPixelData(storedImg);
+      return storedImg.pixels[Scratch.Cast.toNumber(args.INDEX) - 1] || "";
+    }
+
+    rotateImg(args) {
+      if (imageBank[args.NAME] === undefined) this.makeImg(args);
+      else {
+        const storedImg = imageBank[args.NAME];
+        const { canvas, ctx } = storedImg;
+        const { width, height } = canvas;
+        const tempData = this.createCanvasCtx(width, height);
+        const tempCanvas = tempData.canvas;
+        tempData.ctx.drawImage(canvas, 0, 0);
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = args.COLOR;
+        ctx.fillRect(0, 0, width, height);
+        ctx.save();
+        ctx.translate(width / 2, height / 2);
+        ctx.rotate(Scratch.Cast.toNumber(args.DIR) * (Math.PI / 180));
+        ctx.drawImage(tempCanvas, -tempCanvas.width / 2, -tempCanvas.height / 2);
+        ctx.restore();
+        imageBank[args.NAME] = { data: canvas.toDataURL(), canvas, ctx, pixels: [], needsRefresh: false };
+      }
+    }
+
+    addTexture(args) {
+      return new Promise((resolve) => {
+        const storedImg = imageBank[args.NAME];
+        if (storedImg === undefined || !args.IMAGE) return resolve();
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = () => {
+          try {
+            const xOffset = (storedImg.canvas.width - img.width) / 2;
+            const yOffset = (storedImg.canvas.height - img.height) / 2;
+            storedImg.ctx.drawImage(
+              img, Scratch.Cast.toNumber(args.x) + xOffset,
+              (Scratch.Cast.toNumber(args.y) * -1) + yOffset
+            );
+            storedImg.data = storedImg.canvas.toDataURL();
+            resolve();
+          } catch (e) {
+            console.warn(e);
+            resolve();
+          }
+        };
+        img.onerror = (e) => { console.warn(e); resolve() };
+        img.src = args.IMAGE;
+      });
+    }
+  }
+
+  Scratch.extensions.register(new SPimgEditor());
+})(Scratch);
