@@ -243,7 +243,6 @@
           ws.onopen = () => {
             this.wsServers[serverId] = ws;
             this.connectedServers[serverId] = true;
-            this.setupWebSocketHandlers(serverId, ws);
             resolve(serverId);
           };
           ws.onerror = (error) => {
