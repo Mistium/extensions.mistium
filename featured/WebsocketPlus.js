@@ -225,7 +225,7 @@
         PORT = Cast.toString(PORT);
         let prepend = URL.startsWith("wss://") || URL.startsWith("ws://") ? "" : "wss://";
         const ws = new WebSocket(prepend + `${URL}:${PORT}`);
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           ws.onmessage = (event) => {
             if (!this.messageQueue[serverId]) {
               this.messageQueue[serverId] = [];
