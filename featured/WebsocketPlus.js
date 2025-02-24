@@ -9,7 +9,8 @@
 // Then you can obtain one at https://mozilla.org/MPL/2.0/
 
 (function (Scratch) {
-  async function sendMessage(ws, MESSAGE) {
+  async function sendMessage(serverID, MESSAGE) {
+    const ws = serverID;
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(MESSAGE);
     }
@@ -224,34 +225,34 @@
         URL = Cast.toString(URL);
         PORT = Cast.toString(PORT);
         let prepend = URL.startsWith("wss://") || URL.startsWith("ws://") ? "" : "wss://";
-        const ws = new WebSocket(prepend + `${URL}:${PORT}`);
-        return new Promise((resolve, reject) => {
-          ws.onmessage = (event) => {
-            if (!this.messageQueue[serverId]) {
-              this.messageQueue[serverId] = [];
-            }
-            this.messageQueue[serverId].push(event.data);
-            this.runtime.startHats('webSocketPlus_recievedMessage');
-            this.lastFrom = serverId;
-          };
-          ws.onclose = () => {
-            this.lastDisconnect = serverId;
-            delete this.wsServers[serverId];
-            delete this.messageQueue[serverId];
-            delete this.connectedServers[serverId];
-          };
-          ws.onopen = () => {
-            this.wsServers[serverId] = ws;
-            this.connectedServers[serverId] = true;
-            resolve(serverId);
-          };
-          ws.onerror = (error) => {
-            console.error(`WebSocket error on ${serverId}:`, error);
-            resolve('');
-          };
-        });
+        const ws = new WebSocket(prepend+`${URL}:${PORT}`);
+        this.setupWebSocketHandlers(serverId, ws);
+        return serverId;
       }
       return '';
+    }
+
+    setupWebSocketHandlers(serverId, ws) {
+      ws.onopen = () => {
+        this.wsServers[serverId] = ws;
+        this.connectedServers[serverId] = true;
+      };
+      ws.onmessage = (event) => {
+        if (!this.messageQueue[serverId]) {
+          this.messageQueue[serverId] = [];
+        }
+        this.messageQueue[serverId].push(event.data);
+        this.runtime.startHats('webSocketPlus_recievedMessage');
+        this.lastFrom = serverId
+      };
+      ws.onerror = (error) => {
+        console.error(`WebSocket error on ${serverId}:`, error);
+      };
+      ws.onclose = () => {
+        this.lastDisconnect = serverId
+        delete this.wsServers[serverId];
+        delete this.connectedServers[serverId];
+      };
     }
 
     recievedMessage() { return ""; }
@@ -299,7 +300,8 @@
     }
 
     getAllMessages({ ID }) {
-      return JSON.stringify(this.messageQueue[Cast.toString(ID)] || []);
+      const queue = JSON.stringify(this.messageQueue[Cast.toString(ID)] || []);
+      return queue;
     }
 
     disconnectFromConnection({ ID }) {
