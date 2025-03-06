@@ -1,6 +1,6 @@
 // Name: Eval Plus
 // Author: Mistium
-// Description: Evaluate JS better
+// Description: Evaluate JS better (plus some dom stuff)
 
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
@@ -113,6 +113,33 @@
                     "---",
                     {
                         blockType: Scratch.BlockType.LABEL,
+                        text: 'DOM'
+                    },
+                    {
+                        opcode: 'getElementbyID',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'Get Element by ID [ID]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'elementID'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'listTags',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'List All Tags With Type [TYPE]',
+                        arguments: {
+                            TYPE: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'script'
+                            }
+                        }
+                    },
+                    "---",
+                    {
+                        blockType: Scratch.BlockType.LABEL,
                         text: 'Script Tags'
                     },
                     {
@@ -142,11 +169,6 @@
                         }
                     },
                     {
-                        opcode: 'viewAllScriptTags',
-                        blockType: Scratch.BlockType.REPORTER,
-                        text: 'List All Script Tags'
-                    },
-                    {
                         opcode: 'deleteScriptTag',
                         blockType: Scratch.BlockType.COMMAND,
                         text: 'Delete Script Tag With ID [ID]',
@@ -173,17 +195,6 @@
                         }
                     },
                     {
-                        opcode: 'getElementbyID',
-                        blockType: Scratch.BlockType.REPORTER,
-                        text: 'Get Element by ID [ID]',
-                        arguments: {
-                            ID: {
-                                type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'elementID'
-                            }
-                        }
-                    },
-                    {
                         opcode: 'refreshScriptTag',
                         blockType: Scratch.BlockType.COMMAND,
                         text: 'Refresh Script Tag With ID [ID]',
@@ -193,7 +204,59 @@
                                 defaultValue: 'scriptID'
                             }
                         }
-                    }
+                    },
+                    "---",
+                    {
+                        blockType: Scratch.BlockType.LABEL,
+                        text: 'CSS'
+                    },
+                    {
+                        opcode: 'addStyleTag',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'Add Style Tag With ID [ID] and Style [STYLE]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'styleID'
+                            },
+                            STYLE: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'body { background-color: red; }'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'addStyleTagWithSrc',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'Add Style Tag With ID [ID] and Source [SRC]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'styleID'
+                            },
+                            SRC: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'https://example.com/style.css'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'deleteStyleTag',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'Delete Style Tag With ID [ID]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'styleID'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'viewAllScriptTags',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'List All Script Tags',
+                        hidden: true
+                    },
                 ]
             };
         }
@@ -333,6 +396,16 @@
             return JSON.stringify(ids);
         }
 
+        listTags(args) {
+            const type = cast.toString(args.TYPE);
+            const tags = document.getElementsByTagName(type);
+            let ids = [];
+            for (let tag of tags) {
+                ids.push(tag.id || "");
+            }
+            return JSON.stringify(ids);
+        }
+
         deleteScriptTag(args) {
             const id = cast.toString(args.ID);
             const scriptTag = this.tags[id];
@@ -364,6 +437,40 @@
                 scriptTag.remove();
                 delete this.tags[id];
                 this.addScriptTag({ ID: id });
+            }
+        }
+
+        addStyleTag(args) {
+            const id = cast.toString(args.ID);
+            const style = cast.toString(args.STYLE);
+            if (!this.tags?.[id]) {
+                const styleTag = document.createElement('style');
+                styleTag.id = id;
+                styleTag.textContent = style;
+                document.head.appendChild(styleTag);
+                this.tags[id] = styleTag;
+            }
+        }
+
+        addStyleTagWithSrc(args) {
+            const id = cast.toString(args.ID);
+            const src = cast.toString(args.SRC);
+            if (!this.tags?.[id]) {
+                const styleTag = document.createElement('link');
+                styleTag.id = id;
+                styleTag.rel = 'stylesheet';
+                styleTag.href = src;
+                document.head.appendChild(styleTag);
+                this.tags[id] = styleTag;
+            }
+        }
+
+        deleteStyleTag(args) {
+            const id = cast.toString(args.ID);
+            const styleTag = this.tags[id];
+            if (styleTag) {
+                styleTag.remove();
+                delete this.tags[id];
             }
         }
     }
