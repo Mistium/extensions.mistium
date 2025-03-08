@@ -46,45 +46,6 @@
         });
     });
     
-    // Theme handling
-    function initTheme() {
-        const themeToggle = document.getElementById('themeToggle');
-        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-        const currentTheme = localStorage.getItem('theme');
-        
-        // Set initial theme based on saved preference or system preference
-        if (currentTheme) {
-            document.documentElement.setAttribute('data-theme', currentTheme);
-            updateThemeIcon(currentTheme);
-        } else if (prefersDarkScheme.matches) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            updateThemeIcon('dark');
-        }
-        
-        // Toggle theme on click
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        });
-    }
-    
-    function updateThemeIcon(theme) {
-        const lightIcon = document.querySelector('.theme-icon-light');
-        const darkIcon = document.querySelector('.theme-icon-dark');
-        
-        if (theme === 'dark') {
-            lightIcon.style.display = 'none';
-            darkIcon.style.display = 'block';
-        } else {
-            lightIcon.style.display = 'block';
-            darkIcon.style.display = 'none';
-        }
-    }
-    
     // Card interactive effects
     function initCardEffects() {
         document.addEventListener('mousemove', e => {
