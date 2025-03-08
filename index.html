@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <title>Extensions</title>
     <meta content="Extensions" property="og:title" />
     <meta content="A list of scratch extensions made by @mistium" property="og:description" />
     <meta content="https://extensions.mistium.com" property="og:url" />
-    <meta content="#57cdac" data-react-helmet="true" name="theme-color" />
+    <meta content="#9d81c7" data-react-helmet="true" name="theme-color" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -22,9 +22,27 @@
         <div id="fileCards"></div>
         <h2>Other Extension Galleries</h2>
         <div id="otherGalleries"></div>
+        <div class="footer-spacer"></div>
     </div>
+    
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle" id="themeToggle">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="theme-icon-light">
+            <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="theme-icon-dark" style="display:none;">
+            <path d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" />
+        </svg>
+    </div>
+    
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // Initialize theme
+        initTheme();
+        
+        // Initialize card effects
+        initCardEffects();
+        
         fetch('https://raw.githubusercontent.com/Mistium/Origin-OS/main/topbar.html')
             .then(response => response.text())
             .then(html => {
@@ -37,6 +55,61 @@
             generateOtherGalleries();
         });
     });
+    
+    // Theme handling
+    function initTheme() {
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        const currentTheme = localStorage.getItem('theme');
+        
+        // Set initial theme based on saved preference or system preference
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            updateThemeIcon(currentTheme);
+        } else if (prefersDarkScheme.matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            updateThemeIcon('dark');
+        }
+        
+        // Toggle theme on click
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+    }
+    
+    function updateThemeIcon(theme) {
+        const lightIcon = document.querySelector('.theme-icon-light');
+        const darkIcon = document.querySelector('.theme-icon-dark');
+        
+        if (theme === 'dark') {
+            lightIcon.style.display = 'none';
+            darkIcon.style.display = 'block';
+        } else {
+            lightIcon.style.display = 'block';
+            darkIcon.style.display = 'none';
+        }
+    }
+    
+    // Card interactive effects
+    function initCardEffects() {
+        document.addEventListener('mousemove', e => {
+            const cards = document.querySelectorAll('.profile-card, .gallery-card, .project-card, .about');
+            
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    }
 
     // Function to fetch versions data and cache it
     async function fetchAndCacheVersions() {
@@ -93,17 +166,21 @@
                 profileCardLink.href = item.download_url;
                 profileCardLink.target = "_blank";
                 profileCardLink.rel = "noopener noreferrer";
+                profileCardLink.classList.add("gallery-link");
 
                 const profileCard = document.createElement("div");
                 profileCard.classList.add("profile-card");
-
-                const platformHeading = document.createElement("h2");
-                platformHeading.textContent = itemName;
+                
+                const cardContent = document.createElement("div");
+                cardContent.classList.add("card-content");
 
                 const profileImage = document.createElement("img");
                 profileImage.src = `https://raw.githubusercontent.com/Mistium/extensions.mistium/main/images/${itemName}.png`;
                 profileImage.alt = itemName;
                 profileImage.classList.add("profile-image");
+                
+                const platformHeading = document.createElement("h2");
+                platformHeading.textContent = itemName;
 
                 // Check if the extension is new or updated
                 const versionTag = document.createElement("span");
@@ -116,14 +193,13 @@
                     versionTag.classList.add("updated-tag");
                 }
 
-                versionTag.style.color = "#fff";
-
-                profileCard.appendChild(profileImage);
-                profileCard.appendChild(platformHeading);
+                cardContent.appendChild(profileImage);
+                cardContent.appendChild(platformHeading);
                 if (versionTag.textContent) {
-                    profileCard.appendChild(versionTag);
+                    platformHeading.appendChild(versionTag);
                 }
-
+                
+                profileCard.appendChild(cardContent);
                 profileCardLink.appendChild(profileCard);
                 featuredCardsContainer.appendChild(profileCardLink);
             }
@@ -138,15 +214,19 @@
                 profileCardLink.href = item.download_url.replace("https://raw.githubusercontent.com/Mistium/extensions.mistium/main/","https://extensions.mistium.com/");
                 profileCardLink.target = "_blank";
                 profileCardLink.rel = "noopener noreferrer";
+                profileCardLink.classList.add("gallery-link");
 
                 const profileCard = document.createElement("div");
                 profileCard.classList.add("profile-card");
+                
+                const cardContent = document.createElement("div");
+                cardContent.classList.add("card-content");
 
                 const platformHeading = document.createElement("h2");
                 platformHeading.textContent = itemName;
 
-                profileCard.appendChild(platformHeading);
-
+                cardContent.appendChild(platformHeading);
+                profileCard.appendChild(cardContent);
                 profileCardLink.appendChild(profileCard);
                 fileCardsContainer.appendChild(profileCardLink);
             }
@@ -184,13 +264,20 @@
 
             const galleryCard = document.createElement("div");
             galleryCard.classList.add("profile-card");
+            
+            const cardContent = document.createElement("div");
+            cardContent.classList.add("card-content");
 
             const galleryHeading = document.createElement("h2");
             galleryHeading.textContent = gallery.name;
 
-            galleryCard.appendChild(galleryHeading);
+            cardContent.appendChild(galleryHeading);
+            galleryCard.appendChild(cardContent);
             galleryLink.appendChild(galleryCard);
             otherGalleriesContainer.appendChild(galleryLink);
         });
     }
 </script>
+
+</body>
+</html>
