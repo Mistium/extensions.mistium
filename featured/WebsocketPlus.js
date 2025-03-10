@@ -220,39 +220,42 @@
     }
 
     connectSecure({ URL, PORT }) {
-      const serverId = this.generateRandomId();
-      if (!this.wsServers[serverId]) {
+      return new Promise((resolve, reject) => {
+        const serverId = this.generateRandomId();
         URL = Cast.toString(URL);
         PORT = Cast.toString(PORT);
         let prepend = URL.startsWith("wss://") || URL.startsWith("ws://") ? "" : "wss://";
         const ws = new WebSocket(prepend+`${URL}:${PORT}`);
-        this.setupWebSocketHandlers(serverId, ws);
-        return serverId;
-      }
-      return '';
-    }
-
-    setupWebSocketHandlers(serverId, ws) {
-      ws.onopen = () => {
-        this.wsServers[serverId] = ws;
-        this.connectedServers[serverId] = true;
-      };
-      ws.onmessage = (event) => {
-        if (!this.messageQueue[serverId]) {
-          this.messageQueue[serverId] = [];
-        }
-        this.messageQueue[serverId].push(event.data);
-        this.runtime.startHats('webSocketPlus_recievedMessage');
-        this.lastFrom = serverId
-      };
-      ws.onerror = (error) => {
-        console.error(`WebSocket error on ${serverId}:`, error);
-      };
-      ws.onclose = () => {
-        this.lastDisconnect = serverId
-        delete this.wsServers[serverId];
-        delete this.connectedServers[serverId];
-      };
+        
+        ws.onopen = () => {
+          this.wsServers[serverId] = ws;
+          this.connectedServers[serverId] = true;
+          resolve(serverId);
+        };
+        
+        ws.onmessage = (event) => {
+          if (!this.messageQueue[serverId]) {
+            this.messageQueue[serverId] = [];
+          }
+          this.messageQueue[serverId].push(event.data);
+          this.runtime.startHats('webSocketPlus_recievedMessage');
+          this.lastFrom = serverId;
+        };
+        
+        ws.onerror = (error) => {
+          console.error(`WebSocket error on ${serverId}:`, error);
+          reject('Connection error');
+        };
+        
+        ws.onclose = () => {
+          this.lastDisconnect = serverId;
+          delete this.wsServers[serverId];
+          delete this.connectedServers[serverId];
+          if (!this.connectedServers[serverId]) {
+            reject('Connection closed');
+          }
+        };
+      });
     }
 
     recievedMessage() { return ""; }
