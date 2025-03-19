@@ -113,7 +113,7 @@
         case 'mistsutils.round':
           const round_1 = this.descendInput(node.A).asNumber();
           const round_2 = this.descendInput(node.B).asNumber();
-          this.source += `vm.runtime.visualReport("${b.id}", Math.round((${round_1} / ${round_2}) * ${round_2}))\n`;
+          this.source += `vm.runtime.visualReport("${b.id}", Math.round(${round_1} / ${round_2}) * ${round_2})\n`;
           return;
         case 'mistsutils.clamp':
           const clamp_1 = this.descendInput(node.A).asNumber();
@@ -343,7 +343,7 @@
         case 'mistsutils.round':
           const round_1 = this.descendInput(node.A).asNumber();
           const round_2 = this.descendInput(node.B).asNumber();
-          return new TypedInput(`Math.round((${round_1} / ${round_2}) * ${round_2})`, TYPE_NUMBER);
+          return new TypedInput(`(Math.round(${round_1} / ${round_2}) * ${round_2})`, TYPE_NUMBER);
         case 'mistsutils.clamp':
           const clamp_1 = this.descendInput(node.A).asNumber();
           const clamp_2 = this.descendInput(node.B).asNumber();
