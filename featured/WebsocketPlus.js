@@ -350,7 +350,7 @@
     linkrooms({ ROOMS, ID }) {
       let msg = {
         "cmd": "link",
-        "val": Cast.toString(ROOMS),
+        "val": JSON.parse(ROOMS),
         "listener": "link"
       };
       sendMessage(this.wsServers[Cast.toString(ID)], JSON.stringify(msg));
