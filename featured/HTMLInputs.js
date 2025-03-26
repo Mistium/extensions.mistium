@@ -168,7 +168,7 @@
           },
           "---",
           {
-            opcode: 'inputFocused?',
+            opcode: 'inputFocused',
             blockType: Scratch.BlockType.BOOLEAN,
             text: 'input [ID] focused?',
             arguments: {
@@ -560,6 +560,14 @@
     getInputValue({ ID }) {
       ID = Cast.toString(ID);
       return this.inputs[ID] ? this.inputs[ID].value : '';
+    }
+
+    inputFocused({ ID }) {
+      ID = Cast.toString(ID);
+      if (this.inputs[ID]) {
+        return this.inputs[ID] === document.activeElement;
+      }
+      return false;
     }
 
     setInputValue({ ID, VALUE }) {
