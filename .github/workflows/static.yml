@@ -1,5 +1,5 @@
 # Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Compile Extensions and Deploy to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -11,7 +11,7 @@ on:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -22,8 +22,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
+  compile-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -31,13 +30,193 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Compile Extensions Data
+        id: compile
+        run: |
+          node -e '
+          const fs = require("fs");
+          const path = require("path");
+          const { execSync } = require("child_process");
+
+          // Read files from directories
+          const featuredDir = "featured";
+          const filesDir = "files";
+          const imagesDir = "images";
+          const versionsFile = "versions.json";
+          const previousVersionsFile = "cache/previous_versions.json";
+
+          // Read current versions data
+          const versions = JSON.parse(fs.readFileSync(versionsFile, "utf8"));
+          
+          // Initialize previous versions or load if exists
+          let previousVersions = {};
+          try {
+            if (fs.existsSync(previousVersionsFile)) {
+              previousVersions = JSON.parse(fs.readFileSync(previousVersionsFile, "utf8"));
+            }
+          } catch (e) {
+            console.log("Could not read previous versions, initializing empty object");
+          }
+
+          // Ensure cache directory exists
+          if (!fs.existsSync("cache")) {
+            fs.mkdirSync("cache", { recursive: true });
+          }
+
+          // Find new and updated extensions
+          const extensionStatus = {};
+          for (const [ext, version] of Object.entries(versions)) {
+            if (!previousVersions[ext]) {
+              extensionStatus[ext] = "new";
+            } else if (previousVersions[ext] !== version) {
+              extensionStatus[ext] = "updated";
+            }
+          }
+
+          // Save current versions as previous for next time
+          fs.writeFileSync(previousVersionsFile, JSON.stringify(versions, null, 2));
+
+          // Get featured files data
+          const featuredFiles = fs.readdirSync(featuredDir)
+              .filter(file => file.endsWith(".js"))
+              .map(file => {
+                  const filePath = path.join(featuredDir, file);
+                  const stats = fs.statSync(filePath);
+                  return {
+                      name: file,
+                      path: filePath,
+                      download_url: `https://extensions.mistium.com/${filePath}`,
+                      size: stats.size,
+                      status: extensionStatus[file] || ""
+                  };
+              });
+
+          // Get regular files data
+          const regularFiles = fs.readdirSync(filesDir)
+              .filter(file => file.endsWith(".js"))
+              .map(file => {
+                  const filePath = path.join(filesDir, file);
+                  const stats = fs.statSync(filePath);
+                  return {
+                      name: file,
+                      path: filePath,
+                      download_url: `https://extensions.mistium.com/${filePath}`,
+                      size: stats.size,
+                      status: extensionStatus[file] || ""
+                  };
+              });
+
+          // Read the index.html template
+          let indexHtml = fs.readFileSync("index.html", "utf8");
+
+          // Find the script part that needs to be replaced
+          const scriptStartIndex = indexHtml.indexOf("// Function to fetch data from GitHub API");
+          const scriptEndIndex = indexHtml.indexOf("// Function to generate other extension gallery links");
+
+          if (scriptStartIndex !== -1 && scriptEndIndex !== -1) {
+              // Create replacement script
+              const newScript = `// Function to get pre-compiled extension data
+          function fetchData() {
+              return Promise.resolve({
+                  featured: ${JSON.stringify(featuredFiles)},
+                  files: ${JSON.stringify(regularFiles)}
+              });
+          }
+
+          // Function to get version data
+          function fetchAndCacheVersions() {
+              return Promise.resolve(${JSON.stringify(versions)});
+          }
+
+          `;
+
+              // Replace the script
+              indexHtml = indexHtml.substring(0, scriptStartIndex) + newScript + indexHtml.substring(scriptEndIndex);
+
+              // Update the link generation to use relative paths
+              indexHtml = indexHtml.replace(
+                  /profileCardLink\.href = item\.download_url\.replace\("https:\/\/raw\.githubusercontent\.com\/Mistium\/extensions\.mistium\/main\/","https:\/\/extensions\.mistium\.com\/"\);/g, 
+                  "profileCardLink.href = item.download_url;"
+              );
+
+              // Update image paths to be relative
+              indexHtml = indexHtml.replace(
+                  /profileImage\.src = \`https:\/\/raw\.githubusercontent\.com\/Mistium\/extensions\.mistium\/main\/images\/\${itemName}\.png\`;/g,
+                  "profileImage.src = `images/${itemName}.png`;"
+              );
+
+              // Also update the version tag logic to use our pre-computed status
+              const versionTagCode = `
+                // Check if the extension is new or updated
+                const versionTag = document.createElement("span");
+                versionTag.classList.add("version-tag");
+                if (item.status === "new") {
+                    versionTag.textContent = "New";
+                    versionTag.classList.add("new-tag");
+                    platformHeading.appendChild(versionTag);
+                } else if (item.status === "updated") {
+                    versionTag.textContent = "Updated";
+                    versionTag.classList.add("updated-tag");
+                    platformHeading.appendChild(versionTag);
+                }
+              `;
+
+              // Replace the local storage version detection
+              indexHtml = indexHtml.replace(
+                  /\/\/ Check if the extension is new or updated[\s\S]*?if \(versionTag\.textContent\) {\s*platformHeading\.appendChild\(versionTag\);\s*}/,
+                  versionTagCode
+              );
+
+              // Remove any remaining localStorage references
+              indexHtml = indexHtml.replace(
+                  /let cachedVersions = {};[\s\S]*?} catch \(e\) {[\s\S]*?}/, 
+                  ""
+              );
+              
+              // Remove the final localStorage update
+              indexHtml = indexHtml.replace(
+                  /\/\/ Update the cached versions to the latest versions[\s\S]*?localStorage\.setItem\('extensionVersions', JSON\.stringify\(versions\)\);/, 
+                  ""
+              );
+
+              // Write the updated index.html
+              fs.writeFileSync("index.html", indexHtml);
+              
+              // Commit the updated previous_versions.json
+              try {
+                execSync("git config --local user.email 'action@github.com'");
+                execSync("git config --local user.name 'GitHub Action'");
+                execSync("git add cache/previous_versions.json");
+                execSync("git commit -m 'Update previous_versions.json [skip ci]'", { stdio: 'inherit' });
+                execSync("git push", { stdio: 'inherit' });
+                console.log("Committed previous_versions.json");
+              } catch (error) {
+                console.log("No changes to commit or error in committing:", error);
+              }
+              
+              console.log("Successfully compiled extension data into index.html");
+          } else {
+              console.error("Could not find script section to replace in index.html");
+              process.exit(1);
+          }
+          '
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
           path: '.'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
