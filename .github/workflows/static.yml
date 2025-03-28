@@ -162,7 +162,7 @@ jobs:
                       cardContent.classList.add("card-content");
 
                       const profileImage = document.createElement("img");
-                      profileImage.src = \`images/\${itemName}.png\`;
+                      profileImage.src = "images/" + itemName + ".png";
                       profileImage.alt = itemName;
                       profileImage.classList.add("profile-image");
                       
@@ -233,7 +233,7 @@ jobs:
               // Update image paths to be relative
               indexHtml = indexHtml.replace(
                   /profileImage\.src = \`https:\/\/raw\.githubusercontent\.com\/Mistium\/extensions\.mistium\/main\/images\/\${itemName}\.png\`;/g,
-                  "profileImage.src = `images/${itemName}.png`;"
+                  "profileImage.src = \"images/\" + itemName + \".png\";"
               );
 
               // Write the updated index.html
