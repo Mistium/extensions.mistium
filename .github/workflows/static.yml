@@ -136,6 +136,89 @@ jobs:
               return Promise.resolve(${JSON.stringify(versions)});
           }
 
+          // Function to generate profile cards
+          async function generateProfileCards() {
+              const featuredCardsContainer = document.getElementById("featuredCards");
+              const fileCardsContainer = document.getElementById("fileCards");
+              const data = await fetchData();
+
+              if (!data || !data.featured || !Array.isArray(data.featured) || !data.files || !Array.isArray(data.files)) return;
+
+              data.featured.forEach(item => {
+                  const itemName = item.name.split('.')[0]; // Remove file extension
+                  const isJsFile = item.name.endsWith('.js');
+
+                  if (isJsFile) {
+                      const profileCardLink = document.createElement("a");
+                      profileCardLink.href = item.download_url;
+                      profileCardLink.target = "_blank";
+                      profileCardLink.rel = "noopener noreferrer";
+                      profileCardLink.classList.add("gallery-link");
+
+                      const profileCard = document.createElement("div");
+                      profileCard.classList.add("profile-card");
+                      
+                      const cardContent = document.createElement("div");
+                      cardContent.classList.add("card-content");
+
+                      const profileImage = document.createElement("img");
+                      profileImage.src = \`images/\${itemName}.png\`;
+                      profileImage.alt = itemName;
+                      profileImage.classList.add("profile-image");
+                      
+                      const platformHeading = document.createElement("h2");
+                      platformHeading.textContent = itemName;
+
+                      // Check if the extension is new or updated
+                      const versionTag = document.createElement("span");
+                      versionTag.classList.add("version-tag");
+                      if (item.status === "new") {
+                          versionTag.textContent = "New";
+                          versionTag.classList.add("new-tag");
+                          platformHeading.appendChild(versionTag);
+                      } else if (item.status === "updated") {
+                          versionTag.textContent = "Updated";
+                          versionTag.classList.add("updated-tag");
+                          platformHeading.appendChild(versionTag);
+                      }
+
+                      cardContent.appendChild(profileImage);
+                      cardContent.appendChild(platformHeading);
+                      
+                      profileCard.appendChild(cardContent);
+                      profileCardLink.appendChild(profileCard);
+                      featuredCardsContainer.appendChild(profileCardLink);
+                  }
+              });
+
+              data.files.forEach(item => {
+                  const itemName = item.name.split('.')[0]; // Remove file extension
+                  const isJsFile = item.name.endsWith('.js');
+
+                  if (isJsFile) {
+                      const profileCardLink = document.createElement("a");
+                      profileCardLink.href = item.download_url;
+                      profileCardLink.target = "_blank";
+                      profileCardLink.rel = "noopener noreferrer";
+                      profileCardLink.classList.add("gallery-link");
+
+                      const profileCard = document.createElement("div");
+                      profileCard.classList.add("profile-card");
+                      
+                      const cardContent = document.createElement("div");
+                      cardContent.classList.add("card-content");
+
+                      const platformHeading = document.createElement("h2");
+                      platformHeading.textContent = itemName;
+
+                      cardContent.appendChild(platformHeading);
+                      profileCard.appendChild(cardContent);
+                      profileCardLink.appendChild(profileCard);
+                      fileCardsContainer.appendChild(profileCardLink);
+                  }
+              });
+          }
+
           `;
 
               // Replace the script
@@ -151,40 +234,6 @@ jobs:
               indexHtml = indexHtml.replace(
                   /profileImage\.src = \`https:\/\/raw\.githubusercontent\.com\/Mistium\/extensions\.mistium\/main\/images\/\${itemName}\.png\`;/g,
                   "profileImage.src = `images/${itemName}.png`;"
-              );
-
-              // Also update the version tag logic to use our pre-computed status
-              const versionTagCode = `
-                // Check if the extension is new or updated
-                const versionTag = document.createElement("span");
-                versionTag.classList.add("version-tag");
-                if (item.status === "new") {
-                    versionTag.textContent = "New";
-                    versionTag.classList.add("new-tag");
-                    platformHeading.appendChild(versionTag);
-                } else if (item.status === "updated") {
-                    versionTag.textContent = "Updated";
-                    versionTag.classList.add("updated-tag");
-                    platformHeading.appendChild(versionTag);
-                }
-              `;
-
-              // Replace the local storage version detection
-              indexHtml = indexHtml.replace(
-                  /\/\/ Check if the extension is new or updated[\s\S]*?if \(versionTag\.textContent\) {\s*platformHeading\.appendChild\(versionTag\);\s*}/,
-                  versionTagCode
-              );
-
-              // Remove any remaining localStorage references
-              indexHtml = indexHtml.replace(
-                  /let cachedVersions = {};[\s\S]*?} catch \(e\) {[\s\S]*?}/, 
-                  ""
-              );
-              
-              // Remove the final localStorage update
-              indexHtml = indexHtml.replace(
-                  /\/\/ Update the cached versions to the latest versions[\s\S]*?localStorage\.setItem\('extensionVersions', JSON\.stringify\(versions\)\);/, 
-                  ""
               );
 
               // Write the updated index.html
