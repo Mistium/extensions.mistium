@@ -192,11 +192,11 @@ jobs:
               
               // Commit the updated previous_versions.json
               try {
-                execSync("git config --local user.email 'action@github.com'");
-                execSync("git config --local user.name 'GitHub Action'");
+                execSync('git config --local user.email "action@github.com"');
+                execSync('git config --local user.name "GitHub Action"');
                 execSync("git add cache/previous_versions.json");
-                execSync("git commit -m 'Update previous_versions.json [skip ci]'", { stdio: 'inherit' });
-                execSync("git push", { stdio: 'inherit' });
+                execSync('git commit -m "Update previous_versions.json [skip ci]"', { stdio: "inherit" });
+                execSync("git push", { stdio: "inherit" });
                 console.log("Committed previous_versions.json");
               } catch (error) {
                 console.log("No changes to commit or error in committing:", error);
