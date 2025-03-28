@@ -192,8 +192,8 @@ jobs:
               });
 
               data.files.forEach(item => {
-                  const itemName = item.name.split('.')[0]; // Remove file extension
-                  const isJsFile = item.name.endsWith('.js');
+                  const itemName = item.name.split(".")[0]; // Remove file extension
+                  const isJsFile = item.name.endsWith(".js");
 
                   if (isJsFile) {
                       const profileCardLink = document.createElement("a");
@@ -223,18 +223,6 @@ jobs:
 
               // Replace the script
               indexHtml = indexHtml.substring(0, scriptStartIndex) + newScript + indexHtml.substring(scriptEndIndex);
-
-              // Update the link generation to use relative paths
-              indexHtml = indexHtml.replace(
-                  /profileCardLink\.href = item\.download_url\.replace\("https:\/\/raw\.githubusercontent\.com\/Mistium\/extensions\.mistium\/main\/","https:\/\/extensions\.mistium\.com\/"\);/g, 
-                  "profileCardLink.href = item.download_url;"
-              );
-
-              // Update image paths to be relative
-              indexHtml = indexHtml.replace(
-                  /profileImage\.src = \`https:\/\/raw\.githubusercontent\.com\/Mistium\/extensions\.mistium\/main\/images\/\${itemName}\.png\`;/g,
-                  "profileImage.src = \"images/\" + itemName + \".png\";"
-              );
 
               // Write the updated index.html
               fs.writeFileSync("index.html", indexHtml);
