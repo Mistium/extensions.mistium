@@ -52,6 +52,8 @@ jobs:
           const imagesDir = "images";
           const versionsFile = "versions.json";
           const previousVersionsFile = "cache/previous_versions.json";
+          const templateFile = "original.html"; // Changed from index.html to original.html
+          const outputFile = "index.html"; // This will be our output file
 
           // Read current versions data
           const versions = JSON.parse(fs.readFileSync(versionsFile, "utf8"));
@@ -114,8 +116,8 @@ jobs:
                   };
               });
 
-          // Read the index.html template
-          let indexHtml = fs.readFileSync("index.html", "utf8");
+          // Read the original.html template
+          let indexHtml = fs.readFileSync(templateFile, "utf8");
 
           // Find the script part that needs to be replaced
           const scriptStartIndex = indexHtml.indexOf("// Function to fetch data from GitHub API");
@@ -224,8 +226,8 @@ jobs:
               // Replace the script
               indexHtml = indexHtml.substring(0, scriptStartIndex) + newScript + indexHtml.substring(scriptEndIndex);
 
-              // Write the updated index.html
-              fs.writeFileSync("index.html", indexHtml);
+              // Write the updated index.html (as a new file)
+              fs.writeFileSync(outputFile, indexHtml);
               
               // Commit the updated previous_versions.json
               try {
@@ -245,9 +247,9 @@ jobs:
                 console.log("No changes to commit or error in committing:", error);
               }
               
-              console.log("Successfully compiled extension data into index.html");
+              console.log("Successfully compiled extension data into index.html from original.html template");
           } else {
-              console.error("Could not find script section to replace in index.html");
+              console.error("Could not find script section to replace in original.html");
               process.exit(1);
           }
           '
