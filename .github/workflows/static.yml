@@ -145,8 +145,8 @@ jobs:
               if (!data || !data.featured || !Array.isArray(data.featured) || !data.files || !Array.isArray(data.files)) return;
 
               data.featured.forEach(item => {
-                  const itemName = item.name.split('.')[0]; // Remove file extension
-                  const isJsFile = item.name.endsWith('.js');
+                  const itemName = item.name.split(".")[0]; // Remove file extension
+                  const isJsFile = item.name.endsWith(".js");
 
                   if (isJsFile) {
                       const profileCardLink = document.createElement("a");
