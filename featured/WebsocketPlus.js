@@ -224,7 +224,7 @@
         const serverId = this.generateRandomId();
         URL = Cast.toString(URL);
         PORT = Cast.toString(PORT);
-        let prepend = URL.startsWith("wss://") || URL.startsWith("ws://") ? "" : "wss://";
+        let prepend = (URL.startsWith("wss://") || URL.startsWith("ws://") || URL.startsWith("https://")) ? "" : "wss://";
         const ws = new WebSocket(prepend+`${URL}:${PORT}`);
         
         ws.onopen = () => {
