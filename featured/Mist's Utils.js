@@ -1,11 +1,10 @@
 /**!
  * Mist's Utils
  * @author Mistium (mistium.com), Miyo (miyo.lol)
- * @version 5.9
+ * @version 6.0
  * @copyright MIT & LGPLv3 License
  * Do not remove this comment
  */
-
 
 (function(Scratch) {
   'use strict';
@@ -75,6 +74,16 @@
       }
     }
   };
+
+  // Helper function for safe JSON parsing
+  const safeJsonParse = (str) => {
+    try {
+      return JSON.parse(str);
+    } catch (e) {
+      return null;
+    }
+  };
+
   cst_patch(JSGP, {
     descendStackedBlock(fn, node, ...args) {
       let b = node.block;
@@ -309,6 +318,52 @@
         case 'mistsutils.MaxInt':
           this.source += `vm.runtime.visualReport("${b.id}", Number.MAX_SAFE_INTEGER)\n`;
           return;
+
+        // New debug logging blocks
+        case 'mistsutils.consolelog':
+          const consolelog_1 = this.descendInput(node.A).asString();
+          this.source += `console.log(${consolelog_1})\n`;
+          return;
+        case 'mistsutils.consolewarn':
+          const consolewarn_1 = this.descendInput(node.A).asString();
+          this.source += `console.warn(${consolewarn_1})\n`;
+          return;
+        case 'mistsutils.consoleerror':
+          const consoleerror_1 = this.descendInput(node.A).asString();
+          this.source += `console.error(${consoleerror_1})\n`;
+          return;
+
+        // New JSON utility blocks
+        case 'mistsutils.jsonhas':
+          const jsonhas_1 = this.descendInput(node.A).asString();
+          const jsonhas_2 = this.descendInput(node.B).asString();
+          this.source += `vm.runtime.visualReport("${b.id}", Object.prototype.hasOwnProperty.call(safeJsonParse(${jsonhas_1}) || {}, ${jsonhas_2}))\n`;
+          return;
+        case 'mistsutils.jsonkeys':
+          const jsonkeys_1 = this.descendInput(node.A).asString();
+          this.source += `vm.runtime.visualReport("${b.id}", JSON.stringify(Object.keys(safeJsonParse(${jsonkeys_1}) || {})))\n`;
+          return;
+        case 'mistsutils.jsonvalues':
+          const jsonvalues_1 = this.descendInput(node.A).asString();
+          this.source += `vm.runtime.visualReport("${b.id}", JSON.stringify(Object.values(safeJsonParse(${jsonvalues_1}) || {})))\n`;
+          return;
+
+        // New Array utility blocks
+        case 'mistsutils.arrayjoin':
+          const arrayjoin_1 = this.descendInput(node.A).asRaw();
+          const arrayjoin_2 = this.descendInput(node.B).asString();
+          this.source += `vm.runtime.visualReport("${b.id}", (Array.isArray(${arrayjoin_1}) ? ${arrayjoin_1}.join(${arrayjoin_2}) : ${arrayjoin_1}))\n`;
+          return;
+        case 'mistsutils.arrayincludes':
+          const arrayincludes_1 = this.descendInput(node.A).asRaw();
+          const arrayincludes_2 = this.descendInput(node.B).asString();
+          this.source += `vm.runtime.visualReport("${b.id}", (Array.isArray(${arrayincludes_1}) ? ${arrayincludes_1}.includes(${arrayincludes_2}) : false))\n`;
+          return;
+        case 'mistsutils.arrayisarray':
+          const arrayisarray_1 = this.descendInput(node.A).asRaw();
+          this.source += `vm.runtime.visualReport("${b.id}", Array.isArray(${arrayisarray_1}))\n`;
+          return;
+
         default:
           return fn(node, ...args);
       }
@@ -494,6 +549,43 @@
           return new TypedInput(`Infinity`, TYPE_NUMBER);
         case 'mistsutils.MaxInt':
           return new TypedInput(`Number.MAX_SAFE_INTEGER`, TYPE_NUMBER);
+
+        // New debug logging blocks
+        case 'mistsutils.consolelog':
+          const consolelog_1 = this.descendInput(node.A).asString();
+          return new TypedInput(`console.log(${consolelog_1})`, TYPE_UNKNOWN);
+        case 'mistsutils.consolewarn':
+          const consolewarn_1 = this.descendInput(node.A).asString();
+          return new TypedInput(`console.warn(${consolewarn_1})`, TYPE_UNKNOWN);
+        case 'mistsutils.consoleerror':
+          const consoleerror_1 = this.descendInput(node.A).asString();
+          return new TypedInput(`console.error(${consoleerror_1})`, TYPE_UNKNOWN);
+
+        // New JSON utility blocks
+        case 'mistsutils.jsonhas':
+          const jsonhas_1 = this.descendInput(node.A).asString();
+          const jsonhas_2 = this.descendInput(node.B).asString();
+          return new TypedInput(`Object.prototype.hasOwnProperty.call(safeJsonParse(${jsonhas_1}) || {}, ${jsonhas_2})`, TYPE_BOOLEAN);
+        case 'mistsutils.jsonkeys':
+          const jsonkeys_1 = this.descendInput(node.A).asString();
+          return new TypedInput(`JSON.stringify(Object.keys(safeJsonParse(${jsonkeys_1}) || {}))`, TYPE_STRING);
+        case 'mistsutils.jsonvalues':
+          const jsonvalues_1 = this.descendInput(node.A).asString();
+          return new TypedInput(`JSON.stringify(Object.values(safeJsonParse(${jsonvalues_1}) || {}))`, TYPE_STRING);
+
+        // New Array utility blocks
+        case 'mistsutils.arrayjoin':
+          const arrayjoin_1 = this.descendInput(node.A).asRaw();
+          const arrayjoin_2 = this.descendInput(node.B).asString();
+          return new TypedInput(`(Array.isArray(${arrayjoin_1}) ? ${arrayjoin_1}.join(${arrayjoin_2}) : ${arrayjoin_1})`, TYPE_STRING);
+        case 'mistsutils.arrayincludes':
+          const arrayincludes_1 = this.descendInput(node.A).asRaw();
+          const arrayincludes_2 = this.descendInput(node.B).asString();
+          return new TypedInput(`(Array.isArray(${arrayincludes_1}) ? ${arrayincludes_1}.includes(${arrayincludes_2}) : false)`, TYPE_BOOLEAN);
+        case 'mistsutils.arrayisarray':
+          const arrayisarray_1 = this.descendInput(node.A).asRaw();
+          return new TypedInput(`Array.isArray(${arrayisarray_1})`, TYPE_BOOLEAN);
+
         default:
           return fn(node, ...args);
       }
@@ -783,293 +875,61 @@
           return {
             block, kind: 'mistsutils.MaxInt',
           };
-        default:
-          return fn(block, ...args);
-      }
-    },
-    descendInput(fn, block, ...args) {
-      switch (block.opcode) {
-        case 'mistsutils_notequals':
+
+        // New debug logging blocks
+        case 'mistsutils_consolelog':
           return {
-            block, kind: 'mistsutils.notequals',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
+            block, kind: 'mistsutils.consolelog',
+            A: this.descendInputOfBlock(block, 'A'),
           };
-        case 'mistsutils_equals':
+        case 'mistsutils_consolewarn':
           return {
-            block, kind: 'mistsutils.equals',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
+            block, kind: 'mistsutils.consolewarn',
+            A: this.descendInputOfBlock(block, 'A'),
           };
-        case 'mistsutils_greaterorequal':
+        case 'mistsutils_consoleerror':
           return {
-            block, kind: 'mistsutils.greaterorequal',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
+            block, kind: 'mistsutils.consoleerror',
+            A: this.descendInputOfBlock(block, 'A'),
           };
-        case 'mistsutils_lessthanorequal':
+
+        // New JSON utility blocks
+        case 'mistsutils_jsonhas':
           return {
-            block, kind: 'mistsutils.lessthanorequal',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
+            block, kind: 'mistsutils.jsonhas',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
           };
-        case 'mistsutils_compare':
+        case 'mistsutils_jsonkeys':
           return {
-            block, kind: 'mistsutils.compare',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
+            block, kind: 'mistsutils.jsonkeys',
+            A: this.descendInputOfBlock(block, 'A'),
           };
-        case 'mistsutils_power':
+        case 'mistsutils_jsonvalues':
           return {
-            block, kind: 'mistsutils.power',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
+            block, kind: 'mistsutils.jsonvalues',
+            A: this.descendInputOfBlock(block, 'A'),
           };
-        case 'mistsutils_round':
+
+        // New Array utility blocks
+        case 'mistsutils_arrayjoin':
           return {
-            block, kind: 'mistsutils.round',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
+            block, kind: 'mistsutils.arrayjoin',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
           };
-        case 'mistsutils_clamp':
+        case 'mistsutils_arrayincludes':
           return {
-            block, kind: 'mistsutils.clamp',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
+            block, kind: 'mistsutils.arrayincludes',
+            A: this.descendInputOfBlock(block, 'A'),
+            B: this.descendInputOfBlock(block, 'B'),
           };
-        case 'mistsutils_min':
+        case 'mistsutils_arrayisarray':
           return {
-            block, kind: 'mistsutils.min',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
+            block, kind: 'mistsutils.arrayisarray',
+            A: this.descendInputOfBlock(block, 'A'),
           };
-        case 'mistsutils_max':
-          return {
-            block, kind: 'mistsutils.max',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_interpolate':
-          return {
-            block, kind: 'mistsutils.interpolate',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
-          };
-        case 'mistsutils_ifthen':
-          return {
-            block, kind: 'mistsutils.ifthen',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
-          };
-        case 'mistsutils_letters':
-          return {
-            block, kind: 'mistsutils.letters',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
-          };
-        case 'mistsutils_starts':
-          return {
-            block, kind: 'mistsutils.starts',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_ends':
-          return {
-            block, kind: 'mistsutils.ends',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_toUnicode':
-          return {
-            block, kind: 'mistsutils.toUnicode',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_replace':
-          return {
-            block, kind: 'mistsutils.replace',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
-          };
-        case 'mistsutils_replaceall':
-          return {
-            block, kind: 'mistsutils.replaceall',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
-          };
-        case 'mistsutils_alltextAfterString':
-          return {
-            block, kind: 'mistsutils.alltextAfterString',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_alltextBeforeString':
-          return {
-            block, kind: 'mistsutils.alltextBeforeString',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_split':
-          return {
-            block, kind: 'mistsutils.split',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_splitarray':
-          return {
-            block, kind: 'mistsutils.splitarray',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_length':
-          return {
-            block, kind: 'mistsutils.length',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_item':
-          return {
-            block, kind: 'mistsutils.item',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
-          };
-        case 'mistsutils_squarebrackets':
-          return {
-            block, kind: 'mistsutils.squarebrackets',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_jsonparse':
-          return {
-            block, kind: 'mistsutils.jsonparse',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_jsonstringify':
-          return {
-            block, kind: 'mistsutils.jsonstringify',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_isnumber':
-          return {
-            block, kind: 'mistsutils.isnumber',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_isstring':
-          return {
-            block, kind: 'mistsutils.isstring',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_isboolean':
-          return {
-            block, kind: 'mistsutils.isboolean',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_tostring':
-          return {
-            block, kind: 'mistsutils.tostring',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_tonumber':
-          return {
-            block, kind: 'mistsutils.tonumber',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_toboolean':
-          return {
-            block, kind: 'mistsutils.toboolean',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_patchreporter':
-          return {
-            block, kind: 'mistsutils.patchreporter',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_patchreporter2':
-          return {
-            block, kind: 'mistsutils.patchreporter2',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_patchreporter3':
-          return {
-            block, kind: 'mistsutils.patchreporter3',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
-          };
-        case 'mistsutils_patchboolean':
-          return {
-            block, kind: 'mistsutils.patchboolean',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_patchcommand':
-          return {
-            block, kind: 'mistsutils.patchcommand',
-              A: this.descendInputOfBlock(block, 'A'),
-          };
-        case 'mistsutils_patchcommand2':
-          return {
-            block, kind: 'mistsutils.patchcommand2',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-          };
-        case 'mistsutils_patchcommand3':
-          return {
-            block, kind: 'mistsutils.patchcommand3',
-              A: this.descendInputOfBlock(block, 'A'),
-              B: this.descendInputOfBlock(block, 'B'),
-              C: this.descendInputOfBlock(block, 'C'),
-          };
-        case 'mistsutils_true':
-          return {
-            block, kind: 'mistsutils.true',
-          };
-        case 'mistsutils_false':
-          return {
-            block, kind: 'mistsutils.false',
-          };
-        case 'mistsutils_isPackaged':
-          return {
-            block, kind: 'mistsutils.isPackaged',
-          };
-        case 'mistsutils_performancenow':
-          return {
-            block, kind: 'mistsutils.performancenow',
-          };
-        case 'mistsutils_stagewidth':
-          return {
-            block, kind: 'mistsutils.stagewidth',
-          };
-        case 'mistsutils_stageheight':
-          return {
-            block, kind: 'mistsutils.stageheight',
-          };
-        case 'mistsutils_newline':
-          return {
-            block, kind: 'mistsutils.newline',
-          };
-        case 'mistsutils_pi':
-          return {
-            block, kind: 'mistsutils.pi',
-          };
-        case 'mistsutils_e':
-          return {
-            block, kind: 'mistsutils.e',
-          };
-        case 'mistsutils_infinity':
-          return {
-            block, kind: 'mistsutils.infinity',
-          };
-        case 'mistsutils_MaxInt':
-          return {
-            block, kind: 'mistsutils.MaxInt',
-          };
+
         default:
           return fn(block, ...args);
       }
@@ -1083,7 +943,7 @@
         id: 'mistsutils',
         name: 'Mists Utils',
         color1: '#2DA4A0',
-        version: 5.9,
+        version: 6.0,
         blocks: [{
             "blockType": BT.BUTTON,
             "text": "New Version Available!",
@@ -1452,7 +1312,7 @@
           },
           {
             "opcode": "split",
-            "text": "split [A] by [B] (stringify)",
+            "text": "split [A] by [B] (string)",
             "blockType": BT.REPORTER,
             "arguments": {
               "A": {
@@ -1468,7 +1328,7 @@
           },
           {
             "opcode": "splitarray",
-            "text": "split [A] by [B] (array)",
+            "text": "split [A] by [B] (raw)",
             "blockType": BT.REPORTER,
             "arguments": {
               "A": {
@@ -1478,6 +1338,50 @@
               "B": {
                 "type": AT.STRING,
                 "defaultValue": "l"
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "arrayjoin",
+            "text": "join array [A] with [B]",
+            "blockType": BT.REPORTER,
+            "arguments": {
+              "A": {
+                "type": AT.STRING,
+                "defaultValue": "[1,2,3]"
+              },
+              "B": {
+                "type": AT.STRING,
+                "defaultValue": ", "
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "arrayincludes",
+            "text": "array [A] includes [B]",
+            "blockType": BT.BOOLEAN,
+            "arguments": {
+              "A": {
+                "type": AT.STRING,
+                "defaultValue": "[1,2,3]"
+              },
+              "B": {
+                "type": AT.STRING,
+                "defaultValue": "2"
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "arrayisarray",
+            "text": "[A] is an array",
+            "blockType": BT.BOOLEAN,
+            "arguments": {
+              "A": {
+                "type": AT.STRING,
+                "defaultValue": "[1,2,3]"
               }
             },
             "func": "err"
@@ -1550,6 +1454,46 @@
               "A": {
                 "type": AT.STRING,
                 "defaultValue": ""
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "jsonhas",
+            "text": "JSON [A] has key [B]",
+            "blockType": BT.BOOLEAN,
+            "arguments": {
+              "A": {
+                "type": AT.STRING,
+                "defaultValue": "{\"key\":\"value\"}"
+              },
+              "B": {
+                "type": AT.STRING,
+                "defaultValue": "key"
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "jsonkeys",
+            "text": "keys of JSON [A]",
+            "blockType": BT.REPORTER,
+            "arguments": {
+              "A": {
+                "type": AT.STRING,
+                "defaultValue": "{\"key\":\"value\",\"key2\":2}"
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "jsonvalues",
+            "text": "values of JSON [A]",
+            "blockType": BT.REPORTER,
+            "arguments": {
+              "A": {
+                "type": AT.STRING,
+                "defaultValue": "{\"key\":\"value\",\"key2\":2}"
               }
             },
             "func": "err"
@@ -1825,6 +1769,50 @@
             "blockType": BT.REPORTER,
             "disableMonitor": true,
             "func": "err"
+          },
+          {
+            "blockType": BT.LABEL,
+            "text": "Debug"
+          },
+          {
+            "opcode": "consolelog",
+            "text": "console.log [A]",
+            "blockType": BT.COMMAND,
+            "arguments": {
+              "A": {
+                "type": AT.STRING,
+                "defaultValue": "Hello world"
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "consolewarn",
+            "text": "console.warn [A]",
+            "blockType": BT.COMMAND,
+            "arguments": {
+              "A": {
+                "type": AT.STRING,
+                "defaultValue": "Warning message"
+              }
+            },
+            "func": "err"
+          },
+          {
+            "opcode": "consoleerror",
+            "text": "console.error [A]",
+            "blockType": BT.COMMAND,
+            "arguments": {
+              "A": {
+                "type": AT.STRING,
+                "defaultValue": "Error message"
+              }
+            },
+            "func": "err"
+          },
+          {
+            "blockType": BT.LABEL,
+            "text": "Array Utils"
           }
         ],
       };
@@ -1835,7 +1823,7 @@
       return err;
     }
     constructor() {
-      console.log("Loaded Mist's utils! (v5.9)");
+      console.log("Loaded Mist's utils! (v6.0)");
       this.newUpdate = false;
       this.openSite = function() {
         Scratch.openWindow("https://extensions.mistium.com");
@@ -1846,7 +1834,7 @@
         fetch("https://raw.githubusercontent.com/Mistium/extensions.mistium/main/featured/Mist's%20Utils.js")
           .then((res) => res.text())
           .then((text) => {
-            if (!(text.includes("version: 5.9,"))) {
+            if (!(text.includes("version: 6.0,"))) {
               this.newUpdate = true;
             }
           })
