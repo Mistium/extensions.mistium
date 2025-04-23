@@ -661,7 +661,6 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
               Scratch.vm.runtime.startHats('cloudlink_whenuserconnects');
               break;
             case 'remove':
-            case 'remove':
               let index = -1
               for (let i = 0; i < clVars.ulist.length; i++) {
                 let user = clVars.ulist[i]
