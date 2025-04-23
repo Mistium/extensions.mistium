@@ -240,7 +240,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
   }
 
   // Makes values safe for Scratch to represent.
-  async function makeValueScratchSafe(data) {
+  function makeValueScratchSafe(data) {
     if (typeof data == "object") {
       try {
         return JSON.stringify(data);
