@@ -8,7 +8,7 @@
 // Then you can obtain one at https://mozilla.org/MPL/2.0/
 
 (function(Scratch) {
-  const API = 'https://discord.com/api/v10';
+  const API = 'https://apps.mistium.com/discord';
   const WS = 'wss://gateway.discord.gg/?v=10&encoding=json';
   let bot_data = null;
   
