@@ -38,11 +38,11 @@
         color1: '#db76c0',
         color2: '#a3558e',
         blocks: [
-          {
+          /* {
             blockType: Scratch.BlockType.BUTTON,
             text: 'Example Project',
             func: "getExampleProject"
-          },
+          }, */
           {
             opcode: 'connect',
             blockType: Scratch.BlockType.COMMAND,
@@ -57,16 +57,28 @@
           {
             opcode: 'enableAudio',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'enable microphone'
+            text: '[mic] microphone',
+            arguments: {
+              mic: {
+                menu: 'mic',
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'enable'
+              }
+            }
           },
           {
             opcode: 'callPeer',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'call [NAME]',
+            text: 'call [NAME] and [WAIT]',
             arguments: {
               NAME: {
                 type: Scratch.ArgumentType.STRING,
                 defaultValue: 'friend'
+              },
+              WAIT: {
+                type: Scratch.ArgumentType.STRING,
+                menu: 'wait',
+                defaultValue: 'wait'
               }
             }
           },
@@ -127,7 +139,35 @@
             blockType: Scratch.BlockType.REPORTER,
             text: 'call partner name'
           }
-        ]
+        ],
+        menus: {
+          mic: {
+            acceptReporters: true,
+            items: [
+              {
+                text: 'enable',
+                value: 'enable'
+              },
+              {
+                text: 'disable',
+                value: 'disable'
+              }
+            ]
+          },
+          wait: {
+            acceptReporters: true,
+            items: [
+              {
+                text: 'wait for answer',
+                value: 'wait'
+              },
+              {
+                text: 'do not wait for answer',
+                value: 'nowait'
+              }
+            ]
+          }
+        },
       };
     }
 
@@ -189,14 +229,12 @@
       }
     }
 
-    async enableAudio() {
+    async enableAudio({ mic }) {
       try {
-        if (this.audioStream) {
-          return true;
-        }
+        if (this.audioStream) return true;
 
         this.audioStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
+          audio: mic === 'enable',
           video: false
         });
         console.log('Audio stream acquired');
@@ -214,7 +252,7 @@
       }
 
       if (!this.audioStream) {
-        this.enableAudio().then(() => {
+        this.enableAudio({ mic: 'enable' }).then(() => {
           if (this.audioStream) {
             this._completeAnswerCall();
           } else {
@@ -239,7 +277,7 @@
     }
 
     callPeer(args) {
-      return new Promise(async (resolve) => {
+      const call_promise = new Promise(async (resolve) => {
         try {
           // Check connection status more thoroughly
           if (!this.peer) {
@@ -258,7 +296,7 @@
 
           // Make sure we have audio
           if (!this.audioStream) {
-            const audioEnabled = await this.enableAudio();
+            const audioEnabled = await this.enableAudio({ mic: 'enable' });
             if (!audioEnabled || !this.audioStream) {
               console.error('Could not enable audio for call');
               this.callStatus = 'error: no audio';
@@ -331,6 +369,12 @@
           resolve();
         }
       });
+
+      if (args.WAIT === 'wait') {
+        return call_promise;
+      } else {
+        return '';
+      }
     }
 
     _setupCallEvents(callTimeout) {
