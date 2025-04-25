@@ -231,10 +231,22 @@
 
     async enableAudio({ mic }) {
       try {
+        if (mic === 'disable') {
+          if (this.audioStream) {
+            try {
+              this.audioStream.getTracks().forEach(track => track.stop());
+            } catch (e) {
+              console.error('Error stopping audio tracks:', e);
+            }
+            this.audioStream = null;
+          }
+          return true;
+        }
+
         if (this.audioStream) return true;
 
         this.audioStream = await navigator.mediaDevices.getUserMedia({
-          audio: mic === 'enable',
+          audio: true,
           video: false
         });
         console.log('Audio stream acquired');
