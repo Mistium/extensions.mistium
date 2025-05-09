@@ -57,6 +57,11 @@
             func: "getExampleProject"
           }, */
           {
+            opcode: 'extKeepAlive',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'keep this extension in my project'
+          },
+          {
             opcode: 'connect',
             blockType: Scratch.BlockType.COMMAND,
             text: 'connect as [NAME]',
@@ -186,6 +191,10 @@
 
     getExampleProject() {
       window.open("https://turbowarp.org/editor?project_url=https://extensions.mistium.com/examples/roturVoice.sb3");
+    }
+
+    extKeepAlive() {
+      alert("Drag this block into your project to keep the extension loaded.");
     }
 
     async connect(args) {
