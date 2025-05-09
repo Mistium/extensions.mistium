@@ -111,8 +111,10 @@ class RoturExtension {
     this.lastJoined = "";
     this.lastLeft = "";
 
-    this.version = 5;
+    this.version = 6;
     this.outdated = false;
+
+    this.callJson = {};
 
     fetch("https://raw.githubusercontent.com/Mistium/Origin-OS/main/Resources/info.json")
       .then((response) => {
@@ -163,10 +165,14 @@ class RoturExtension {
     }
   }
 
+  openUpdate() {
+    window.open("https://extensions.mistium.com/featured/rotur.js");
+  }
+
   getInfo() {
     return {
       id: "roturEXT",
-      name: "RoturV5",
+      name: "RoturV6",
       color1: "#403041",
       blocks: [
         blocks.button("New Update Available", "openUpdate", {
@@ -377,6 +383,7 @@ class RoturExtension {
         blocks.label("Client Information"),
         blocks.reporter("clientIP", "Client IP"),
         blocks.reporter("clientUsername", "Client Username"),
+        blocks.reporter("getClient", "My Client Object"),
         blocks.separator(),
         blocks.label("Users"),
         blocks.reporter("clientUsers", "Connected Users"),
@@ -653,15 +660,17 @@ class RoturExtension {
         blocks.command("redownloadBadges", "Redownload Badges"),
         blocks.separator(),
         blocks.label("Voice Calling"),
-        blocks.command("callUser", "Call User [USERNAME]", {
+        blocks.button("Example Project", "openRoturVoiceExample"),
+        blocks.button("Get roturVoice", "openRoturVoice"),
+        blocks.reporter("callUser", "Call User [USERNAME]", {
           USERNAME: {
             type: Scratch.ArgumentType.STRING,
-            defaultValue: "des-user§instance",
+            defaultValue: "friend",
           },
         }),
-        blocks.button("Get roturVoice", "openRoturVoice"),
         blocks.event("whenCallReceived", "When Call Received"),
         blocks.reporter("callData", "Call Data"),
+        blocks.command("acceptCall", "Accept Call"),
         blocks.separator(),
         blocks.label("DANGER ZONE"),
         blocks.button("Show Danger Zone", "openDangerZone", {
@@ -751,6 +760,10 @@ class RoturExtension {
 
   openRoturVoice() {
     window.open("https://extensions.mistium.com/featured/roturVoice.js")
+  }
+
+  openRoturVoiceExample() {
+    window.open("https://turbowarp.org/editor?project_url=https://extensions.mistium.com/examples/roturEXTCallExample.sb3")
   }
 
   openDangerZone() {
@@ -858,7 +871,8 @@ class RoturExtension {
         let packet = JSON.parse(event.data);
         if (packet.cmd == "client_ip") {
           this.client.ip = packet.val;
-        } else if (packet.cmd == "client_obj") {
+        } else if (packet.cmd == "statuscode" && typeof(packet.val) === "object") {
+          this.client = Object.assign(this.client, packet.val);
           this.client.username = packet.val.username;
         } else if (packet.cmd == "ulist") {
           if (packet.mode == "add") {
@@ -892,10 +906,12 @@ class RoturExtension {
             delete packet.val.source_command;
           }
           if (packet.origin === this.accounts) {
-            switch (packet.val.source_command) {
+            switch (packet.source_command) {
               case "call":
-                this.callData = packet.val;
-                Scratch.vm.runtime.startHats("roturEXT_whenCallReceived");
+                if (packet.val.payload === "request") {
+                  this.callJson = packet.val;
+                  Scratch.vm.runtime.startHats("roturEXT_whenCallReceived");
+                }
                 break;
               case "omail_received":
                 Scratch.vm.runtime.startHats("roturEXT_whenMailReceived");
@@ -1001,6 +1017,14 @@ class RoturExtension {
       console.log("Disconnected!");
       Scratch.vm.runtime.startHats("roturEXT_whenDisconnected");
       this.is_connected = false;
+      
+      // Log out locally when disconnected
+      if (this.authenticated) {
+        this.authenticated = false;
+        this.userToken = "";
+        this.user = {};
+        console.log("Logged out due to disconnection");
+      }
     };
   }
 
@@ -1057,13 +1081,12 @@ class RoturExtension {
         ip: this.client.ip,
         client: this.my_client,
         command: "login",
-        id: this.userToken,
+        id: ":3",
         payload: [args.USERNAME, args.PASSWORD],
       },
       id: this.accounts,
     }, (packet, resolve, reject) => {
       if (typeof packet.val?.payload === "object") {
-        this.ws.close();
         this.userToken = packet.val.token;
         this.user = packet.val.payload;
         this.first_login = packet.val.first_login;
@@ -1084,11 +1107,27 @@ class RoturExtension {
         delete this.user.requests;
 
         // setup username for reconnect
-        this.username = args.USERNAME + "§" + randomString(10);
-        this.connectToWebsocket();
-        while (!this.is_connected) { }
+        this.username = this.designation + "-" + args.USERNAME + "§" + randomString(10);
+
+        this.ws.send(
+          JSON.stringify({
+            cmd: "setid",
+            val: this.username,
+            listener: "set_username_cfg",
+          }),
+        );
+        this.my_client.username = this.username;
+        
         this.authenticated = true;
         Scratch.vm.runtime.startHats("roturEXT_whenAuthenticated");
+
+        this.ws.send(
+          JSON.stringify({
+            cmd: "auth",
+            val: this.userToken
+          })
+        );
+
         resolve(`Logged in as ${args.USERNAME}`);
       } else {
         this.authenticated = false;
@@ -1105,7 +1144,7 @@ class RoturExtension {
       val: {
         client: this.my_client,
         command: "new_account",
-        id: this.userToken,
+        id: ":3",
         ip: this.client.ip,
         payload: {
           username: args.USERNAME,
@@ -1132,7 +1171,7 @@ class RoturExtension {
       val: {
         client: this.my_client,
         command: "delete_account",
-        id: this.userToken,
+        id: ":3",
       },
       id: this.accounts,
     }, (packet, resolve, reject) => {
@@ -1160,7 +1199,7 @@ class RoturExtension {
         val: {
           command: "logout",
           client: this.my_client,
-          id: this.userToken,
+          id: ":3",
         },
         id: this.accounts,
       }),
@@ -1204,7 +1243,7 @@ class RoturExtension {
       val: {
         command: "update",
         client: this.my_client,
-        id: this.userToken,
+        id: ":3",
         payload: [args.KEY, args.VALUE],
       },
       id: this.accounts,
@@ -1256,7 +1295,7 @@ class RoturExtension {
         val: {
           command: "storage_getid",
           client: this.my_client,
-          id: this.userToken,
+          id: ":3",
           payload: args.ID,
         },
         id: this.accounts,
@@ -1303,7 +1342,7 @@ class RoturExtension {
       cmd: "pmsg",
       val: {
         command: "storage_set",
-        id: this.userToken,
+        id: ":3",
         client: this.my_client,
         payload: {
           key: args.KEY,
@@ -1336,7 +1375,7 @@ class RoturExtension {
       cmd: "pmsg",
       val: {
         command: "storage_delete",
-        id: this.userToken,
+        id: ":3",
         client: this.my_client,
         payload: {
           key: args.KEY,
@@ -1376,7 +1415,7 @@ class RoturExtension {
       cmd: "pmsg",
       val: {
         command: "storage_clear",
-        id: this.userToken,
+        id: ":3",
         client: this.my_client,
         payload: this.storage_id
       },
@@ -1420,7 +1459,7 @@ class RoturExtension {
       val: {
         command: "storage_usage",
         client: this.my_client,
-        id: this.userToken
+        id: ":3"
       },
       id: this.accounts
     }, (packet, resolve, reject) => {
@@ -1445,7 +1484,7 @@ class RoturExtension {
       val: {
         command: "storage_usage",
         client: this.my_client,
-        id: this.userToken
+        id: ":3"
       },
       id: this.accounts
     }, (packet, resolve, reject) => {
@@ -1546,6 +1585,11 @@ class RoturExtension {
   clientUsername() {
     if (!this.is_connected) return "Not Connected";
     return this.client.username;
+  }
+
+  getClient() {
+    if (!this.is_connected) return "Not Connected";
+    return JSON.stringify(this.client);
   }
 
   clientUsers() {
@@ -1669,7 +1713,7 @@ class RoturExtension {
       val: {
         command: "omail_send",
         client: this.my_client,
-        id: this.userToken,
+        id: ":3",
         payload: {
           title: args.SUBJECT,
           body: args.MESSAGE,
@@ -1695,7 +1739,7 @@ class RoturExtension {
       val: {
         command: "omail_getinfo",
         client: this.my_client,
-        id: this.userToken,
+        id: ":3",
       },
       id: this.accounts,
     }, (packet, resolve) => {
@@ -1713,7 +1757,7 @@ class RoturExtension {
         command: "omail_getid",
         client: this.my_client,
         payload: args.ID,
-        id: this.userToken,
+        id: ":3",
       },
       id: this.accounts,
     }, (packet, resolve, reject) => {
@@ -1735,7 +1779,7 @@ class RoturExtension {
         command: "omail_delete",
         client: this.my_client,
         payload: args.ID,
-        id: this.userToken,
+        id: ":3",
       },
       id: this.accounts,
     }, (packet, resolve, reject) => {
@@ -1757,7 +1801,7 @@ class RoturExtension {
         command: "omail_delete",
         client: this.my_client,
         payload: "all",
-        id: this.userToken,
+        id: ":3",
       },
       id: this.accounts,
     }, (packet, resolve, reject) => {
@@ -1787,7 +1831,7 @@ class RoturExtension {
         command: "friend_request",
         client: this.my_client,
         payload: args.FRIEND,
-        id: this.userToken,
+        id: ":3",
       },
       id: this.accounts,
     }, (packet, resolve, reject) => {
@@ -1810,7 +1854,7 @@ class RoturExtension {
         command: "friend_remove",
         client: this.my_client,
         payload: args.FRIEND,
-        id: this.userToken,
+        id: ":3",
       },
       id: this.accounts,
     }, (packet, resolve, reject) => {
@@ -1834,7 +1878,7 @@ class RoturExtension {
         command: "friend_accept",
         client: this.my_client,
         payload: args.FRIEND,
-        id: this.userToken,
+        id: ":3",
       },
       id: this.accounts,
     }, (packet, resolve, reject) => {
@@ -1861,7 +1905,7 @@ class RoturExtension {
         command: "friend_decline",
         client: this.my_client,
         payload: args.FRIEND,
-        id: this.userToken,
+        id: ":3",
       },
       id: this.accounts,
     }, (packet, resolve, reject) => {
@@ -1919,7 +1963,7 @@ class RoturExtension {
           amount: args.AMOUNT,
           recipient: args.USER,
         },
-        id: this.userToken,
+        id: ":3",
         client: this.my_client,
       },
       id: this.accounts,
@@ -2200,10 +2244,98 @@ class RoturExtension {
     this._initializeBadges()
   }
 
+  callUser(args) {
+    if (!this.is_connected) return "Not Connected";
+    if (!this.authenticated) return "Not Logged In";
+    if (args.USERNAME === this.user.username) return "You Can't Call Yourself";
+
+    return new Promise((resolve, reject) => {
+      // Send the call request
+      this.ws.send(
+        JSON.stringify({
+          cmd: "pmsg",
+          val: {
+            command: "call",
+            client: this.my_client,
+            id: ":3",
+            payload: "request",
+            peer: args.USERNAME,
+            username: this.username,
+          },
+          id: this.accounts,
+        })
+      );
+
+      // Set up timeout for 10 seconds
+      const timeout = setTimeout(() => {
+        this.ws.removeEventListener("message", callResponseHandler);
+        resolve(JSON.stringify({
+          success: false,
+          message: "Call timed out - no response received"
+        }));
+      }, 10000);
+
+      // Handler for the call confirmation response
+      const callResponseHandler = (event) => {
+        try {
+          const packet = JSON.parse(event.data);
+          
+          // Check if this is a call confirmation response
+          if (packet?.val?.source_command === "call" && 
+              packet?.val?.payload === "confirm" && 
+              packet?.origin?.username === this.accounts) {
+            
+            // Clear the timeout and remove the event listener
+            clearTimeout(timeout);
+            this.ws.removeEventListener("message", callResponseHandler);
+            
+            // Extract and return the call data
+            const callData = {
+              success: true,
+              from: packet.val.from,
+              from_username: packet.val.from_username,
+              from_rotur: packet.val.from_rotur,
+            };
+            
+            // Store the call data and resolve with it
+            this.callJson = callData;
+            resolve(JSON.stringify(callData));
+          }
+        } catch (error) {
+          console.error("Error handling call response:", error);
+        }
+      };
+
+      // Add the event listener for call responses
+      this.ws.addEventListener("message", callResponseHandler);
+    });
+  }
+
   callData() {
     if (!this.is_connected) return "Not Connected";
     if (!this.authenticated) return "Not Logged In";
-    return JSON.stringify(this.callData);
+    return JSON.stringify(this.callJson);
+  }
+
+  acceptCall() {
+    if (!this.is_connected) return "Not Connected";
+    if (!this.authenticated) return "Not Logged In";
+    if (!this.callJson) return "No Call Data";
+
+    this.ws.send(
+      JSON.stringify({
+        cmd: "pmsg",
+        val: {
+          command: "call",
+          client: this.my_client,
+          id: ":3",
+          payload: "confirm",
+          peer: this.callJson.from,
+          username: this.username,
+        },
+        id: this.accounts,
+      })
+    );
   }
 }
 
