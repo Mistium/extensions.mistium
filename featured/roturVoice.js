@@ -28,6 +28,20 @@
       this.onCallChangeCallback = null;
       this.callPartner = '';
       this.incomingCall = null;
+      
+      // Check WebRTC support
+      this.isWebRTCSupported = this._checkWebRTCSupport();
+      if (!this.isWebRTCSupported) {
+        console.warn('WebRTC is not supported in this browser. Voice calls will not work.');
+      }
+    }
+    
+    _checkWebRTCSupport() {
+      return Boolean(
+        navigator.mediaDevices &&
+        navigator.mediaDevices.getUserMedia &&
+        window.RTCPeerConnection
+      );
     }
 
     getInfo() {
@@ -549,5 +563,5 @@
     }
   }
 
-  Scratch.extensions.register(new roturVoice());
+  Scratch.extensions.register(vm.runtime.ext_roturVoice = new roturVoice());
 })(Scratch)
