@@ -254,6 +254,52 @@ jobs:
           }
           '
 
+      - name: Generate Extensions Metadata
+        run: |
+          node -e '
+          const fs = require("fs");
+          const path = require("path");
+
+          // Read files from directories
+          const featuredDir = "featured";
+          const imagesDir = "images";
+          const versionsFile = "versions.json";
+
+          // Read versions data
+          const versions = JSON.parse(fs.readFileSync(versionsFile, "utf8"));
+
+          // Get featured files data
+          const extensions = fs.readdirSync(featuredDir)
+              .filter(file => file.endsWith(".js"))
+              .map(file => {
+                  const filePath = path.join(featuredDir, file);
+                  const stats = fs.statSync(filePath);
+                  const name = file.split(".")[0];
+                  const imagePath = path.join(imagesDir, name + ".png");
+                  
+                  return {
+                      slug: name.toLowerCase(),
+                      id: name,
+                      name: name,
+                      description: "",
+                      image: `images/${name}.png`,
+                      by: [{
+                          name: "Mistium",
+                          link: "https://github.com/Mistium"
+                      }]
+                  };
+              });
+
+          // Create the metadata object
+          const metadata = {
+              extensions: extensions
+          };
+
+          // Write the metadata file
+          fs.writeFileSync("generated-metadata/extensions-v0.json", JSON.stringify(metadata, null, 2));
+          console.log("Successfully generated extensions metadata file");
+          '
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
