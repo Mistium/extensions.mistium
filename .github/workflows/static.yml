@@ -235,7 +235,7 @@ jobs:
                   ["git", "config", "--local", "user.email", "action@github.com"],
                   ["git", "config", "--local", "user.name", "GitHub Action"],
                   ["git", "add", "cache/previous_versions.json"],
-                  ["git", "commit", "-m", "Update previous_versions.json [skip ci]"],
+                  ["git", "commit", "-m", "\"Update previous_versions.json [skip ci]\""],
                   ["git", "push"]
                 ];
                 
@@ -312,7 +312,7 @@ jobs:
                   ['git', 'config', '--local', 'user.email', 'action@github.com'],
                   ['git', 'config', '--local', 'user.name', 'GitHub Action'],
                   ['git', 'add', path.join(metadataDir, 'extensions-v0.json')],
-                  ['git', 'commit', '-m', 'Update extensions metadata [skip ci]'],
+                  ['git', 'commit', '-m', '\"Update extensions metadata [skip ci]\"'],
                   ['git', 'push']
               ];
               
