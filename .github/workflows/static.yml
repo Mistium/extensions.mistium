@@ -259,6 +259,7 @@ jobs:
           node -e "
           const fs = require('fs');
           const path = require('path');
+          const { execSync } = require('child_process');
 
           // Read files from directories
           const featuredDir = 'featured';
@@ -304,6 +305,24 @@ jobs:
           // Write the metadata file
           fs.writeFileSync(path.join(metadataDir, 'extensions-v0.json'), JSON.stringify(metadata, null, 2));
           console.log('Successfully generated extensions metadata file');
+
+          // Commit the generated metadata file
+          try {
+              const commands = [
+                  ['git', 'config', '--local', 'user.email', 'action@github.com'],
+                  ['git', 'config', '--local', 'user.name', 'GitHub Action'],
+                  ['git', 'add', path.join(metadataDir, 'extensions-v0.json')],
+                  ['git', 'commit', '-m', 'Update extensions metadata [skip ci]'],
+                  ['git', 'push']
+              ];
+              
+              for (const cmd of commands) {
+                  execSync(cmd.join(' '), { stdio: 'inherit' });
+              }
+              console.log('Committed extensions metadata file');
+          } catch (error) {
+              console.log('No changes to commit or error in committing:', error);
+          }
           "
 
       - name: Setup Pages
