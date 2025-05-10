@@ -312,7 +312,7 @@ jobs:
                   ['git', 'config', '--local', 'user.email', 'action@github.com'],
                   ['git', 'config', '--local', 'user.name', 'GitHub Action'],
                   ['git', 'add', path.join(metadataDir, 'extensions-v0.json')],
-                  ['git', 'commit', '-m', '\"Update extensions metadata [skip ci]\"'],
+                  ['git', 'commit', '-m', '\"Update extensions metadata\"'],
                   ['git', 'push']
               ];
               
