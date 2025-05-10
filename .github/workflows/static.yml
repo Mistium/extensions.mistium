@@ -256,15 +256,15 @@ jobs:
 
       - name: Generate Extensions Metadata
         run: |
-          node -e '
-          const fs = require("fs");
-          const path = require("path");
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
 
           // Read files from directories
-          const featuredDir = "featured";
-          const imagesDir = "images";
-          const versionsFile = "versions.json";
-          const metadataDir = "generated-metadata";
+          const featuredDir = 'featured';
+          const imagesDir = 'images';
+          const versionsFile = 'versions.json';
+          const metadataDir = 'generated-metadata';
 
           // Create metadata directory if it doesn't exist
           if (!fs.existsSync(metadataDir)) {
@@ -272,26 +272,26 @@ jobs:
           }
 
           // Read versions data
-          const versions = JSON.parse(fs.readFileSync(versionsFile, "utf8"));
+          const versions = JSON.parse(fs.readFileSync(versionsFile, 'utf8'));
 
           // Get featured files data
           const extensions = fs.readdirSync(featuredDir)
-              .filter(file => file.endsWith(".js"))
+              .filter(file => file.endsWith('.js'))
               .map(file => {
                   const filePath = path.join(featuredDir, file);
                   const stats = fs.statSync(filePath);
-                  const name = file.split(".")[0];
-                  const imagePath = path.join(imagesDir, name + ".png");
+                  const name = file.split('.')[0];
+                  const imagePath = path.join(imagesDir, name + '.png');
                   
                   return {
                       slug: name.toLowerCase(),
                       id: name,
                       name: name,
-                      description: "",
-                      image: `images/${name}.png`,
+                      description: '',
+                      image: 'images/' + name + '.png',
                       by: [{
-                          name: "Mistium",
-                          link: "https://github.com/Mistium"
+                          name: 'Mistium',
+                          link: 'https://github.com/Mistium'
                       }]
                   };
               });
@@ -302,9 +302,9 @@ jobs:
           };
 
           // Write the metadata file
-          fs.writeFileSync(path.join(metadataDir, "extensions-v0.json"), JSON.stringify(metadata, null, 2));
-          console.log("Successfully generated extensions metadata file");
-          '
+          fs.writeFileSync(path.join(metadataDir, 'extensions-v0.json'), JSON.stringify(metadata, null, 2));
+          console.log('Successfully generated extensions metadata file');
+          "
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
