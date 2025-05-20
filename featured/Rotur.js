@@ -1633,7 +1633,7 @@ class RoturExtension {
   }
 
   RAWgetFirstPacket() {
-    return JSON.stringify(this.packetQueue[0] || "{}");
+    return JSON.stringify(this.packetQueue[0] || {});
   }
 
   RAWdeleteFirstPacket() {
