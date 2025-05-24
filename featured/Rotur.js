@@ -965,8 +965,15 @@ class RoturExtension {
                 }
             }
             this.user[packet.payload.key] = packet.payload.value;
-          }
-        } else {
+          } else {
+            console.log(packet);
+            if (packet.val && packet.val.target) {
+              this.packets[packet.val.target] ??= [];
+              this.packets[packet.val.target].push(packet);
+              Scratch.vm.runtime.startHats("roturEXT_whenMessageReceived");
+              delete packet.val;
+            }
+          }        } else {
           if (packet.source_command === "sync_set") {
             this.syncedVariables[packet.origin] ||= {};
             this.syncedVariables[packet.origin][packet.payload.key] = packet.payload.value;
@@ -974,17 +981,8 @@ class RoturExtension {
           if (packet.source_command === "sync_delete") {
             delete this.syncedVariables[packet.origin][packet.payload.key];
           }
-          
-          if (packet.val && packet.val.target) {
-            if (!this.packets[packet.val.target]) {
-              this.packets[packet.val.target] = [];
-            }
-            this.packets[packet.val.target].push(packet);
-            Scratch.vm.runtime.startHats("roturEXT_whenMessageReceived");
-            delete packet.val;
-          }
         }
-        
+
         if (packet.listener === "handshake_cfg") {
           let username = this.designation + "-" + this.username;
           let msg = {
@@ -1006,8 +1004,10 @@ class RoturExtension {
 
           this.ws.send(JSON.stringify(msg));
         }
-        if (packet.listener == "link_cfg") {
-          this.client.room = packet.val;
+        if (packet.cmd === "roomlist") {
+          this.client.room = packet.val[0];
+        }
+        if (packet.listener == "link_cfg" && !this.is_connected) {
           this.is_connected = true;
           Scratch.vm.runtime.startHats("roturEXT_whenConnected");
           console.log("Connected!")
@@ -1019,7 +1019,7 @@ class RoturExtension {
       console.log("Disconnected!");
       Scratch.vm.runtime.startHats("roturEXT_whenDisconnected");
       this.is_connected = false;
-      
+
       // Log out locally when disconnected
       if (this.authenticated) {
         this.authenticated = false;
@@ -1077,12 +1077,12 @@ class RoturExtension {
   async _login(args) {
     if (!this.is_connected) return "Not Connected";
     if (this.authenticated) return "Already Logged In";
-    
+
     try {
         const response = await fetch(`https://social.rotur.dev/get_user?username=${encodeURIComponent(args.USERNAME)}&password=${encodeURIComponent(args.PASSWORD)}`);
-        
+
         if (!response.ok) throw new Error(`Authentication failed: ${response.status}`);
-        
+
         const packet = await response.json();
 
         this.userToken = packet.key;
@@ -1092,11 +1092,11 @@ class RoturExtension {
         delete this.user.password;
 
         this.friends = {};
-        
+
         // Handle if the user has no friends :P
         if (!this.user["sys.friends"]) this.user["sys.friends"] = [];
         if (!this.user["sys.requests"]) this.user["sys.requests"] = [];
-        
+
         this.friends.list = this.user["sys.friends"];
         this.friends.requests = this.user["sys.requests"];
 
@@ -1112,7 +1112,7 @@ class RoturExtension {
                 listener: "set_username_cfg",
             })
         );
-        
+
         this.my_client.username = this.username;
         this.authenticated = true;
 
@@ -1124,9 +1124,9 @@ class RoturExtension {
                 val: this.userToken
             })
         );
-        
+
         return `Logged in as ${args.USERNAME}`;
-        
+
     } catch (error) {
         this.authenticated = false;
         throw new Error(`Failed to login as ${args.USERNAME}: ${error.message}`);
@@ -2276,16 +2276,16 @@ class RoturExtension {
       const callResponseHandler = (event) => {
         try {
           const packet = JSON.parse(event.data);
-          
+
           // Check if this is a call confirmation response
-          if (packet?.val?.source_command === "call" && 
-              packet?.val?.payload === "confirm" && 
+          if (packet?.val?.source_command === "call" &&
+              packet?.val?.payload === "confirm" &&
               packet?.origin?.username === this.accounts) {
-            
+
             // Clear the timeout and remove the event listener
             clearTimeout(timeout);
             this.ws.removeEventListener("message", callResponseHandler);
-            
+
             // Extract and return the call data
             const callData = {
               success: true,
@@ -2293,7 +2293,7 @@ class RoturExtension {
               from_username: packet.val.from_username,
               from_rotur: packet.val.from_rotur,
             };
-            
+
             // Store the call data and resolve with it
             this.callJson = callData;
             resolve(JSON.stringify(callData));
