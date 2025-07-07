@@ -838,9 +838,14 @@ class RoturExtension {
 
   myFriends() {
     if (!(this.authenticated && this.is_connected)) return ["Not Authenticated"];
-    let keys = [];
-    for (let key of this.user["sys.friends"]) {
-      keys.push(key);
+    let keys = this.user["sys.friends"];
+    if (typeof keys === "string") {
+      try {
+        keys = JSON.parse(keys);
+      } catch (e) {
+        console.error("Failed to parse friends list:", e);
+        return ["Invalid Friends List"];
+      }
     }
     if (keys.length === 0) return ["No Friends"];
     else return keys;
@@ -848,9 +853,14 @@ class RoturExtension {
 
   myRequests() {
     if (!(this.authenticated && this.is_connected)) return ["Not Authenticated"];
-    let keys = [];
-    for (let key of this.user["sys.requests"]) {
-      keys.push(key);
+    let keys = this.user["sys.requests"];
+    if (typeof keys === "string") {
+      try {
+        keys = JSON.parse(keys);
+      } catch (e) {
+        console.error("Failed to parse requests list:", e);
+        return ["Invalid Requests List"];
+      }
     }
     if (keys.length === 0) return ["No Requests"];
     else return keys;
