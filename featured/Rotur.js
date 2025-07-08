@@ -832,7 +832,7 @@ class RoturExtension {
     for (let key of Object.keys(this.user)) {
       keys.push(key);
     }
-    if (keys.length === 0) return ["No User Keys"];
+    if (!keys || keys.length === 0) return ["No User Keys"];
     else return keys;
   }
 
@@ -847,7 +847,7 @@ class RoturExtension {
         return ["Invalid Friends List"];
       }
     }
-    if (keys.length === 0) return ["No Friends"];
+    if (!keys || keys.length === 0) return ["No Friends"];
     else return keys;
   }
 
@@ -862,7 +862,7 @@ class RoturExtension {
         return ["Invalid Requests List"];
       }
     }
-    if (keys.length === 0) return ["No Requests"];
+    if (!keys || keys.length === 0) return ["No Requests"];
     else return keys;
   }
 
