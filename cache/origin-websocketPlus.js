@@ -299,7 +299,7 @@
 
     hasNewMessages({ ID }) {
       const queue = this.messageQueue[Cast.toString(ID)];
-      return queue && queue.length > 0;
+      return queue?.length > 0;
     }
 
     getAllMessages({ ID }) {
