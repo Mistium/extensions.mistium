@@ -181,7 +181,7 @@ class RoturExtension {
         blocks.button("New Update Available", "openUpdate", {
           hideFromPalette: !this.outdated
         }),
-        blocks.command("connectToServer", "Connect To Server With Designation: [DESIGNATION], System: [SYSTEM] And Version: [VERSION]", {
+        blocks.command("connectToServer", "connect to server with designation: [DESIGNATION], system: [SYSTEM] and version: [VERSION]", {
           DESIGNATION: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "rtr",
@@ -195,21 +195,21 @@ class RoturExtension {
             defaultValue: "v5",
           },
         }),
-        blocks.boolean("serverOnline", "Account Server Online"),
-        blocks.command("disconnect", "Disconnect From Server"),
-        blocks.boolean("connected", "Connected To Server"),
+        blocks.boolean("serverOnline", "account server online"),
+        blocks.command("disconnect", "disconnect from server"),
+        blocks.boolean("connected", "connected to server"),
         blocks.separator(),
-        blocks.event("whenConnected", "When Connected To Server"),
-        blocks.event("whenDisconnected", "When Disconnected From Server"),
+        blocks.event("whenConnected", "when connected to server"),
+        blocks.event("whenDisconnected", "when disconnected from server"),
         blocks.separator(),
         blocks.label("Authentication"),
-        blocks.command("login_prompt", "Open login prompt with style [STYLE_URL]", {
+        blocks.command("login_prompt", "open login prompt with style [STYLE_URL]", {
           STYLE_URL: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "https://origin.mistium.com/Resources/auth.css",
           },
         }),
-        blocks.reporter("login", "Login With Username: [USERNAME] And Password: [PASSWORD]", {
+        blocks.reporter("login", "login with username: [USERNAME] and password: [PASSWORD]", {
           USERNAME: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "test",
@@ -219,7 +219,7 @@ class RoturExtension {
             defaultValue: "password",
           },
         }, { hideFromPalette: true }),
-        blocks.reporter("loginMd5", "Login With Username: [USERNAME] And Password: [PASSWORD] ()", {
+        blocks.reporter("loginMd5", "login with username: [USERNAME] and password: [PASSWORD] (md5)", {
           USERNAME: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "test",
@@ -229,13 +229,13 @@ class RoturExtension {
             defaultValue: "password",
           },
         }, { hideFromPalette: true }),
-        blocks.reporter("loginToken", "Login With Token: [TOKEN]", {
+        blocks.reporter("loginToken", "login with token: [TOKEN]", {
           TOKEN: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "token",
           },
         }, { hideFromPalette: true }),
-        blocks.reporter("register", "Register With Username: [USERNAME] And Password: [PASSWORD]", {
+        blocks.reporter("register", "register with username: [USERNAME] and password: [PASSWORD]", {
           USERNAME: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "test",
@@ -245,22 +245,22 @@ class RoturExtension {
             defaultValue: "password",
           },
         }, { hideFromPalette: true }),
-        blocks.command("logout", "Logout"),
-        blocks.boolean("loggedIn", "Authenticated"),
-        blocks.boolean("firstLogin", "Is This The First Login Of Today?", {}, {
+        blocks.command("logout", "logout"),
+        blocks.boolean("loggedIn", "authenticated"),
+        blocks.boolean("firstLogin", "is this the first login of today?", {}, {
           hideFromPalette: true,
         }),
-        blocks.event("whenAuthenticated", "When Authenticated"),
+        blocks.event("whenAuthenticated", "when authenticated"),
         blocks.separator(),
         blocks.label("Account Information"),
         blocks.button("Account Docs", "openAccountDocs"),
-        blocks.reporter("getToken", "User Token"),
-        blocks.reporter("getkey", "Get [KEY]", {
+        blocks.reporter("getToken", "user token"),
+        blocks.reporter("getkey", "get [KEY]", {
           KEY: {
             menu: "keys",
           },
         }),
-        blocks.reporter("setkey", "Set [KEY] To [VALUE]", {
+        blocks.reporter("setkey", "set [KEY] to [VALUE]", {
           KEY: {
             menu: "keys",
           },
@@ -269,33 +269,33 @@ class RoturExtension {
             defaultValue: "value",
           },
         }),
-        blocks.boolean("keyExists", "Key [KEY] Exists", {
+        blocks.boolean("keyExists", "key [KEY] exists", {
           KEY: {
             menu: "keys",
           },
         }),
-        blocks.reporter("getkeys", "Get All Keys"),
-        blocks.reporter("getvalues", "Get All Values"),
-        blocks.reporter("getAccount", "Get Account Object"),
-        blocks.event("whenAccountUpdate", "When Account Updated"),
+        blocks.reporter("getkeys", "get all keys"),
+        blocks.reporter("getvalues", "get all values"),
+        blocks.reporter("getAccount", "get account object"),
+        blocks.event("whenAccountUpdate", "when account updated"),
         blocks.separator(),
         blocks.label("Data Storage"),
         blocks.button("Data Storage Docs", "openStorageDocs"),
-        blocks.command("setStorageID", "Set Storage Id To [ID]", {
+        blocks.command("setStorageID", "set storage id to [ID]", {
           ID: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "id",
           },
         }),
-        blocks.boolean("storageIdExists", "Storage ID Has Been Set"),
-        blocks.reporter("getStorageID", "Storage ID"),
-        blocks.reporter("getStorageKey", "Get Key From Storage [KEY]", {
+        blocks.boolean("storageIdExists", "storage id has been set"),
+        blocks.reporter("getStorageID", "storage id"),
+        blocks.reporter("getStorageKey", "get key from storage [KEY]", {
           KEY: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "key",
           },
         }),
-        blocks.command("setStorageKey", "Set Key [KEY] To [VALUE] In Storage", {
+        blocks.command("setStorageKey", "set key [KEY] to [VALUE] in storage", {
           KEY: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "key",
@@ -305,31 +305,31 @@ class RoturExtension {
             defaultValue: "value",
           },
         }),
-        blocks.boolean("existsStorageKey", "Key [KEY] Exists In Storage", {
+        blocks.boolean("existsStorageKey", "key [KEY] exists in storage", {
           KEY: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "key",
           },
         }),
-        blocks.command("deleteStorageKey", "Delete Key [KEY] From Storage", {
+        blocks.command("deleteStorageKey", "delete key [KEY] from storage", {
           KEY: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "key",
           },
         }),
-        blocks.reporter("getStorageKeys", "Get All Keys From Storage"),
-        blocks.reporter("getStorageValues", "Get All Values From Storage"),
-        blocks.command("clearStorage", "Clear Storage"),
+        blocks.reporter("getStorageKeys", "get all keys from storage"),
+        blocks.reporter("getStorageValues", "get all values from storage"),
+        blocks.command("clearStorage", "clear storage"),
         blocks.label("Storage Information"),
-        blocks.reporter("storageUsage", "Storage Usage (Characters)"),
-        blocks.reporter("storageLimit", "Storage Limit (Characters)"),
-        blocks.reporter("storageRemaining", "Storage Remaining (Characters)"),
-        blocks.reporter("accountStorageUsage", "Account Storage Usage (Characters)"),
-        blocks.reporter("accountStorageLimit", "Account Storage Limit (Characters)"),
-        blocks.reporter("accountStorageRemaining", "Account Storage Remaining (Characters)"),
+        blocks.reporter("storageUsage", "storage usage (characters)"),
+        blocks.reporter("storageLimit", "storage limit (characters)"),
+        blocks.reporter("storageRemaining", "storage remaining (characters)"),
+        blocks.reporter("accountStorageUsage", "account storage usage (characters)"),
+        blocks.reporter("accountStorageLimit", "account storage limit (characters)"),
+        blocks.reporter("accountStorageRemaining", "account storage remaining (characters)"),
         blocks.separator(),
         blocks.label("Messaging"),
-        blocks.command("sendMessage", "Send Message [PAYLOAD] To User [USER] On Port: [TARGET] From Port: [SOURCE]", {
+        blocks.command("sendMessage", "send message [PAYLOAD] to user [USER] on port: [TARGET] from port: [SOURCE]", {
           PAYLOAD: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "Hello",
@@ -347,18 +347,18 @@ class RoturExtension {
             defaultValue: "port",
           },
         }),
-        blocks.event("whenMessageReceived", "When Message Received"),
-        blocks.reporter("getPacketsFromTarget", "Get Packets From Port [TARGET]", {
+        blocks.event("whenMessageReceived", "when message received"),
+        blocks.reporter("getPacketsFromTarget", "get packets from port [TARGET]", {
           TARGET: {
             menu: "targets",
           },
         }),
-        blocks.reporter("getFirstPacketOnTarget", "First Packet On Port [TARGET]", {
+        blocks.reporter("getFirstPacketOnTarget", "first packet on port [TARGET]", {
           TARGET: {
             menu: "targets",
           },
         }),
-        blocks.reporter("dataOfFirstPacketOnTarget", "[DATA] Of First Packet On Port [TARGET]", {
+        blocks.reporter("dataOfFirstPacketOnTarget", "[DATA] of first packet on port [TARGET]", {
           DATA: {
             menu: "packetData",
           },
@@ -366,45 +366,45 @@ class RoturExtension {
             menu: "targets",
           },
         }),
-        blocks.reporter("numberOfPacketsOnTarget", "Number Of Packets On Port [TARGET]", {
+        blocks.reporter("numberOfPacketsOnTarget", "number of packets on port [TARGET]", {
           TARGET: {
             menu: "targets",
           },
         }),
-        blocks.reporter("getAllTargets", "All Open Targets"),
-        blocks.reporter("getAllPackets", "All Packets"),
-        blocks.reporter("deleteFirstPacketOnTarget", "Pop First Of Port [TARGET]", {
+        blocks.reporter("getAllTargets", "all open targets"),
+        blocks.reporter("getAllPackets", "all packets"),
+        blocks.reporter("deleteFirstPacketOnTarget", "pop first of port [TARGET]", {
           TARGET: {
             menu: "targets",
           }
         }),
-        blocks.command("deletePacketsOnTarget", "Delete All Packets On Port [TARGET]", {
+        blocks.command("deletePacketsOnTarget", "delete all packets on port [TARGET]", {
           TARGET: {
             menu: "targets",
           }
         }),
-        blocks.command("deleteAllPackets", "Delete All Packets"),
+        blocks.command("deleteAllPackets", "delete all packets"),
         blocks.separator(),
         blocks.label("Raw Packet Queue"),
-        blocks.reporter("RAWgetAllPackets", "Get All RAW Packets"),
-        blocks.reporter("RAWgetFirstPacket", "First RAW Packet"),
-        blocks.command("RAWdeleteFirstPacket", "Pop First RAW Packet"),
-        blocks.command("RAWdeleteAllPackets", "Delete All RAW Packets"),
+        blocks.reporter("RAWgetAllPackets", "get all raw packets"),
+        blocks.reporter("RAWgetFirstPacket", "first raw packet"),
+        blocks.command("RAWdeleteFirstPacket", "pop first raw packet"),
+        blocks.command("RAWdeleteAllPackets", "delete all raw packets"),
         blocks.separator(),
         blocks.label("Client Information"),
-        blocks.reporter("clientIP", "Client IP"),
-        blocks.reporter("clientUsername", "Client Username"),
-        blocks.reporter("getClient", "My Client Object"),
+        blocks.reporter("clientIP", "client IP"),
+        blocks.reporter("clientUsername", "client username"),
+        blocks.reporter("getClient", "my client object"),
         blocks.separator(),
         blocks.label("Users"),
-        blocks.reporter("clientUsers", "Connected Users"),
-        blocks.boolean("usernameConnected", "Username [USER] Connected On Any Designation", {
+        blocks.reporter("clientUsers", "connected users"),
+        blocks.boolean("usernameConnected", "username [USER] connected on any designation", {
           USER: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "user",
           },
         }),
-        blocks.boolean("userConnected", "User [USER] Connected On Designation: [DESIGNATION]", {
+        blocks.boolean("userConnected", "user [USER] connected on designation: [DESIGNATION]", {
           USER: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "user",
@@ -414,25 +414,25 @@ class RoturExtension {
             defaultValue: "rtr",
           },
         }),
-        blocks.reporter("getUserDesignation", "Get All Users On Designation: [DESIGNATION]", {
+        blocks.reporter("getUserDesignation", "get all users on designation: [DESIGNATION]", {
           DESIGNATION: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "rtr",
           },
         }),
-        blocks.reporter("findID", "Find All Connections Of Username: [USER]", {
+        blocks.reporter("findID", "find all connections of username: [USER]", {
           USER: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "user",
           },
         }),
-        blocks.event("onJoin", "When A User Connects"),
-        blocks.event("onLeave", "When A User Disconnects"),
-        blocks.reporter("onJoinUser", "Last User To Join"),
-        blocks.reporter("onLeaveUser", "Last User To Leave"),
+        blocks.event("onJoin", "when a user connects"),
+        blocks.event("onLeave", "when a user disconnects"),
+        blocks.reporter("onJoinUser", "last user to join"),
+        blocks.reporter("onLeaveUser", "last user to leave"),
         blocks.separator(),
         blocks.label("Synced Variables"),
-        blocks.command("setSyncedVariable", "Sync Variable With [USER] Of [KEY] To [VALUE]", {
+        blocks.command("setSyncedVariable", "sync variable with [USER] of [KEY] to [VALUE]", {
           USER: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "user",
@@ -446,7 +446,7 @@ class RoturExtension {
             defaultValue: "value",
           },
         }),
-        blocks.reporter("getSyncedVariable", "Get Synced Variable With [USER] Of [KEY]", {
+        blocks.reporter("getSyncedVariable", "get synced variable with [USER] of [KEY]", {
           USER: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "user",
@@ -456,7 +456,7 @@ class RoturExtension {
             defaultValue: "key",
           },
         }),
-        blocks.command("deleteSyncedVariable", "Delete Synced Variable With [USER] Of [KEY]", {
+        blocks.command("deleteSyncedVariable", "delete synced variable with [USER] of [KEY]", {
           USER: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "user",
@@ -466,7 +466,7 @@ class RoturExtension {
             defaultValue: "key",
           },
         }),
-        blocks.reporter("getSyncedVariables", "Get Synced Variables With [USER]", {
+        blocks.reporter("getSyncedVariables", "get synced variables with [USER]", {
           USER: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "user",
@@ -475,8 +475,8 @@ class RoturExtension {
         blocks.separator(),
         blocks.label("rMail"),
         blocks.button("Mail Docs", "openMailDocs"),
-        blocks.event("whenMailReceived", "When Mail Received"),
-        blocks.reporter("sendMail", "Send Mail With Subject: [SUBJECT] And Message: [MESSAGE] To: [TO]", {
+        blocks.event("whenMailReceived", "when mail received"),
+        blocks.reporter("sendMail", "send mail with subject: [SUBJECT] and message: [MESSAGE] to: [TO]", {
           SUBJECT: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "Subject",
@@ -490,60 +490,60 @@ class RoturExtension {
             defaultValue: "user",
           },
         }),
-        blocks.reporter("getAllMail", "Get Mail List"),
-        blocks.reporter("getMail", "Get Body Of Mail At Index [ID]", {
+        blocks.reporter("getAllMail", "get mail list"),
+        blocks.reporter("getMail", "get body of mail at index [ID]", {
           ID: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "1",
           },
         }),
-        blocks.command("deleteMail", "Delete Mail At Index [ID]", {
+        blocks.command("deleteMail", "delete mail at index [ID]", {
           ID: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "1",
           },
         }),
-        blocks.command("deleteAllMail", "Delete All Mail"),
+        blocks.command("deleteAllMail", "delete all mail"),
         blocks.separator(),
         blocks.label("Friends"),
         blocks.button("Friends Docs", "openFriendsDocs"),
-        blocks.reporter("getFriendList", "Get Friend List"),
-        blocks.reporter("removeFriend", "Remove Friend [FRIEND]", {
+        blocks.reporter("getFriendList", "get friend list"),
+        blocks.reporter("removeFriend", "remove friend [FRIEND]", {
           FRIEND: {
             menu: "friends",
           },
         }),
-        blocks.reporter("acceptFriendRequest", "Accept Friend Request From [FRIEND]", {
+        blocks.reporter("acceptFriendRequest", "accept friend request from [FRIEND]", {
           FRIEND: {
             menu: "requests",
           },
         }),
-        blocks.reporter("declineFriendRequest", "Decline Friend Request From [FRIEND]", {
+        blocks.reporter("declineFriendRequest", "decline friend request from [FRIEND]", {
           FRIEND: {
             menu: "requests",
           },
         }),
-        blocks.reporter("sendFriendRequest", "Send Friend Request To [FRIEND]", {
+        blocks.reporter("sendFriendRequest", "send friend request to [FRIEND]", {
           FRIEND: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "friend",
           },
         }),
-        blocks.event("whenFriendRequestReceived", "When Friend Request Received"),
-        blocks.event("whenFriendRequestAccepted", "When Friend Request Accepted"),
-        blocks.reporter("getFriendRequests", "Get Friend Requests"),
-        blocks.reporter("getFriendStatus", "Get Friend Status Of [FRIEND]", {
+        blocks.event("whenFriendRequestReceived", "when friend request received"),
+        blocks.event("whenFriendRequestAccepted", "when friend request accepted"),
+        blocks.reporter("getFriendRequests", "get friend requests"),
+        blocks.reporter("getFriendStatus", "get friend status of [FRIEND]", {
           FRIEND: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "friend",
           },
         }),
-        blocks.reporter("getFriendCount", "Get Friend Count"),
+        blocks.reporter("getFriendCount", "get friend count"),
         blocks.separator(),
         blocks.label("Currency"),
         blocks.button("Currency Docs", "openCurrencyDocs"),
-        blocks.reporter("getBalance", "Get Balance"),
-        blocks.reporter("tranferCurrency", "Transfer [AMOUNT] To [USER]", {
+        blocks.reporter("getBalance", "get balance"),
+        blocks.reporter("tranferCurrency", "transfer [AMOUNT] to [USER]", {
           AMOUNT: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "0",
@@ -553,49 +553,49 @@ class RoturExtension {
             defaultValue: "user",
           },
         }),
-        blocks.event("whenBalanceChanged", "When Balance Changed"),
-        blocks.reporter("getTransactions", "Get Transactions"),
+        blocks.event("whenBalanceChanged", "when balance changed"),
+        blocks.reporter("getTransactions", "get transactions"),
         blocks.separator(),
         blocks.label("Owned Items"),
-        blocks.reporter("getMyOwnedItems", "Items Owned By Me"),
-        blocks.reporter("itemData", "Data Of Item (ID) [ITEM]", {
+        blocks.reporter("getMyOwnedItems", "items owned by me"),
+        blocks.reporter("itemData", "data of item (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
         }),
-        blocks.reporter("purchaseItem", "Purchase Item (ID) [ITEM]", {
+        blocks.reporter("purchaseItem", "purchase item (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
         }),
-        blocks.reporter("itemInfo", "Info Of Item (ID) [ITEM]", {
+        blocks.reporter("itemInfo", "info of item (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
         }),
-        blocks.boolean("ownsItem", "Do I Own Item (ID) [ITEM]", {
+        blocks.boolean("ownsItem", "do I own item (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
         }),
-        blocks.reporter("getPublicItems", "Public Items, Page: [PAGE]", {
+        blocks.reporter("getPublicItems", "get public items, page: [PAGE]", {
           PAGE: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "1",
           },
         }),
-        blocks.reporter("getPublicItemPages", "Public Item Pages", {}, {
+        blocks.reporter("getPublicItemPages", "get public item pages", {}, {
           disableMonitor: true
         }),
         blocks.separator(),
         blocks.label("Created Items"),
         blocks.button("READ ME BEFORE MAKING ITEMS", "openItemsDocs"),
-        blocks.reporter("getMyCreatedItems", "ITEMS - By Me"),
-        blocks.reporter("createItem", "ITEMS - Create With Name: [NAME] And Description: [DESCRIPTION] And Price: [PRICE] And Data: [CODE] And Transferable: [TRADABLE]", {
+        blocks.reporter("getMyCreatedItems", "items - created by me"),
+        blocks.reporter("createItem", "items - create with name: [NAME] and description: [DESCRIPTION] and price: [PRICE] and data: [CODE]", {
           NAME: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
@@ -611,13 +611,9 @@ class RoturExtension {
           CODE: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "code",
-          },
-          TRADABLE: {
-            type: Scratch.ArgumentType.BOOLEAN,
-            defaultValue: true,
-          },
+          }
         }),
-        blocks.reporter("updateItem", "ITEMS - Update [KEY] To [DATA] for id: [ITEM]", {
+        blocks.reporter("updateItem", "items - update [KEY] to [DATA] for id: [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "ID",
@@ -631,19 +627,19 @@ class RoturExtension {
             defaultValue: "data",
           },
         }),
-        blocks.reporter("deleteItem", "ITEMS - Delete (ID) [ITEM]", {
+        blocks.reporter("deleteItem", "items - delete (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
         }),
-        blocks.reporter("hideItem", "ITEMS - Disable Purchases On (ID) [ITEM]", {
+        blocks.reporter("hideItem", "items - disable purchases on (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
         }),
-        blocks.reporter("showItem", "ITEMS - Enable Purchases on (ID) [ITEM]", {
+        blocks.reporter("showItem", "items - enable purchases on (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
@@ -652,36 +648,36 @@ class RoturExtension {
         blocks.separator(),
         blocks.label("Badges"),
         blocks.button("Badge Docs", "openBadgesDocs"),
-        blocks.boolean("gotBadgesSuccessfully", "Badges Loaded Successfully"),
+        blocks.boolean("gotBadgesSuccessfully", "badges loaded successfully"),
         blocks.reporter("userBadges", "User Badges"),
-        blocks.reporter("userBadgeCount", "User Badge Count"),
-        blocks.boolean("hasBadge", "User Has Badge [BADGE]", {
+        blocks.reporter("userBadgeCount", "user badge count"),
+        blocks.boolean("hasBadge", "user has badge [BADGE]", {
           BADGE: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "badge",
           },
         }),
-        blocks.reporter("badgeInfo", "Badge Info [BADGE]", {
+        blocks.reporter("badgeInfo", "badge info [BADGE]", {
           BADGE: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "badge",
           },
         }),
-        blocks.reporter("allBadges", "All Badges"),
-        blocks.command("redownloadBadges", "Redownload Badges"),
+        blocks.reporter("allBadges", "all badges"),
+        blocks.command("redownloadBadges", "redownload badges"),
         blocks.separator(),
         blocks.label("Voice Calling"),
         blocks.button("Example Project", "openRoturVoiceExample"),
         blocks.button("Get roturVoice", "openRoturVoice"),
-        blocks.reporter("callUser", "Call User [USERNAME]", {
+        blocks.reporter("callUser", "call user [USERNAME]", {
           USERNAME: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "friend",
           },
         }),
-        blocks.event("whenCallReceived", "When Call Received"),
-        blocks.reporter("callData", "Call Data"),
-        blocks.command("acceptCall", "Accept Call"),
+        blocks.event("whenCallReceived", "when call received"),
+        blocks.reporter("callData", "call data"),
+        blocks.command("acceptCall", "accept call"),
         blocks.separator(),
         blocks.label("DANGER ZONE"),
         blocks.button("Show Danger Zone", "openDangerZone", {
@@ -690,7 +686,7 @@ class RoturExtension {
         blocks.button("Hide Danger Zone", "closeDangerZone", {
           hideFromPalette: !this.showDangerous
         }),
-        blocks.reporter("deleteAccount", "Delete Account", {}, {
+        blocks.reporter("deleteAccount", "delete account", {}, {
           hideFromPalette: !this.showDangerous,
           disableMonitor: true
         }),
