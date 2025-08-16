@@ -119,6 +119,21 @@
             },
           },
           {
+            opcode: "registerDataURISkin",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "load skin from data URI [DATAURI] as [NAME]",
+            arguments: {
+              DATAURI: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...",
+              },
+              NAME: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "my skin",
+              },
+            },
+          },
+          {
             opcode: "registerBlurredURLSkin",
             blockType: Scratch.BlockType.COMMAND,
             text: Scratch.translate("load skin from URL [URL] as [NAME] and blur by [BLUR] pixels"),
@@ -395,6 +410,36 @@
         }
       });
     }
+
+    async registerDataURISkin(args) {
+      const skinName = `lms-${Cast.toString(args.NAME)}`;
+      const dataUri = Cast.toString(args.DATAURI);
+    
+      let oldSkinId = null;
+      if (createdSkins[skinName]) {
+        oldSkinId = createdSkins[skinName];
+      }
+    
+      loadingSkins.push(skinName);
+    
+      try {
+        const blob = await (await fetch(dataUri)).blob();
+        const bitmap = await createImageBitmap(blob);
+        const skinId = renderer.createBitmapSkin(bitmap);
+    
+        loadingSkins = loadingSkins.filter((skin) => skin !== skinName);
+        createdSkins[skinName] = skinId;
+    
+        if (oldSkinId) {
+          this._refreshTargetsFromID(oldSkinId, false, skinId);
+          renderer.destroySkin(oldSkinId);
+        }
+      } catch (e) {
+        console.error("Failed to load skin from data URI:", e);
+        loadingSkins = loadingSkins.filter((skin) => skin !== skinName);
+      }
+    }
+
 
     getSkinLoaded(args) {
       const skinName = `lms-${Cast.toString(args.NAME)}`;
