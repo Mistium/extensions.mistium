@@ -5,6 +5,7 @@
  * @copyright MIT & LGPLv3 License
  * Do not remove this comment
  */
+// Description: A bunch of compiled stuff
 
 
 (function(Scratch) {

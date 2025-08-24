@@ -1,6 +1,6 @@
 // Name: IframePlus
 // By: @mistium on discord
-// Description: Display webpages or HTML over the stage with unique IDs. Made primarily for use in originOS (https://github.com/Mistium/Origin-OS).
+// Description: Have many iframes at once
 
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,

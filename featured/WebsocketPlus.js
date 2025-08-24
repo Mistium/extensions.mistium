@@ -1,6 +1,7 @@
 // Made by @mistium on discord,
 // this extension is for originOS :P
 // Thanks for using my extension :D
+// Description: Connect and manage multiple websocket connections
 // version 3.2
 
 // License: MPL-2.0

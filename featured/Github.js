@@ -1,5 +1,6 @@
 // Made By Mistium
 // github extension
+// Description: Access github from scratch
 // v2
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,

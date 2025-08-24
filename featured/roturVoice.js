@@ -1,3 +1,12 @@
+// Name: roturVoice
+// Author: Mistium
+// Description: Voice calling for turbowarp
+
+// License: MPL-2.0
+// This Source Code is subject to the terms of the Mozilla Public License, v2.0,
+// If a copy of the MPL was not distributed with this file,
+// Then you can obtain one at https://mozilla.org/MPL/2.0/
+
 (function (Scratch) {
   // PeerJS
   // https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js
