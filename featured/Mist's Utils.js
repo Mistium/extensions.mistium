@@ -1,6 +1,6 @@
 /**!
  * Mist's Utils
- * @author Mistium (mistium.com), Miyo (miyo.lol)
+ * @author Mistium (mistium.com), Miyo (miyo.icu)
  * @version 5.9
  * @copyright MIT & LGPLv3 License
  * Do not remove this comment
