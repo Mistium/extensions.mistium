@@ -42,229 +42,233 @@
                 name: Scratch.translate("Iframe Plus"),
                 id: "iframePlus",
                 color1: '#333d82',
-                blocks: [{
-                    opcode: "display",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("show website [URL] with ID [ID]"),
-                    arguments: {
-                        URL: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "https://example.com",
-                        },
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
-                        },
-                    },
-                },
-                {
-                    opcode: "showHtmlContent",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("show HTML content [HTML] with ID [ID]"),
-                    arguments: {
-                        HTML: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "<p>Hello, world!</p>",
-                        },
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
+                blocks: [
+                    {
+                        opcode: "display",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("show website [URL] with ID [ID]"),
+                        arguments: {
+                            URL: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "https://example.com",
+                            },
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
                         },
                     },
-                },
-                    "---",
-                {
-                    opcode: "remove",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("remove iframe with ID [ID]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
+                    {
+                        opcode: "showHtmlContent",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("show HTML content [HTML] with ID [ID]"),
+                        arguments: {
+                            HTML: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "<p>Hello, world!</p>",
+                            },
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
                         },
                     },
-                },
-                {
-                    opcode: "removeAllIframes",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("remove all iframes"),
-                },
-                    "---",
-                {
-                    opcode: "getIframeTitle",
-                    blockType: Scratch.BlockType.REPORTER,
-                    text: Scratch.translate("get title of iframe with ID [ID]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
+                        "---",
+                    {
+                        opcode: "remove",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("remove iframe with ID [ID]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
                         },
                     },
-                },
-                {
-                    opcode: "getIframeURL",
-                    blockType: Scratch.BlockType.REPORTER,
-                    text: Scratch.translate("get URL of iframe with ID [ID]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
+                    {
+                        opcode: "removeAllIframes",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("remove all iframes"),
+                    },
+                        "---",
+                    {
+                        opcode: "getIframeTitle",
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: Scratch.translate("get title of iframe with ID [ID]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
                         },
                     },
-                },
-                {
-                    opcode: "setIframeURL",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("set URL of iframe with ID [ID] to [URL]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
-                        },
-                        URL: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "https://example.com",
+                    {
+                        opcode: "getIframeURL",
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: Scratch.translate("get URL of iframe with ID [ID]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
                         },
                     },
-                },
-                    "---",
-                {
-                    opcode: "show",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("show iframe with ID [ID]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
+                    {
+                        opcode: "setIframeURL",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("set URL of iframe with ID [ID] to [URL]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
+                            URL: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "https://example.com",
+                            },
                         },
                     },
-                },
-                {
-                    opcode: "hide",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("hide iframe with ID [ID]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
+                        "---",
+                    {
+                        opcode: "show",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("show iframe with ID [ID]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
                         },
                     },
-                },
-                    "---",
-                {
-                    opcode: "resize",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("resize iframe with ID [ID] to width [WIDTH] and height [HEIGHT]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
-                        },
-                        WIDTH: {
-                            type: Scratch.ArgumentType.NUMBER,
-                            defaultValue: 480,
-                        },
-                        HEIGHT: {
-                            type: Scratch.ArgumentType.NUMBER,
-                            defaultValue: 360,
+                    {
+                        opcode: "hide",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("hide iframe with ID [ID]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
                         },
                     },
-                },
-                {
-                    opcode: "move",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("move iframe with ID [ID] to x [X] and y [Y]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
-                        },
-                        X: {
-                            type: Scratch.ArgumentType.NUMBER,
-                            defaultValue: 0,
-                        },
-                        Y: {
-                            type: Scratch.ArgumentType.NUMBER,
-                            defaultValue: 0,
-                        },
-                    },
-                },
-                {
-                    opcode: "setCorners",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("set iframe with ID [ID] top-left corner at x [X1] and y [Y1] bottom-right corner at x [X2] and y [Y2]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
-                        },
-                        X1: {
-                            type: Scratch.ArgumentType.NUMBER,
-                            defaultValue: 0,
-                        },
-                        Y1: {
-                            type: Scratch.ArgumentType.NUMBER,
-                            defaultValue: 0,
-                        },
-                        X2: {
-                            type: Scratch.ArgumentType.NUMBER,
-                            defaultValue: 100,
-                        },
-                        Y2: {
-                            type: Scratch.ArgumentType.NUMBER,
-                            defaultValue: 100,
+                        "---",
+                    {
+                        opcode: "resize",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("resize iframe with ID [ID] to width [WIDTH] and height [HEIGHT]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
+                            WIDTH: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 480,
+                            },
+                            HEIGHT: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 360,
+                            },
                         },
                     },
-                },
-                {
-                    opcode: "stamp",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("stamp iframe with ID [ID] to stage"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
+                    {
+                        opcode: "move",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("move iframe with ID [ID] to x [X] and y [Y]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
+                            X: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 0,
+                            },
+                            Y: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 0,
+                            },
                         },
                     },
-                    hiddenFromPalette: true,
-                },
-                    "---",
-                {
-                    opcode: "setLayerOfIframe",
-                    blockType: Scratch.BlockType.COMMAND,
-                    text: Scratch.translate("set layer of iframe with ID [ID] to [LAYER]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
-                        },
-                        LAYER: {
-                            type: Scratch.ArgumentType.NUMBER,
-                            defaultValue: 1,
-                        },
-                    },
-                },
-                {
-                    opcode: "getAllIframeIDs",
-                    blockType: Scratch.BlockType.REPORTER,
-                    text: Scratch.translate("all iframe IDs"),
-                },
-                {
-                    opcode: "getTotalLayers",
-                    blockType: Scratch.BlockType.REPORTER,
-                    text: Scratch.translate("total number of layers"),
-                },
-                {
-                    opcode: "getLayerOfIframe",
-                    blockType: Scratch.BlockType.REPORTER,
-                    text: Scratch.translate("layer of iframe with ID [ID]"),
-                    arguments: {
-                        ID: {
-                            type: Scratch.ArgumentType.STRING,
-                            defaultValue: "iframe1",
+                    {
+                        opcode: "setCorners",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("set iframe with ID [ID] top-left corner at x [X1] and y [Y1] bottom-right corner at x [X2] and y [Y2]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
+                            X1: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 0,
+                            },
+                            Y1: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 0,
+                            },
+                            X2: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 100,
+                            },
+                            Y2: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 100,
+                            },
                         },
                     },
-                },
+                    {
+                        opcode: "setScale",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("set iframe with ID [ID] scale to [SCALE]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
+                            SCALE: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 1,
+                            },
+                        },
+                    },
+                        "---",
+                    {
+                        opcode: "setLayerOfIframe",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("set layer of iframe with ID [ID] to [LAYER]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
+                            LAYER: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 1,
+                            },
+                        },
+                    },
+                    {
+                        opcode: "getAllIframeIDs",
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: Scratch.translate("all iframe IDs"),
+                    },
+                    {
+                        opcode: "getTotalLayers",
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: Scratch.translate("total number of layers"),
+                    },
+                    {
+                        opcode: "getLayerOfIframe",
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: Scratch.translate("layer of iframe with ID [ID]"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
+                        },
+                    },
                 ],
             };
         }
@@ -395,6 +399,14 @@
             }
         }
 
+        setScale({ ID, SCALE }) {
+            const iframeInfo = iframesMap.get(ID);
+            if (iframeInfo) {
+                iframeInfo.scale = SCALE;
+                this.updateFrameAttributes(iframeInfo);
+            }
+        }
+
         getIframeURL(ID) {
             ID = ID.ID;
             const iframe = document.getElementById(ID);
@@ -430,8 +442,6 @@
         createFrame(src, ID) {
             ID = ID.toString()
             const iframe = document.createElement("iframe");
-            iframe.style.width = "100%";
-            iframe.style.height = "100%";
             iframe.style.border = "none";
             iframe.style.position = "absolute";
             iframe.setAttribute("id", ID);
@@ -454,7 +464,8 @@
                 height: 360,
                 x: 0,
                 y: 0,
-                interactive: true
+                interactive: true,
+                scale: 1
             });
 
             this.updateFrameAttributes(iframesMap.get(ID));
@@ -471,22 +482,23 @@
                 height,
                 x,
                 y,
-                interactive
+                interactive,
+                scale
             } = iframeInfo;
 
-            const scale = Scratch.vm.renderer.canvas.clientWidth / Scratch.vm.renderer.canvas.width;
+            const stageScale = Scratch.vm.renderer.canvas.clientWidth / Scratch.vm.runtime.stageWidth;
 
             const centerX = Scratch.vm.runtime.stageWidth / 2;
             const centerY = Scratch.vm.runtime.stageHeight / 2;
 
-            const scaledWidth = width * scale;
-            const scaledHeight = height * scale;
-            const scaledX = (centerX + x) * scale;
-            const scaledY = (centerY - y) * scale;
+            const scaledX = (centerX + x) * stageScale;
+            const scaledY = (centerY - y) * stageScale;
 
-            iframe.style.transform = `translate(${scaledX}px, ${scaledY}px)`;
-            iframe.style.width = `${scaledWidth}px`;
-            iframe.style.height = `${scaledHeight}px`;
+            iframe.style.width = `${width * scale}px`;
+            iframe.style.height = `${height * scale}px`;
+
+            iframe.style.transform = `translate(${scaledX}px, ${scaledY}px) scale(${1 / (scale / stageScale)})`;
+            iframe.style.transformOrigin = "top left";
 
             overlay.mode = "manual";
             Scratch.renderer._updateOverlays();
