@@ -174,6 +174,11 @@
             }
           },
           {
+            opcode: 'deleteAllCanvases',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'delete all canvases',
+          },
+          {
             opcode: 'clearCanvas',
             blockType: Scratch.BlockType.COMMAND,
             text: 'clear canvas [CANVAS_ID]',
@@ -611,8 +616,17 @@
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return;
+      vm.renderer.removeOverlay(canvas);
       canvas.remove();
       delete this.canvases[CANVAS_ID];
+    }
+
+    deleteAllCanvases() {
+      for (const canvas of Object.values(this.canvases)) {
+        vm.renderer.removeOverlay(canvas);
+        canvas.remove();
+      }
+      this.canvases = {};
     }
 
     moveCanvas({ CANVAS_ID, X, Y }) {
