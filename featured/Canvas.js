@@ -80,17 +80,7 @@
               },
             }
           },
-          {
-            opcode: 'deleteCanvas',
-            blockType: Scratch.BlockType.COMMAND,
-            text: 'delete canvas [CANVAS_ID]',
-            arguments: {
-              CANVAS_ID: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: 'canvas1'
-              }
-            }
-          },
+          "---",
           {
             opcode: 'moveCanvas',
             blockType: Scratch.BlockType.COMMAND,
@@ -107,6 +97,28 @@
               Y: {
                 type: Scratch.ArgumentType.NUMBER,
                 defaultValue: 0
+              }
+            }
+          },
+          {
+            opcode: 'getCanvasX',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get x of [CANVAS_ID]',
+            arguments: {
+              CANVAS_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'canvas1'
+              }
+            }
+          },
+          {
+            opcode: 'getCanvasY',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get y of [CANVAS_ID]',
+            arguments: {
+              CANVAS_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'canvas1'
               }
             }
           },
@@ -129,6 +141,7 @@
               }
             }
           },
+          "---",
           {
             opcode: 'setCanvasStyle',
             blockType: Scratch.BlockType.COMMAND,
@@ -148,18 +161,15 @@
               }
             }
           },
+          "---",
           {
-            opcode: 'setCanvasLayer',
+            opcode: 'deleteCanvas',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'set canvas [CANVAS_ID] layer to [LAYER]',
+            text: 'delete canvas [CANVAS_ID]',
             arguments: {
               CANVAS_ID: {
                 type: Scratch.ArgumentType.STRING,
                 defaultValue: 'canvas1'
-              },
-              LAYER: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: 1
               }
             }
           },
@@ -392,32 +402,27 @@
               }
             }
           },
+
+          "---",
+          {
+            opcode: 'setCanvasLayer',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'set canvas [CANVAS_ID] layer to [LAYER]',
+            arguments: {
+              CANVAS_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'canvas1'
+              },
+              LAYER: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 1
+              }
+            }
+          },
           {
             opcode: 'getCanvasLayer',
             blockType: Scratch.BlockType.REPORTER,
             text: 'get layer of [CANVAS_ID]',
-            arguments: {
-              CANVAS_ID: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: 'canvas1'
-              }
-            }
-          },
-          {
-            opcode: 'getCanvasX',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'get x of [CANVAS_ID]',
-            arguments: {
-              CANVAS_ID: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: 'canvas1'
-              }
-            }
-          },
-          {
-            opcode: 'getCanvasY',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'get y of [CANVAS_ID]',
             arguments: {
               CANVAS_ID: {
                 type: Scratch.ArgumentType.STRING,
