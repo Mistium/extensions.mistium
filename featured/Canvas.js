@@ -540,6 +540,13 @@
       };
     }
 
+    _objToHex(obj) {
+      const r = obj[0];
+      const g = obj[1];
+      const b = obj[2];
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
     createCanvas({ CANVAS_ID, X, Y, WIDTH, HEIGHT, COLOUR }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       X = cast.toNumber(X);
@@ -568,8 +575,6 @@
 
     createInvisCanvas({ CANVAS_ID, WIDTH, HEIGHT, COLOUR }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
-      X = cast.toNumber(X);
-      Y = cast.toNumber(Y);
       WIDTH = cast.toNumber(WIDTH);
       HEIGHT = cast.toNumber(HEIGHT);
       COLOUR = cast.toString(COLOUR);
@@ -648,6 +653,7 @@
 
     drawTriangle({ CANVAS_ID, X1, Y1, X2, Y2, X3, Y3, COLOUR, FILL }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
+      const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return;
       X1 = cast.toNumber(X1);
       Y1 = cast.toNumber(Y1);
@@ -657,7 +663,6 @@
       Y3 = cast.toNumber(Y3);
       COLOUR = cast.toString(COLOUR);
       FILL = cast.toString(FILL);
-      const canvas = this.canvases[CANVAS_ID];
       let translatedX1 = (canvas.width / 2) + X1;
       let translatedY1 = (canvas.height / 2) - Y1;
       let translatedX2 = (canvas.width / 2) + X2;
@@ -691,13 +696,11 @@
       ctx.fillStyle = COLOUR;
       ctx.strokeStyle = COLOUR;
 
-      // Convert Scratch coordinates to canvas coordinates
       const translatedX = (canvas.width / 2) + cast.toNumber(X) - (WIDTH / 2);
       const translatedY = (canvas.height / 2) - cast.toNumber(Y) - (HEIGHT / 2);
 
       ctx.beginPath();
       if (ROUNDING > 0) {
-        // Rounded rectangle
         const radius = Math.min(ROUNDING, WIDTH / 2, HEIGHT / 2);
         ctx.moveTo(translatedX + radius, translatedY);
         ctx.lineTo(translatedX + WIDTH - radius, translatedY);
@@ -709,7 +712,6 @@
         ctx.lineTo(translatedX, translatedY + radius);
         ctx.quadraticCurveTo(translatedX, translatedY, translatedX + radius, translatedY);
       } else {
-        // Regular rectangle
         ctx.rect(translatedX, translatedY, WIDTH, HEIGHT);
       }
       ctx.closePath();
@@ -719,18 +721,6 @@
       } else {
         ctx.stroke();
       }
-    }
-
-
-    setPixel({ CANVAS_ID, X, Y, COLOUR }) {
-      CANVAS_ID = cast.toString(CANVAS_ID);
-      const canvas = this.canvases[CANVAS_ID];
-      if (!canvas) return;
-      let translatedX1 = (canvas.width / 2) + cast.toNumber(X);
-      let translatedY1 = (canvas.height / 2) - cast.toNumber(Y);
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = cast.toString(COLOUR);
-      ctx.fillRect(translatedX1, translatedY1, 1, 1);
     }
 
     getWidth({ CANVAS_ID }) {
@@ -779,8 +769,13 @@
       if (TYPE === 'dataURI') {
         return canvas.toDataURL();
       } else if (TYPE === 'array') {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        return imageData.data;
+        try {
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          return imageData.data;
+        } catch (e) {
+          console.error(e);
+          return "";
+        }
       }
     }
 
@@ -788,9 +783,7 @@
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return 0;
-      const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      return imageData.data.length / 4;
+      return canvas.width * canvas.height;
     }
 
     getPixel({ CANVAS_ID, X, Y }) {
@@ -800,8 +793,13 @@
       let translatedX1 = (canvas.width / 2) + cast.toNumber(X);
       let translatedY1 = (canvas.height / 2) - cast.toNumber(Y);
       const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(translatedX1, translatedY1, 1, 1);
-      return imageData.data;
+      try {
+        const imageData = ctx.getImageData(translatedX1, translatedY1, 1, 1);
+        return this._objToHex(imageData.data);
+      } catch (e) {
+        console.error(e);
+        return "";
+      }
     }
 
     getPixelIndex({ CANVAS_ID, INDEX }) {
@@ -810,8 +808,15 @@
       if (!canvas) return "";
       INDEX = cast.toNumber(INDEX);
       const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      return imageData.data.slice(INDEX * 4, INDEX * 4 + 4);
+      const x = INDEX % canvas.width;
+      const y = Math.floor(INDEX / canvas.width);
+      try {
+        const imageData = ctx.getImageData(x, y, 1, 1);
+        return this._objToHex(imageData.data);
+      } catch (e) {
+        console.error(e);
+        return "";
+      }
     }
 
     setPixelIndex({ CANVAS_ID, INDEX, COLOUR }) {
@@ -819,9 +824,11 @@
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      imageData.data.set(cast.toString(COLOUR), cast.toNumber(INDEX) * 4);
-      ctx.putImageData(imageData, 0, 0);
+      INDEX = cast.toNumber(INDEX);
+      const x = INDEX % canvas.width;
+      const y = Math.floor(INDEX / canvas.width);
+      ctx.fillStyle = cast.toString(COLOUR);
+      ctx.fillRect(x, y, 1, 1);
     }
 
     setPixel({ CANVAS_ID, X, Y, COLOUR }) {
@@ -831,9 +838,8 @@
       let translatedX1 = (canvas.width / 2) + cast.toNumber(X);
       let translatedY1 = (canvas.height / 2) - cast.toNumber(Y);
       const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(translatedX1, translatedY1, 1, 1);
-      imageData.data.set(cast.toString(COLOUR));
-      ctx.putImageData(imageData, X, Y);
+      ctx.fillStyle = cast.toString(COLOUR);
+      ctx.fillRect(translatedX1, translatedY1, 1, 1);
     }
 
     drawLine({ CANVAS_ID, X1, Y1, X2, Y2, COLOUR, LINEWIDTH, LINECAP }) {
@@ -868,7 +874,6 @@
       const img = new Image();
       img.src = cast.toString(URL);
       img.onload = () => {
-        // Center the image based on canvas dimensions and specified X, Y
         const translatedX1 = (canvas.width / 2) + cast.toNumber(X) - (WIDTH / 2);
         const translatedY1 = (canvas.height / 2) - cast.toNumber(Y) - (HEIGHT / 2);
         ctx.drawImage(img, translatedX1, translatedY1, WIDTH, HEIGHT);
@@ -888,7 +893,6 @@
       img.onload = () => {
         const pattern = ctx.createPattern(img, cast.toString(DIRECTION));
         ctx.fillStyle = pattern;
-        // Convert Scratch coordinates to canvas coordinates
         const translatedX = (canvas.width / 2) + cast.toNumber(X) - (cast.toNumber(WIDTH) / 2);
         const translatedY = (canvas.height / 2) - cast.toNumber(Y) - (cast.toNumber(HEIGHT) / 2);
         ctx.fillRect(translatedX, translatedY, cast.toNumber(WIDTH), cast.toNumber(HEIGHT));
