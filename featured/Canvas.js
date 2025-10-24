@@ -522,6 +522,11 @@
                 menu: 'TYPE',
               }
             }
+          },
+          {
+            opcode: 'getCanvasList',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get all canvases',
           }
         ],
         menus: {
@@ -905,6 +910,10 @@
       img.onerror = (err) => {
         console.log(`Error loading image: ${err}`);
       }
+    }
+
+    getCanvasList() {
+      return JSON.stringify(Object.keys(this.canvases));
     }
   }
   Scratch.extensions.register(new CanvasExtension());
