@@ -20,18 +20,14 @@ class VirtualFileSystem {
             .split('/')
             .filter(part => part.length > 0 && part !== '.');
         
-        if (parts.some(part => part === '..')) {
-            return null;
-        }
+        if (parts.some(part => part === '..')) return null;
         
         return parts;
     }
 
-    // Helper function to navigate and create directories as needed
     _navigatePath(path, createDirs = false) {
         const parts = this._normalizePath(path);
         if (parts === null) return null;
-        
         if (parts.length === 0) return this.vfs;
         
         let current = this.vfs;
@@ -40,16 +36,11 @@ class VirtualFileSystem {
             const part = parts[i];
             
             if (!current[part]) {
-                if (createDirs) {
-                    current[part] = {};
-                } else {
-                    return null;
-                }
+                if (!createDirs) return null;
+                current[part] = {};
             }
             
-            if (current[part][this.FILE_MARKER] && i < parts.length - 1) {
-                return null;
-            }
+            if (current[part][this.FILE_MARKER] && i < parts.length - 1) return null;
             
             current = current[part];
         }
@@ -65,192 +56,208 @@ class VirtualFileSystem {
         return obj && typeof obj === 'object' && !obj[this.FILE_MARKER];
     }
 
-    createFile(args) {
-        const parts = this._normalizePath(args.FILE_PATH);
-        if (parts === null || parts.length === 0) {
-            return 'Error: Invalid file path';
-        }
+    _getEntry(path, isFile = true) {
+        const parts = this._normalizePath(path);
+        if (parts === null || parts.length === 0) return null;
+
+        const name = parts.pop();
+        const dir = this._navigatePath(parts.join('/'));
+
+        if (!dir || dir[name] === undefined) return null;
+        
+        const entry = dir[name];
+        const correctType = isFile ? this._isFile(entry) : this._isDirectory(entry);
+        
+        return correctType ? { entry, dir, name } : null;
+    }
+
+    _performFileOperation(path, operation, ...args) {
+        const result = this._getEntry(path, true);
+        if (!result) return;
+        
+        operation(result, ...args);
+    }
+
+    _transferEntry(sourcePath, destPath, isMove = false, isFile = true) {
+        const parts = this._normalizePath(sourcePath);
+        if (parts === null || parts.length === 0) return;
+        
+        const name = parts.pop();
+        const sourceDir = this._navigatePath(parts.join('/'));
+
+        if (!sourceDir || sourceDir[name] === undefined) return;
+        
+        const entry = sourceDir[name];
+        const correctType = isFile ? this._isFile(entry) : this._isDirectory(entry);
+        if (!correctType) return;
+
+        const destParts = this._normalizePath(destPath);
+        if (destParts === null || destParts.length === 0) return;
+
+        const destName = destParts.pop();
+        const destDir = this._navigatePath(destParts.join('/'), true);
+
+        if (!destDir || destDir[destName] !== undefined) return;
+
+        destDir[destName] = isMove ? entry : JSON.parse(JSON.stringify(entry));
+        
+        if (isMove) delete sourceDir[name];
+    }
+
+    createFile({ FILE_PATH }) {
+        const parts = this._normalizePath(FILE_PATH);
+        if (parts === null || parts.length === 0) return;
 
         const fileName = parts.pop();
         const dir = this._navigatePath(parts.join('/'), true);
 
-        if (!dir) {
-            return 'Error: Invalid directory path';
-        }
+        if (!dir || dir[fileName] !== undefined) return;
 
-        if (dir[fileName] !== undefined) {
-            if (this._isFile(dir[fileName])) {
-                return 'Error: File already exists';
-            } else {
-                return 'Error: A directory with this name already exists';
-            }
-        }
-
-        dir[fileName] = { [this.FILE_MARKER]: true, content: '' };
-        return `File created: ${fileName}`;
+        dir[fileName] = {
+            [this.FILE_MARKER]: true,
+            modified: Date.now(),
+            created: Date.now(),
+            content: ''
+        };
     }
 
-    readFile(args) {
-        const parts = this._normalizePath(args.FILE_PATH);
-        if (parts === null || parts.length === 0) {
-            return 'Error: Invalid file path';
-        }
-
-        const fileName = parts.pop();
-        const dir = this._navigatePath(parts.join('/'));
-
-        if (!dir || dir[fileName] === undefined) {
-            return 'Error: File not found';
-        }
-
-        if (!this._isFile(dir[fileName])) {
-            return 'Error: Path is a directory, not a file';
-        }
-
-        return dir[fileName].content;
+    readFile({ FILE_PATH }) {
+        const result = this._getEntry(FILE_PATH, true);
+        if (!result) return 'Error: File not found';
+        return result.entry.content;
     }
 
-    writeFile(args) {
-        const parts = this._normalizePath(args.FILE_PATH);
-        if (parts === null || parts.length === 0) {
-            return 'Error: Invalid file path';
-        }
+    getMetadata({ FILE_PATH, METADATA }) {
+        const result = this._getEntry(FILE_PATH, true);
+        if (!result) return "Error: File not found";
 
-        const fileName = parts.pop();
-        const dir = this._navigatePath(parts.join('/'));
-
-        if (!dir || dir[fileName] === undefined) {
-            return 'Error: File not found';
-        }
-
-        if (!this._isFile(dir[fileName])) {
-            return 'Error: Path is a directory, not a file';
-        }
-
-        dir[fileName].content = String(args.CONTENT);
-        return `Content written to: ${fileName}`;
+        return result.entry[METADATA] || "";
     }
 
-    deleteFile(args) {
-        const parts = this._normalizePath(args.FILE_PATH);
-        if (parts === null || parts.length === 0) {
-            return 'Error: Invalid file path';
-        }
-
-        const fileName = parts.pop();
-        const dir = this._navigatePath(parts.join('/'));
-
-        if (!dir || dir[fileName] === undefined) {
-            return 'Error: File not found';
-        }
-
-        if (!this._isFile(dir[fileName])) {
-            return 'Error: Path is a directory, not a file';
-        }
-
-        delete dir[fileName];
-        return `File deleted: ${fileName}`;
+    writeFile({ FILE_PATH, CONTENT }) {
+        this._performFileOperation(FILE_PATH, (result) => {
+            result.entry.modified = Date.now();
+            result.entry.content = String(CONTENT);
+        });
     }
 
-    createDirectory(args) {
-        const parts = this._normalizePath(args.DIR_PATH);
-        if (parts === null || parts.length === 0) {
-            return 'Error: Invalid directory path';
-        }
+    appendFile({ FILE_PATH, CONTENT }) {
+        this._performFileOperation(FILE_PATH, (result) => {
+            result.entry.modified = Date.now();
+            result.entry.content += String(CONTENT);
+        });
+    }
+
+    moveFile({ FILE_PATH, NEW_FILE_PATH }) {
+        this._transferEntry(FILE_PATH, NEW_FILE_PATH, true, true);
+    }
+
+    copyFile({ FILE_PATH, NEW_FILE_PATH }) {
+        this._transferEntry(FILE_PATH, NEW_FILE_PATH, false, true);
+    }
+
+    renameFile({ FILE_PATH, NEW_FILE_NAME }) {
+        const parts = this._normalizePath(FILE_PATH);
+        if (parts === null || parts.length === 0) return;
+
+        const newName = this._normalizePath(NEW_FILE_NAME);
+        if (newName === null || newName.length !== 1) return;
+        
+        const dirPath = parts.slice(0, -1).join('/');
+        const newPath = dirPath ? `${dirPath}/${newName[0]}` : newName[0];
+        
+        this._transferEntry(args.FILE_PATH, newPath, true, true);
+    }
+
+    moveDirectory({ DIR_PATH, NEW_DIR_PATH }) {
+        this._transferEntry(DIR_PATH, NEW_DIR_PATH, true, false);
+    }
+
+    copyDirectory({ DIR_PATH, NEW_DIR_PATH }) {
+        this._transferEntry(DIR_PATH, NEW_DIR_PATH, false, false);
+    }
+
+    deleteFile({ FILE_PATH }) {
+        this._performFileOperation(FILE_PATH, (result) => {
+            delete result.dir[result.name];
+        });
+    }
+
+    createDirectory({ DIR_PATH }) {
+        const parts = this._normalizePath(DIR_PATH);
+        if (parts === null || parts.length === 0) return;
 
         const dirName = parts.pop();
         const parentDir = this._navigatePath(parts.join('/'), true);
 
-        if (!parentDir) {
-            return 'Error: Invalid parent directory path';
-        }
-
-        if (parentDir[dirName] !== undefined) {
-            if (this._isDirectory(parentDir[dirName])) {
-                return 'Error: Directory already exists';
-            } else {
-                return 'Error: A file with this name already exists';
-            }
-        }
+        if (!parentDir || parentDir[dirName] !== undefined) return;
 
         parentDir[dirName] = {};
-        return `Directory created: ${dirName}`;
     }
 
-    deleteDirectory(args) {
-        const parts = this._normalizePath(args.DIR_PATH);
-        if (parts === null || parts.length === 0) {
-            return 'Error: Cannot delete root directory';
-        }
+    deleteDirectory({ DIR_PATH }) {
+        const parts = this._normalizePath(DIR_PATH);
+        if (parts === null || parts.length === 0) return;
 
         const dirName = parts.pop();
         const parentDir = this._navigatePath(parts.join('/'));
 
-        if (!parentDir || parentDir[dirName] === undefined) {
-            return 'Error: Directory not found';
-        }
-
-        if (!this._isDirectory(parentDir[dirName])) {
-            return 'Error: Path is a file, not a directory';
-        }
+        if (!parentDir || parentDir[dirName] === undefined) return;
+        if (!this._isDirectory(parentDir[dirName])) return;
 
         delete parentDir[dirName];
-        return `Directory deleted: ${dirName}`;
     }
 
-    listDirectory(args) {
-        const parts = this._normalizePath(args.DIR_PATH);
-        if (parts === null) {
-            return 'Error: Invalid directory path';
-        }
+    listDirectory({ DIR_PATH }) {
+        const parts = this._normalizePath(DIR_PATH);
+        if (parts === null) return 'Error: Invalid directory path';
 
         const dir = this._navigatePath(parts.join('/'));
+        if (!dir) return 'Error: Directory not found';
+        if (this._isFile(dir)) return 'Error: Path is a file, not a directory';
 
-        if (!dir) {
-            return 'Error: Directory not found';
-        }
-
-        if (this._isFile(dir)) {
-            return 'Error: Path is a file, not a directory';
-        }
-
-        const entries = Object.keys(dir).map(key => {
-            if (this._isFile(dir[key])) {
-                return key + ' (file)';
-            } else {
-                return key + '/';
-            }
-        });
+        const entries = Object.keys(dir).map(key => 
+            this._isFile(dir[key]) ? key : key + '/'
+        );
 
         return JSON.stringify(entries);
     }
 
-    fileExists(args) {
-        const parts = this._normalizePath(args.FILE_PATH);
-        if (parts === null || parts.length === 0) return false;
-
-        const fileName = parts.pop();
-        const dir = this._navigatePath(parts.join('/'));
-
-        return dir && dir[fileName] !== undefined && this._isFile(dir[fileName]);
+    getFileSize({ FILE_PATH }) {
+        const result = this._getEntry(FILE_PATH, true);
+        if (!result) return 0;
+        return result.entry.content.length;
     }
 
-    directoryExists(args) {
-        const parts = this._normalizePath(args.DIR_PATH);
+    fileExists({ FILE_PATH }) {
+        return this._getEntry(FILE_PATH, true) !== null;
+    }
+
+    directoryExists({ DIR_PATH }) {
+        const parts = this._normalizePath(DIR_PATH);
         if (parts === null) return false;
 
         const dir = this._navigatePath(parts.join('/'));
         return dir !== null && this._isDirectory(dir);
     }
 
-    getallfiles() {
-        const exportObj = this._serializeVFS(this.vfs);
-        return JSON.stringify(exportObj);
+    getallfiles({ EXPORT }) {
+        switch (EXPORT) {
+            case 'json':
+                return JSON.stringify(this._serializeVFS(this.vfs));
+            case 'zip':
+                return this.exportAsZip();
+        }
     }
 
     _serializeVFS(obj) {
         if (this._isFile(obj)) {
-            return { __isFile: true, content: obj.content };
+            return { 
+                __isFile: true, 
+                content: obj.content,
+                created: obj.created,
+                modified: obj.modified
+            };
         }
         
         const result = {};
@@ -264,7 +271,12 @@ class VirtualFileSystem {
 
     _deserializeVFS(obj) {
         if (obj && obj.__isFile === true) {
-            return { [this.FILE_MARKER]: true, content: obj.content || '' };
+            return { 
+                [this.FILE_MARKER]: true, 
+                content: obj.content || '',
+                created: obj.created || Date.now(),
+                modified: obj.modified || Date.now()
+            };
         }
         
         const result = {};
@@ -274,19 +286,123 @@ class VirtualFileSystem {
         return result;
     }
 
-    importfiles(args) {
-        try {
-            const parsed = JSON.parse(args.FILES);
-            this.vfs = this._deserializeVFS(parsed);
-            return 'Files imported successfully';
-        } catch (e) {
-            return 'Error: Invalid JSON format';
+    importfiles({ EXPORT, FILES }) {
+        switch (EXPORT) {
+            case 'json':
+                try {
+                    const parsed = JSON.parse(FILES);
+                    this.vfs = this._deserializeVFS(parsed);
+                } catch {}
+                break;
+            case 'zip':
+                const zipData = FILES;
+                if (!zipData) return;
+
+                if (zipData.startsWith('data:application/zip;base64,')) {
+                    zipData = zipData.substring('data:application/zip;base64,'.length);
+                    this.importFromZip({ ZIP_DATA: zipData });
+                } else {
+                    console.error('Error: Invalid ZIP data, expected: "data:application/zip;base64,..."');
+                }
+                break;
         }
     }
 
     clearall() {
         this.vfs = {};
-        return 'File system cleared';
+    }
+
+    async _collectAllFiles(dir = this.vfs, currentPath = '') {
+        const files = [];
+        
+        for (const key in dir) {
+            if (key === this.FILE_MARKER) continue;
+            
+            const entry = dir[key];
+            const fullPath = currentPath ? `${currentPath}/${key}` : key;
+            
+            if (this._isFile(entry)) {
+                files.push({
+                    path: fullPath,
+                    content: entry.content,
+                    modified: entry.modified
+                });
+            } else if (this._isDirectory(entry)) {
+                const subFiles = await this._collectAllFiles(entry, fullPath);
+                files.push(...subFiles);
+            }
+        }
+        
+        return files;
+    }
+
+    async exportAsZip() {
+        try {
+            const JSZip = vm.exports.JSZip;
+            if (!JSZip) {
+                return 'Error: JSZip not available';
+            }
+
+            const zip = new JSZip();
+            const files = await this._collectAllFiles();
+
+            if (files.length === 0) {
+                return 'Error: No files to export';
+            }
+
+            for (const file of files) {
+                zip.file(file.path, file.content, {
+                    date: file.modified ? new Date(file.modified) : new Date()
+                });
+            }
+
+            const blob = await zip.generateAsync({ type: 'base64' });
+            return "data:application/zip;base64," + blob;
+        } catch (error) {
+            return `Error: ${error.message}`;
+        }
+    }
+
+    async importFromZip({ ZIP_DATA }) {
+        try {
+            const JSZip = vm.exports.JSZip;
+            if (!JSZip) {
+                return;
+            }
+
+            const zipData = ZIP_DATA;
+            const zip = new JSZip();
+            
+            await zip.loadAsync(zipData, { base64: true });
+
+            const files = [];
+            zip.forEach((relativePath, file) => {
+                if (!file.dir) {
+                    files.push({ path: relativePath, file });
+                }
+            });
+
+            for (const { path, file } of files) {
+                const content = await file.async('string');
+                const parts = this._normalizePath(path);
+                
+                if (parts === null || parts.length === 0) continue;
+
+                const fileName = parts.pop();
+                const dir = this._navigatePath(parts.join('/'), true);
+
+                if (!dir) continue;
+
+                dir[fileName] = {
+                    [this.FILE_MARKER]: true,
+                    modified: file.date ? file.date.getTime() : Date.now(),
+                    created: file.date ? file.date.getTime() : Date.now(),
+                    content: content
+                };
+            }
+        } catch (error) {
+            console.error('Import error:', error);
+        }
     }
 
     getInfo() {
@@ -334,6 +450,95 @@ class VirtualFileSystem {
                     }
                 },
                 {
+                    opcode: 'appendFile',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'append [CONTENT] to file [FILE_PATH]',
+                    arguments: {
+                        FILE_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2/myFile.txt'
+                        },
+                        CONTENT: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'More text!'
+                        }
+                    }
+                },
+                "---",
+                {
+                    opcode: 'getMetadata',
+                    blockType: Scratch.BlockType.REPORTER,
+                    text: 'get [METADATA] for file [FILE_PATH]',
+                    arguments: {
+                        METADATA: {
+                            type: Scratch.ArgumentType.STRING,
+                            menu: 'options',
+                            defaultValue: 'modified'
+                        },
+                        FILE_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2/myFile.txt'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getFileSize',
+                    blockType: Scratch.BlockType.REPORTER,
+                    text: 'size of file [FILE_PATH]',
+                    arguments: {
+                        FILE_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2/myFile.txt'
+                        }
+                    }
+                },
+                "---",
+                {
+                    opcode: 'moveFile',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'move [FILE_PATH] to [NEW_FILE_PATH]',
+                    arguments: {
+                        FILE_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2/myFile.txt'
+                        },
+                        NEW_FILE_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir3/myFile.txt'
+                        }
+                    }
+                },
+                {
+                    opcode: 'copyFile',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'copy [FILE_PATH] to [NEW_FILE_PATH]',
+                    arguments: {
+                        FILE_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2/myFile.txt'
+                        },
+                        NEW_FILE_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2/myNewFile.txt'
+                        }
+                    }
+                },
+                {
+                    opcode: 'renameFile',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'rename file [FILE_PATH] to [NEW_FILE_NAME]',
+                    arguments: {
+                        FILE_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2/myFile.txt'
+                        },
+                        NEW_FILE_NAME: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'newFile.txt'
+                        }
+                    }
+                },
+                {
                     opcode: 'deleteFile',
                     blockType: Scratch.BlockType.COMMAND,
                     text: 'delete file [FILE_PATH]',
@@ -364,6 +569,36 @@ class VirtualFileSystem {
                         DIR_PATH: {
                             type: Scratch.ArgumentType.STRING,
                             defaultValue: 'dir1/dir2'
+                        }
+                    }
+                },
+                {
+                    opcode: 'moveDirectory',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'move directory [DIR_PATH] to [NEW_DIR_PATH]',
+                    arguments: {
+                        DIR_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2'
+                        },
+                        NEW_DIR_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir3'
+                        }
+                    }
+                },
+                {
+                    opcode: 'copyDirectory',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'copy directory [DIR_PATH] to [NEW_DIR_PATH]',
+                    arguments: {
+                        DIR_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2'
+                        },
+                        NEW_DIR_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir3'
                         }
                     }
                 },
@@ -405,25 +640,48 @@ class VirtualFileSystem {
                 {
                     opcode: 'getallfiles',
                     blockType: Scratch.BlockType.REPORTER,
-                    text: 'export all files as JSON',
+                    text: 'export all files as [EXPORT]',
+                    arguments: {
+                        EXPORT: {
+                            type: Scratch.ArgumentType.STRING,
+                            menu: 'exports',
+                            defaultValue: 'json'
+                        }
+                    }
                 },
                 {
                     opcode: 'importfiles',
                     blockType: Scratch.BlockType.COMMAND,
-                    text: 'import files from JSON [FILES]',
+                    text: 'import files from [EXPORT] [FILES]',
                     arguments: {
+                        EXPORT: {
+                            type: Scratch.ArgumentType.STRING,
+                            menu: 'exports',
+                            defaultValue: 'json'
+                        },
                         FILES: {
                             type: Scratch.ArgumentType.STRING,
                             defaultValue: '{}'
                         }
                     }
                 },
+                '---',
                 {
                     opcode: 'clearall',
                     blockType: Scratch.BlockType.COMMAND,
                     text: 'clear entire file system'
                 }
-            ]
+            ],
+            menus: {
+                options: [
+                    { text: 'Modified', value: 'modified' },
+                    { text: 'Created', value: 'created' }
+                ],
+                exports: [
+                    { text: 'JSON', value: 'json' },
+                    { text: 'ZIP (data URL, base64)', value: 'zip' }
+                ]
+            }
         };
     }
 }
