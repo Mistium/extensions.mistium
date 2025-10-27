@@ -114,6 +114,8 @@ class RoturExtension {
 
     this.callJson = {};
 
+    this.systems = [];
+
     fetch("https://raw.githubusercontent.com/Mistium/Origin-OS/main/Resources/info.json")
       .then((response) => {
         if (response.ok) return response.json();
@@ -132,17 +134,13 @@ class RoturExtension {
 
 
     if (typeof window.scaffolding !== "object") {
-      fetch("https://raw.githubusercontent.com/RoturTW/main/main/Implementations/SCRATCH/version.txt")
-        .then((response) => {
-          if (response.ok) return response.text();
-          else throw new Error('Network response was not ok');
-        })
-        .then((data) => {
-          this.outdated = this.version < parseInt(data);
-          Scratch.vm.extensionManager.refreshBlocks();
+      fetch("https://api.rotur.dev/systems")
+        .then(resp => resp.json())
+        .then(data => {
+          this.systems = Object.keys(data);
         })
         .catch((error) => {
-          console.error('Error fetching version:', error);
+          console.error('Error fetching systems:', error);
         });
     }
 
@@ -187,8 +185,8 @@ class RoturExtension {
             defaultValue: "rtr",
           },
           SYSTEM: {
-            type: Scratch.ArgumentType.STRING,
-            defaultValue: "rotur",
+            menu: "systems",
+            defaultValue: "rotur"
           },
           VERSION: {
             type: Scratch.ArgumentType.STRING,
@@ -692,6 +690,10 @@ class RoturExtension {
         }),
       ],
       menus: {
+        systems: {
+          acceptReporters: true,
+          items: "systemsList",
+        },
         packetData: {
           acceptReporters: true,
           items: ["origin", "client", "source port", "payload", "timestamp"],
@@ -821,6 +823,11 @@ class RoturExtension {
       version: args.VERSION,
     };
     this.connectToWebsocket();
+  }
+
+  systemsList() {
+    if (this.systems.length === 0) return ["rotur"];
+    return this.systems;
   }
 
   openPorts() {
@@ -1087,7 +1094,7 @@ class RoturExtension {
     // Create iframe for authentication
     const e = document.createElement("iframe");
     e.id = "rotur-auth";
-    e.src = `https://rotur.dev/auth?styles=${encodeURIComponent(STYLE_URL)}`;
+    e.src = `https://rotur.dev/auth?styles=${encodeURIComponent(STYLE_URL)}&system=${encodeURIComponent(this.my_client.system)}`;
     Object.assign(e.style, {
       width: "100%",
       height: "100%",
