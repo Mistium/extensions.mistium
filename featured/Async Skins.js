@@ -333,7 +333,7 @@
 
       loadingSkins.push(skinName);
       this.blurImage({ URL: url, BLUR: blur }).then((dataUri) => {
-        this._createURLSkin(dataUri).then((skinId) => {
+        this._createURLSkin(dataUri, null, skinName).then((skinId) => {
           loadingSkins = loadingSkins.filter((skin) => skin !== skinName);
           if (!skinId) return;
           createdSkins[skinName] = skinId;
@@ -368,7 +368,7 @@
         oldSkinId = createdSkins[skinName];
       }
 
-      const skinId = await this._createURLSkin(url, rotationCenter);
+      const skinId = await this._createURLSkin(url, rotationCenter, skinName);
       createdSkins[skinName] = skinId;
 
       if (oldSkinId) {
@@ -388,7 +388,7 @@
       }
 
       loadingSkins.push(skinName);
-      this._createURLSkin(url).then((skinId) => {
+      this._createURLSkin(url, null, skinName).then((skinId) => {
         loadingSkins = loadingSkins.filter((skin) => skin !== skinName);
         if (!skinId) return;
         createdSkins[skinName] = skinId;
@@ -632,7 +632,7 @@
       return target;
     }
 
-    async _createURLSkin(URL, rotationCenter) {
+    async _createURLSkin(URL, rotationCenter, skinName) {
       let imageData;
       if (await Scratch.canFetch(URL)) {
         imageData = await Scratch.fetch(URL);
@@ -645,7 +645,6 @@
       if (contentType === "image/svg+xml") {
         return renderer.createSVGSkin(await imageData.text(), rotationCenter);
       } else if (contentType === "image/gif") {
-        const skinName = this._getCurrentSkinName(URL);
         return await this._decodeGif(skinName, imageData.body);
       } else if (
         contentType === "image/png" ||
@@ -662,8 +661,6 @@
     }
 
     _getCurrentSkinName(url) {
-      // Helper to find the skin name being created from URL
-      // This is a workaround since we need the skin name in _createURLSkin
       for (const skinName in createdSkins) {
         return skinName;
       }
