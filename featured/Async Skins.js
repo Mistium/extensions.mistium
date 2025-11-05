@@ -660,13 +660,6 @@
       }
     }
 
-    _getCurrentSkinName(url) {
-      for (const skinName in createdSkins) {
-        return skinName;
-      }
-      return "unknown";
-    }
-
     _getTargets() {
       const spriteNames = [
         { text: "myself", value: "_myself_" },
