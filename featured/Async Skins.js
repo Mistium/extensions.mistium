@@ -29,7 +29,7 @@
    * @returns {Promise<void>}
    */
   const svgSkinFinishedLoading = (svgSkin) => {
-    new Promise((resolve) => {
+    return new Promise((resolve) => {
       if (svgSkin._svgImageLoaded) {
         resolve();
       } else {
@@ -50,6 +50,8 @@
 
   var createdSkins = [];
   var loadingSkins = [];
+  var gifDecoders = {};
+  var gifAnimationStates = {};
 
   class Skins {
     constructor() {
@@ -59,6 +61,7 @@
 
       runtime.on("PROJECT_STOP_ALL", () => {
         this._refreshTargets();
+        this._stopAllGifAnimations();
       });
     }
 
@@ -381,6 +384,7 @@
       let oldSkinId = null;
       if (createdSkins[skinName]) {
         oldSkinId = createdSkins[skinName];
+        this._stopGifAnimation(skinName);
       }
 
       loadingSkins.push(skinName);
@@ -467,6 +471,7 @@
       if (!createdSkins[skinName]) return;
       const skinId = createdSkins[skinName];
 
+      this._stopGifAnimation(skinName);
       this._refreshTargetsFromID(skinId, true);
       renderer.destroySkin(skinId);
       Reflect.deleteProperty(createdSkins, skinName);
@@ -474,6 +479,7 @@
 
     deleteAllSkins() {
       this._refreshTargets();
+      this._stopAllGifAnimations();
       for (const skinName in createdSkins) {
         const skinId = createdSkins[skinName];
         renderer.destroySkin(skinId);
@@ -489,6 +495,104 @@
       const skinId = createdSkins[skinName];
 
       this._refreshTargetsFromID(skinId, true);
+    }
+
+    // GIF Animation Functions
+
+    _stopGifAnimation(skinName) {
+      if (gifAnimationStates[skinName]) {
+        gifAnimationStates[skinName].stopped = true;
+        delete gifAnimationStates[skinName];
+      }
+      if (gifDecoders[skinName]) {
+        delete gifDecoders[skinName];
+      }
+    }
+
+    _stopAllGifAnimations() {
+      for (const skinName in gifAnimationStates) {
+        gifAnimationStates[skinName].stopped = true;
+      }
+      gifAnimationStates = {};
+      gifDecoders = {};
+    }
+
+    async _renderGifFrame(skinName, result, canvas) {
+      const state = gifAnimationStates[skinName];
+      if (!state || state.stopped) return;
+
+      const canvasContext = canvas.getContext("2d");
+      canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+      canvasContext.drawImage(result.image, 0, 0);
+
+      const skinId = createdSkins[skinName];
+      if (skinId && renderer._allSkins[skinId]) {
+        renderer.updateBitmapSkin(skinId, canvas, 1);
+      }
+
+      const decoder = gifDecoders[skinName];
+      if (!decoder) return;
+
+      const track = decoder.tracks.selectedTrack;
+
+      if (decoder.complete) {
+        if (track.frameCount === 1) return;
+        if (state.frameIndex + 1 >= track.frameCount) {
+          state.frameIndex = 0;
+        } else {
+          state.frameIndex++;
+        }
+      } else {
+        state.frameIndex++;
+      }
+
+      try {
+        const nextResult = await decoder.decode({ frameIndex: state.frameIndex });
+        const duration = result.image.duration / 1000.0;
+        setTimeout(() => {
+          this._renderGifFrame(skinName, nextResult, canvas);
+        }, duration);
+      } catch (e) {
+        if (e instanceof RangeError) {
+          state.frameIndex = 0;
+          try {
+            const nextResult = await decoder.decode({ frameIndex: state.frameIndex });
+            this._renderGifFrame(skinName, nextResult, canvas);
+          } catch (err) {
+            console.error("Error decoding GIF frame:", err);
+          }
+        } else {
+          console.error("Error in GIF animation:", e);
+        }
+      }
+    }
+
+    async _decodeGif(skinName, imageByteStream) {
+      if (!window.ImageDecoder) {
+        console.warn("ImageDecoder API not available. GIF animation will not work.");
+        return null;
+      }
+
+      try {
+        const decoder = new ImageDecoder({ data: imageByteStream, type: "image/gif" });
+        gifDecoders[skinName] = decoder;
+        gifAnimationStates[skinName] = { frameIndex: 0, stopped: false };
+
+        const result = await decoder.decode({ frameIndex: 0 });
+        
+        const canvas = document.createElement("canvas");
+        canvas.width = result.image.displayWidth;
+        canvas.height = result.image.displayHeight;
+
+        const skinId = renderer.createBitmapSkin(canvas);
+        
+        this._renderGifFrame(skinName, result, canvas);
+
+        return skinId;
+      } catch (e) {
+        console.error("Error decoding GIF:", e);
+        return null;
+      }
     }
 
     // Utility Functions
@@ -537,8 +641,12 @@
       }
 
       const contentType = imageData.headers.get("Content-Type");
+      
       if (contentType === "image/svg+xml") {
         return renderer.createSVGSkin(await imageData.text(), rotationCenter);
+      } else if (contentType === "image/gif") {
+        const skinName = this._getCurrentSkinName(URL);
+        return await this._decodeGif(skinName, imageData.body);
       } else if (
         contentType === "image/png" ||
         contentType === "image/jpeg" ||
@@ -551,6 +659,15 @@
         await output.decode();
         return renderer.createBitmapSkin(output);
       }
+    }
+
+    _getCurrentSkinName(url) {
+      // Helper to find the skin name being created from URL
+      // This is a workaround since we need the skin name in _createURLSkin
+      for (const skinName in createdSkins) {
+        return skinName;
+      }
+      return "unknown";
     }
 
     _getTargets() {
