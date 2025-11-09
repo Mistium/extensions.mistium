@@ -109,7 +109,7 @@ class RoturExtension {
     this.lastJoined = "";
     this.lastLeft = "";
 
-    this.version = 7;
+    this.version = 8;
     this.outdated = false;
 
     this.callJson = {};
@@ -130,9 +130,6 @@ class RoturExtension {
         this.server = "wss://rotur.mistium.com";
       });
 
-    this._initializeBadges(); // Start fetching badges
-
-
     if (typeof window.scaffolding !== "object") {
       fetch("https://api.rotur.dev/systems")
         .then(resp => resp.json())
@@ -148,22 +145,6 @@ class RoturExtension {
 
     vm.on("PROJECT_RUN_START", cleanUpLogin);
     vm.on("PROJECT_RUN_STOP", cleanUpLogin);
-  }
-
-  async _initializeBadges() {
-    await this._getBadges(); // Wait for the fetch operation to complete
-  }
-
-  async _getBadges() {
-    try {
-      const response = await fetch("https://raw.githubusercontent.com/RoturTW/Badges/main/badges.json");
-      if (!response.ok) throw new Error('Network response was not ok');
-
-      const data = await response.json();
-      this.badges = data;
-    } catch (error) {
-      this.badges = [];
-    }
   }
 
   openUpdate() {
@@ -190,7 +171,7 @@ class RoturExtension {
           },
           VERSION: {
             type: Scratch.ArgumentType.STRING,
-            defaultValue: "v5",
+            defaultValue: "v" + this.version,
           },
         }),
         blocks.boolean("serverOnline", "account server online"),
@@ -232,7 +213,7 @@ class RoturExtension {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "token",
           },
-        }, { hideFromPalette: true }),
+        }),
         blocks.reporter("register", "register with username: [USERNAME] and password: [PASSWORD]", {
           USERNAME: {
             type: Scratch.ArgumentType.STRING,
@@ -554,27 +535,28 @@ class RoturExtension {
         blocks.event("whenBalanceChanged", "when balance changed"),
         blocks.reporter("getTransactions", "get transactions"),
         blocks.separator(),
-        blocks.label("Owned Items"),
-        blocks.reporter("getMyOwnedItems", "items owned by me"),
-        blocks.reporter("itemData", "data of item (ID) [ITEM]", {
+        blocks.label("My Keys"),
+        blocks.button("Mange My Keys", "openKeyManager"),
+        blocks.reporter("getMyOwnedItems", "my keys"),
+        blocks.reporter("itemData", "get key data for id: [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
         }),
-        blocks.reporter("purchaseItem", "purchase item (ID) [ITEM]", {
+        blocks.reporter("purchaseItem", "purchase key with id: [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
         }),
-        blocks.reporter("itemInfo", "info of item (ID) [ITEM]", {
+        blocks.reporter("itemInfo", "get key info for id: [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
         }),
-        blocks.boolean("ownsItem", "do I own item (ID) [ITEM]", {
+        blocks.boolean("ownsItem", "do I own key of id: [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
@@ -585,33 +567,12 @@ class RoturExtension {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "1",
           },
-        }),
+        }, { hideFromPalette: true }),
         blocks.reporter("getPublicItemPages", "get public item pages", {}, {
-          disableMonitor: true
+          disableMonitor: true,
+          hideFromPalette: true
         }),
-        blocks.separator(),
-        blocks.label("Created Items"),
-        blocks.button("READ ME BEFORE MAKING ITEMS", "openItemsDocs"),
-        blocks.reporter("getMyCreatedItems", "items - created by me"),
-        blocks.reporter("createItem", "items - create with name: [NAME] and description: [DESCRIPTION] and price: [PRICE] and data: [CODE]", {
-          NAME: {
-            type: Scratch.ArgumentType.STRING,
-            defaultValue: "item",
-          },
-          DESCRIPTION: {
-            type: Scratch.ArgumentType.STRING,
-            defaultValue: "description",
-          },
-          PRICE: {
-            type: Scratch.ArgumentType.STRING,
-            defaultValue: "0",
-          },
-          CODE: {
-            type: Scratch.ArgumentType.STRING,
-            defaultValue: "code",
-          }
-        }),
-        blocks.reporter("updateItem", "items - update [KEY] to [DATA] for id: [ITEM]", {
+        blocks.reporter("updateItem", "keys - update [KEY] to [DATA] for id: [KEY]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "ID",
@@ -624,32 +585,32 @@ class RoturExtension {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "data",
           },
-        }),
-        blocks.reporter("deleteItem", "items - delete (ID) [ITEM]", {
+        }, { hideFromPalette: true }),
+        blocks.reporter("deleteItem", "keys - delete (ID) [KEY]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
-        }),
+        }, { hideFromPalette: true }),
         blocks.reporter("hideItem", "items - disable purchases on (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
-        }),
+        }, { hideFromPalette: true }),
         blocks.reporter("showItem", "items - enable purchases on (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
           },
-        }),
+        }, { hideFromPalette: true }),
         blocks.separator(),
         blocks.label("Badges"),
         blocks.button("Badge Docs", "openBadgesDocs"),
         blocks.boolean("gotBadgesSuccessfully", "badges loaded successfully"),
-        blocks.reporter("userBadges", "User Badges"),
-        blocks.reporter("userBadgeCount", "user badge count"),
-        blocks.boolean("hasBadge", "user has badge [BADGE]", {
+        blocks.reporter("userBadges", "all user badges"),
+        blocks.reporter("userBadgeCount", "total badge count"),
+        blocks.boolean("hasBadge", "does user have badge: [BADGE]", {
           BADGE: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "badge",
@@ -661,8 +622,8 @@ class RoturExtension {
             defaultValue: "badge",
           },
         }),
-        blocks.reporter("allBadges", "all badges"),
-        blocks.command("redownloadBadges", "redownload badges"),
+        blocks.reporter("allBadges", "all badges", {}, { hideFromPalette: true }),
+        blocks.command("redownloadBadges", "redownload badges", {}, { hideFromPalette: true }),
         blocks.separator(),
         blocks.label("Voice Calling"),
         blocks.button("Example Project", "openRoturVoiceExample"),
@@ -775,6 +736,10 @@ class RoturExtension {
     window.open("https://turbowarp.org/editor?project_url=https://extensions.mistium.com/examples/roturEXTCallExample.sb3")
   }
 
+  openKeyManager() {
+    window.open("https://rotur.dev/key-manager?auth=" + this.userToken);
+  }
+
   openDangerZone() {
     this.showDangerous = true;
     Scratch.vm.extensionManager.refreshBlocks();
@@ -850,32 +815,16 @@ class RoturExtension {
 
   myFriends() {
     if (!(this.authenticated && this.is_connected)) return ["Not Authenticated"];
-    let keys = this.user["sys.friends"];
-    if (typeof keys === "string") {
-      try {
-        keys = JSON.parse(keys);
-      } catch (e) {
-        console.error("Failed to parse friends list:", e);
-        return ["Invalid Friends List"];
-      }
-    }
-    if (!keys || keys.length === 0) return ["No Friends"];
-    else return keys;
+    let out = this.friends.list;
+    if (out.length === 0) return ["No Friends"];
+    else return out;
   }
 
   myRequests() {
     if (!(this.authenticated && this.is_connected)) return ["Not Authenticated"];
-    let keys = this.user["sys.requests"];
-    if (typeof keys === "string") {
-      try {
-        keys = JSON.parse(keys);
-      } catch (e) {
-        console.error("Failed to parse requests list:", e);
-        return ["Invalid Requests List"];
-      }
-    }
-    if (!keys || keys.length === 0) return ["No Requests"];
-    else return keys;
+    let out = this.friends.requests;
+    if (out.length === 0) return ["No Requests"];
+    else return out;
   }
 
   serverOnline() {
@@ -981,6 +930,11 @@ class RoturExtension {
                   } else {
                     Scratch.vm.runtime.startHats("roturEXT_whenFriendRequestAccepted");
                   }
+                  this.friends.requests = packet.payload.value;
+                }
+                if (packet.payload.key === "sys.friends") {
+                  this.friends.list = packet.payload.value;
+                  break;
                 }
                 if (packet.payload.key === "sys.currency") {
                   Scratch.vm.runtime.startHats("roturEXT_whenBalanceChanged");
@@ -988,14 +942,13 @@ class RoturExtension {
             }
             this.user[packet.payload.key] = packet.payload.value;
           } else {
-            console.log(packet);
             if (packet.val && packet.val.target) {
               this.packets[packet.val.target] ??= [];
               this.packets[packet.val.target].push(packet);
               Scratch.vm.runtime.startHats("roturEXT_whenMessageReceived");
               delete packet.val;
             }
-          }        } else {
+          }
           if (packet.source_command === "sync_set") {
             this.syncedVariables[packet.origin] ||= {};
             this.syncedVariables[packet.origin][packet.payload.key] = packet.payload.value;
@@ -2122,91 +2075,28 @@ class RoturExtension {
       });
   }
 
-  createItem(args) {
-    if (!this.is_connected) return "Not Connected";
-    if (!this.authenticated) return "Not Logged In";
-
-    const url = `https://social.rotur.dev/keys/create?auth=${this.userToken}&data=${encodeURIComponent(args.CODE)}&price=${encodeURIComponent(args.PRICE)}`;
-
-    return fetch(url)
-      .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
-          return "Item Created";
-        } else {
-          return data.message || "Creation failed";
-        }
-      })
-      .catch(error => {
-        return `Error: ${error.message}`;
-      });
+  createItem() {
+    return "";
   }
 
-  updateItem(args) {
-    if (!this.is_connected) return "Not Connected";
-    if (!this.authenticated) return "Not Logged In";
-
-    let updateUrl = `https://social.rotur.dev/keys/update/${args.ITEM}?auth=${this.userToken}&key=${args.ITEM}`;
-
-    if (args.KEY === "data") {
-      updateUrl += `&data=${encodeURIComponent(args.DATA)}`;
-    } else {
-      return "Only data updates are supported through the API. Use the key manager for other properties.";
-    }
-
-    return fetch(updateUrl)
-      .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
-          return "Item Updated";
-        } else {
-          return data.message || "Update failed";
-        }
-      })
-      .catch(error => {
-        return `Error: ${error.message}`;
-      });
+  updateItem() {
+    console.warn("Key blocks nolonger work within the rotur extension. Please use the key manager at https://rotur.dev/key-manager");
+    return "";
   }
 
-  deleteItem(args) {
-    if (!this.is_connected) return "Not Connected";
-    if (!this.authenticated) return "Not Logged In";
-
-    return fetch(`https://social.rotur.dev/keys/delete/${args.ITEM}?auth=${this.userToken}`)
-      .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
-          return "Item Deleted";
-        } else {
-          return data.message || "Deletion failed";
-        }
-      })
-      .catch(error => {
-        return `Error: ${error.message}`;
-      });
+  deleteItem() {
+    console.warn("Key blocks nolonger work within the rotur extension. Please use the key manager at https://rotur.dev/key-manager");
+    return "";
   }
 
-  hideItem(args) {
-    if (!this.is_connected) return "Not Connected";
-    if (!this.authenticated) return "Not Logged In";
-
-    return "Please use the key manager at https://rotur.dev/key-manager to hide keys";
+  hideItem() {
+    console.warn("Key blocks nolonger work within the rotur extension. Please use the key manager at https://rotur.dev/key-manager");
+    return "";
   }
 
-  showItem(args) {
-    if (!this.is_connected) return "Not Connected";
-    if (!this.authenticated) return "Not Logged In";
-
-    return "Please use the key manager at https://rotur.dev/key-manager to show keys";
+  showItem() {
+    console.warn("Key blocks nolonger work within the rotur extension. Please use the key manager at https://rotur.dev/key-manager");
+    return "";
   }
 
   RAWgetAllPackets() {
@@ -2226,7 +2116,7 @@ class RoturExtension {
   }
 
   gotBadgesSuccessfully() {
-    return JSON.stringify(this.badges) !== "[]";
+    return true;
   }
 
   userBadges() {
@@ -2244,20 +2134,15 @@ class RoturExtension {
   hasBadge(args) {
     if (!this.is_connected) return false;
     if (!this.authenticated) return false;
-    return this.user["sys.badges"].includes(args.BADGE);
+    return this.user["sys.badges"].some(badge => badge === args.BADGE);
   }
 
   allBadges() {
-    console.log(this.badges);
-    return JSON.stringify(Object.keys(this.badges));
+    return "{}";
   }
 
-  badgeInfo(args) {
-    return JSON.stringify(this.badges?.[args.BADGE] ?? {});
-  }
-
-  redownloadBadges() {
-    this._initializeBadges()
+  badgeInfo() {
+    return "{}";
   }
 
   callUser(args) {
