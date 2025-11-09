@@ -10,6 +10,9 @@
 
 (function (Scratch) {
 
+  const vm = Scratch.vm;
+  const runtime = vm.runtime;
+  const renderer = runtime.renderer;
   const cast = Scratch.Cast;
 
   class CanvasExtension {
@@ -115,6 +118,17 @@
             opcode: 'getCanvasY',
             blockType: Scratch.BlockType.REPORTER,
             text: 'get y of [CANVAS_ID]',
+            arguments: {
+              CANVAS_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'canvas1'
+              }
+            }
+          },
+          {
+            opcode: 'showCanvasOn',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'show canvas [CANVAS_ID] on myself',
             arguments: {
               CANVAS_ID: {
                 type: Scratch.ArgumentType.STRING,
@@ -616,6 +630,11 @@
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return;
+      if (canvas.skin) {
+        const skinId = canvas.skin;
+        this._setSkin(null, null);
+        renderer.destroySkin(skinId);
+      }
       vm.renderer.removeOverlay(canvas);
       canvas.remove();
       delete this.canvases[CANVAS_ID];
@@ -623,6 +642,11 @@
 
     deleteAllCanvases() {
       for (const canvas of Object.values(this.canvases)) {
+        if (canvas.skin) {
+          const skinId = canvas.skin;
+          this._setSkin(null, null);
+          renderer.destroySkin(skinId);
+        }
         vm.renderer.removeOverlay(canvas);
         canvas.remove();
       }
@@ -782,6 +806,28 @@
       if (!canvas) return 0;
       const stageHeight = vm.runtime.stageHeight;
       return stageHeight / 2 - (parseInt(canvas.style.top) + canvas.height / 2);
+    }
+
+    _setSkin(skinId, target) {
+      if (!target) return;
+      const drawableID = target.drawableID;
+
+      renderer._allDrawables[drawableID].skin = renderer._allSkins[skinId];
+    }
+
+    showCanvasOn({ CANVAS_ID }, util) {
+      CANVAS_ID = cast.toString(CANVAS_ID);
+      const canvas = this.canvases[CANVAS_ID];
+      if (!canvas) return;
+
+      const skinId = canvas.skin;
+      if (skinId && renderer._allSkins[skinId]) {
+        renderer.updateBitmapSkin(skinId, canvas, 1);
+      } else {
+        const skinId = renderer.createBitmapSkin(canvas);
+        this.canvases[CANVAS_ID].skin = skinId;
+      }
+      this._setSkin(skinId, util.target);
     }
 
     getCanvasAs({ CANVAS_ID, TYPE }) {
