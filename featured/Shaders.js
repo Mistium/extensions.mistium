@@ -180,6 +180,8 @@
             shader.height = height;
             shader.gl.canvas.width = width;
             shader.gl.canvas.height = height;
+            shader.outputCanvas.width = width;
+            shader.outputCanvas.height = height;
         }
 
         setUniform(args) {
