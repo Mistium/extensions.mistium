@@ -930,5 +930,5 @@
       return JSON.stringify(Object.keys(this.canvases));
     }
   }
-  Scratch.extensions.register(new CanvasExtension());
+  Scratch.extensions.register(Scratch.vm.runtime.ext_MistiumCanvas = new CanvasExtension());
 })(Scratch);
