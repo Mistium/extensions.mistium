@@ -77,7 +77,12 @@
                             ID: { type: Scratch.ArgumentType.STRING, defaultValue: 'shader1' },
                         },
                     },
-                    
+                    {
+                        opcode: 'allShaders',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'all shaders',
+                    },
+
                     "---",
                     {
                         opcode: 'vec2',
@@ -313,8 +318,13 @@
 
             const { gl, program } = shader;
             gl.deleteProgram(program);
+            gl.getExtension('WEBGL_lose_context')?.loseContext();
             delete this.shaders[id];
             delete this.canvases[id];
+        }
+
+        allShaders() {
+            return JSON.stringify(Object.keys(this.shaders));
         }
 
         vec2(args) {
