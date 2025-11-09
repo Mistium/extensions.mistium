@@ -283,34 +283,20 @@
             const glCanvas = this.canvases[id];
             if (!glCanvas) return;
 
-            const gl = glCanvas.getContext('webgl', { preserveDrawingBuffer: true });
-            if (!gl) {
-                console.error('No WebGL context found.');
-                return;
-            }
-
-            if (!shader.outputCanvas) {
-                const outputCanvas = document.createElement('canvas');
-                outputCanvas.width = glCanvas.width;
-                outputCanvas.height = glCanvas.height;
-                shader.outputCanvas = outputCanvas;
-            }
-
             this.runShader({ ID: id });
-            const outputCanvas = shader.outputCanvas;
-            const ctx = outputCanvas.getContext('2d');
-            ctx.drawImage(glCanvas, 0, 0);
+            glCanvas.reusable = false;
 
             const renderer = vm.renderer;
-            let skinId = outputCanvas.skin;
+            let skinId = glCanvas.skin;
             if (skinId && renderer._allSkins[skinId]) {
-                renderer.updateBitmapSkin(skinId, outputCanvas, 1);
+                renderer.updateBitmapSkin(skinId, glCanvas, 1);
             } else {
-                skinId = renderer.createBitmapSkin(outputCanvas);
-                outputCanvas.skin = skinId;
+                skinId = renderer.createBitmapSkin(glCanvas);
+                glCanvas.skin = skinId;
             }
 
             this._setSkin(skinId, util.target);
+            return;
         }
 
         deleteShader(args) {
