@@ -53,11 +53,167 @@
   const renderer = runtime.renderer;
   const Cast = Scratch.Cast;
 
-  var createdSkins = [];
-  var loadingSkins = [];
-  var gifDecoders = {};
-  var gifAnimationStates = {};
-  var gifFrameCache = {};
+  const createdSkins = new Map();
+  const loadingSkins = new Set();
+  
+  const gifState = {
+    decoders: new Map(),
+    animations: new Map(),
+    frameCache: new Map(),
+  };
+  class GifAnimator {
+    constructor(skinName, decoder, skinId, renderer) {
+      this.skinName = skinName;
+      this.decoder = decoder;
+      this.skinId = skinId;
+      this.renderer = renderer;
+      this.frameIndex = 0;
+      this.stopped = false;
+      this.paused = false;
+      this.timeoutId = null;
+      this.rafId = null;
+      this.remainingTime = 0;
+      this.currentDuration = 0;
+      this.startTime = 0;
+      this.track = decoder.tracks.selectedTrack;
+      this.frameCount = this.track.frameCount;
+      
+      gifState.frameCache.set(skinName, new Map());
+    }
+
+    async preloadFrames(count = 10) {
+      const framesToLoad = Math.min(this.frameCount, count);
+      const cache = gifState.frameCache.get(this.skinName);
+      
+      const preloadPromises = [];
+      for (let i = 1; i < framesToLoad; i++) {
+        preloadPromises.push(this._cacheFrame(i, cache));
+      }
+      
+      await Promise.allSettled(preloadPromises);
+    }
+
+    async _cacheFrame(frameIndex, cache) {
+      if (cache.has(frameIndex)) return;
+      
+      try {
+        const result = await this.decoder.decode({ frameIndex });
+        const bitmap = await createImageBitmap(result.image);
+        const duration = result.image.duration / 1000.0 || 100;
+        
+        cache.set(frameIndex, { bitmap, duration });
+      } catch (e) {
+        console.warn(`Failed to cache frame ${frameIndex}:`, e);
+      }
+    }
+
+    async renderFrame(frameIndex) {
+      if (this.stopped || this.paused || !createdSkins.has(this.skinName)) {
+        if (this.stopped) this.cleanup();
+        return;
+      }
+
+      const cache = gifState.frameCache.get(this.skinName);
+      if (!cache) {
+        this.cleanup();
+        return;
+      }
+
+      try {
+        let frameData = cache.get(frameIndex);
+        
+        if (!frameData) {
+          await this._cacheFrame(frameIndex, cache);
+          frameData = cache.get(frameIndex);
+          if (!frameData) {
+            this.stop();
+            return;
+          }
+        }
+
+        const { bitmap, duration } = frameData;
+        
+        this.renderer.updateBitmapSkin(this.skinId, bitmap, 1);
+
+        this.frameIndex = (frameIndex + 1) % this.frameCount;
+        this.currentDuration = duration;
+        this.startTime = Date.now();
+
+        this.timeoutId = setTimeout(() => {
+          this.rafId = requestAnimationFrame(() => this.renderFrame(this.frameIndex));
+        }, duration);
+
+      } catch (e) {
+        console.error("Error rendering GIF frame:", e);
+        if (frameIndex !== 0) {
+          this.frameIndex = 0;
+          this.renderFrame(0);
+        } else {
+          this.stop();
+        }
+      }
+    }
+
+    pause() {
+      this.paused = true;
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+        this.remainingTime = this.currentDuration - (Date.now() - this.startTime);
+        if (this.remainingTime < 0) this.remainingTime = 0;
+      }
+      if (this.rafId) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
+    }
+
+    resume() {
+      if (!this.paused || this.stopped) return;
+      this.paused = false;
+      const timeToWait = this.remainingTime > 0 ? this.remainingTime : this.currentDuration;
+      this.remainingTime = 0;
+      if (timeToWait > 0) {
+        this.timeoutId = setTimeout(() => {
+          this.rafId = requestAnimationFrame(() => this.renderFrame(this.frameIndex));
+        }, timeToWait);
+      }
+    }
+
+    stop() {
+      this.stopped = true;
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+      }
+      if (this.rafId) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
+    }
+
+    cleanup() {
+      this.stop();
+      
+      const cache = gifState.frameCache.get(this.skinName);
+      if (cache) {
+        for (const frameData of cache.values()) {
+          if (frameData.bitmap && typeof frameData.bitmap.close === 'function') {
+            frameData.bitmap.close();
+          }
+        }
+        gifState.frameCache.delete(this.skinName);
+      }
+      
+      const decoder = gifState.decoders.get(this.skinName);
+      if (decoder) {
+        decoder.close();
+        gifState.decoders.delete(this.skinName);
+      }
+      
+      gifState.animations.delete(this.skinName);
+    }
+  }
 
   class Skins {
     constructor() {
@@ -69,6 +225,25 @@
         this._refreshTargets();
         this._stopAllGifAnimations();
       });
+
+      runtime.on("PROJECT_LOADED", () => {
+        this.deleteAllSkins();
+      });
+
+      this.isPaused = vm.runtime.ioDevices?.clock?._paused ?? false;
+      this.pauseChecker = setInterval(() => {
+        const currentPaused = vm.runtime.ioDevices?.clock?._paused ?? false;
+        if (currentPaused !== this.isPaused) {
+          this.isPaused = currentPaused;
+          for (const animator of gifState.animations.values()) {
+            if (this.isPaused) {
+              animator.pause();
+            } else {
+              animator.resume();
+            }
+          }
+        }
+      }, 50);
     }
 
     getInfo() {
@@ -293,13 +468,13 @@
       const svgData = Cast.toString(args.SVG);
 
       let oldSkinId = null;
-      if (createdSkins[skinName]) {
-        oldSkinId = createdSkins[skinName];
+      if (createdSkins.has(skinName)) {
+        oldSkinId = createdSkins.get(skinName);
       }
 
       // This generally takes a few frames, so yield the block
       const skinId = renderer.createSVGSkin(svgData);
-      createdSkins[skinName] = skinId;
+      createdSkins.set(skinName, skinId);
 
       await svgSkinFinishedLoading(renderer._allSkins[skinId]);
 
@@ -313,16 +488,19 @@
       const dataUri = args.URL;
       const blur = args.BLUR;
       return new Promise((resolve, reject) => {
-        var image = new Image();
+        const image = new Image();
         image.crossOrigin = "anonymous";
         image.onload = function () {
-          var canvas = document.createElement("canvas");
-          var ctx = canvas.getContext("2d");
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
           canvas.width = image.width;
           canvas.height = image.height;
           ctx.filter = "blur(" + blur + "px)";
           ctx.drawImage(image, 0, 0, image.width, image.height);
-          resolve(canvas.toDataURL());
+          const blurredDataUrl = canvas.toDataURL();
+          
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          resolve(blurredDataUrl);
         };
         image.onerror = function () {
           reject(new Error("Failed to load image from URL: " + dataUri));
@@ -337,23 +515,28 @@
       const blur = Cast.toNumber(args.BLUR);
 
       let oldSkinId = null;
-      if (createdSkins[skinName]) {
-        oldSkinId = createdSkins[skinName];
+      if (createdSkins.has(skinName)) {
+        oldSkinId = createdSkins.get(skinName);
+        this._stopGifAnimation(skinName);
       }
 
-      loadingSkins.push(skinName);
-      this.blurImage({ URL: url, BLUR: blur }).then((dataUri) => {
-        this._createURLSkin(dataUri, null, skinName).then((skinId) => {
-          loadingSkins = loadingSkins.filter((skin) => skin !== skinName);
-          if (!skinId) return;
-          createdSkins[skinName] = skinId;
+      loadingSkins.add(skinName);
+      try {
+        const dataUri = await this.blurImage({ URL: url, BLUR: blur });
+        const skinId = await this._createURLSkin(dataUri, null, skinName);
+        loadingSkins.delete(skinName);
+        
+        if (!skinId) return;
+        createdSkins.set(skinName, skinId);
 
-          if (oldSkinId) {
-            this._refreshTargetsFromID(oldSkinId, false, skinId);
-            renderer.destroySkin(oldSkinId);
-          }
-        });
-      });
+        if (oldSkinId) {
+          this._refreshTargetsFromID(oldSkinId, false, skinId);
+          renderer.destroySkin(oldSkinId);
+        }
+      } catch (error) {
+        loadingSkins.delete(skinName);
+        console.error("Failed to create blurred skin:", error);
+      }
     }
 
     async registerCostumeSkin(args, util) {
@@ -374,12 +557,15 @@
       if (!rotationCenterX || !rotationCenterY) rotationCenter = null;
 
       let oldSkinId = null;
-      if (createdSkins[skinName]) {
-        oldSkinId = createdSkins[skinName];
+      if (createdSkins.has(skinName)) {
+        oldSkinId = createdSkins.get(skinName);
+        this._stopGifAnimation(skinName);
       }
 
       const skinId = await this._createURLSkin(url, rotationCenter, skinName);
-      createdSkins[skinName] = skinId;
+      if (!skinId) return;
+      
+      createdSkins.set(skinName, skinId);
 
       if (oldSkinId) {
         this._refreshTargetsFromID(oldSkinId, false, skinId);
@@ -387,53 +573,58 @@
       }
     }
 
-    registerURLSkin(args) {
+    async registerURLSkin(args) {
       const skinName = `lms-${Cast.toString(args.NAME)}`;
       const url = Cast.toString(args.URL);
 
       let oldSkinId = null;
-      if (createdSkins[skinName]) {
-        oldSkinId = createdSkins[skinName];
+      if (createdSkins.has(skinName)) {
+        oldSkinId = createdSkins.get(skinName);
         this._stopGifAnimation(skinName);
       }
 
-      loadingSkins.push(skinName);
-      this._createURLSkin(url, null, skinName).then((skinId) => {
-        loadingSkins = loadingSkins.filter((skin) => skin !== skinName);
+      loadingSkins.add(skinName);
+      try {
+        const skinId = await this._createURLSkin(url, null, skinName);
+        loadingSkins.delete(skinName);
+        
         if (!skinId) return;
-        createdSkins[skinName] = skinId;
+        createdSkins.set(skinName, skinId);
 
         if (oldSkinId) {
           this._refreshTargetsFromID(oldSkinId, false, skinId);
           renderer.destroySkin(oldSkinId);
         }
-      });
+      } catch (error) {
+        loadingSkins.delete(skinName);
+        console.error("Failed to create URL skin:", error);
+      }
     }
 
     getSkinLoaded(args) {
       const skinName = `lms-${Cast.toString(args.NAME)}`;
-      return !!createdSkins[skinName];
+      return createdSkins.has(skinName);
     }
 
     getSkinLoading(args) {
       const skinName = `lms-${Cast.toString(args.NAME)}`;
-      return loadingSkins.includes(skinName);
+      return loadingSkins.has(skinName);
     }
 
     getSkins() {
-      return JSON.stringify(Object.keys(createdSkins).map((skin) => skin.replace(/^lms\-/, "")));
+      return JSON.stringify(Array.from(createdSkins.keys()).map((skin) => skin.replace(/^lms\-/, "")));
     }
 
     setSkin(args, util) {
       const skinName = `lms-${Cast.toString(args.NAME)}`;
-      if (!createdSkins[skinName]) return;
+      if (!createdSkins.has(skinName)) return;
 
       const targetName = Cast.toString(args.TARGET);
       const target = this._getTargetFromMenu(targetName, util);
       if (!target) return;
       const drawableID = target.drawableID;
 
-      const skinId = createdSkins[skinName];
+      const skinId = createdSkins.get(skinName);
       renderer._allDrawables[drawableID].skin = renderer._allSkins[skinId];
     }
 
@@ -447,7 +638,7 @@
     getCurrentSkin(args, util) {
       const targetName = Cast.toString(args.TARGET);
       const target = this._getTargetFromMenu(targetName, util);
-      if (!target) return;
+      if (!target) return "";
       const drawableID = target.drawableID;
 
       const skinId = renderer._allDrawables[drawableID].skin._id;
@@ -459,8 +650,8 @@
       const skins = renderer._allSkins;
       const skinName = `lms-${Cast.toString(args.NAME)}`;
 
-      if (!createdSkins[skinName]) return 0;
-      const skinId = createdSkins[skinName];
+      if (!createdSkins.has(skinName)) return 0;
+      const skinId = createdSkins.get(skinName);
       if (!skins[skinId]) return 0;
 
       const size = skins[skinId].size;
@@ -472,7 +663,8 @@
         case "height":
           return Math.ceil(size[1]);
         case "frames":
-          return gifFrameCache[skinName] ? Object.keys(gifFrameCache[skinName].frames).length : 0;
+          const cache = gifState.frameCache.get(skinName);
+          return cache ? cache.size : 0;
         default:
           return 0;
       }
@@ -480,137 +672,53 @@
 
     deleteSkin(args) {
       const skinName = `lms-${Cast.toString(args.NAME)}`;
-      if (!createdSkins[skinName]) return;
-      const skinId = createdSkins[skinName];
+      if (!createdSkins.has(skinName)) return;
+      const skinId = createdSkins.get(skinName);
 
       this._stopGifAnimation(skinName);
       this._refreshTargetsFromID(skinId, true);
       renderer.destroySkin(skinId);
-      Reflect.deleteProperty(createdSkins, skinName);
+      createdSkins.delete(skinName);
+      loadingSkins.delete(skinName);
     }
 
     deleteAllSkins() {
       this._refreshTargets();
       this._stopAllGifAnimations();
-      for (const skinName in createdSkins) {
-        const skinId = createdSkins[skinName];
+      
+      for (const [skinName, skinId] of createdSkins) {
         renderer.destroySkin(skinId);
-        Reflect.deleteProperty(createdSkins, skinName);
       }
-      loadingSkins = [];
-      createdSkins = [];
+      
+      createdSkins.clear();
+      loadingSkins.clear();
     }
 
     restoreTargets(args) {
       const skinName = `lms-${Cast.toString(args.NAME)}`;
-      if (!createdSkins[skinName]) return;
-      const skinId = createdSkins[skinName];
+      if (!createdSkins.has(skinName)) return;
+      const skinId = createdSkins.get(skinName);
 
       this._refreshTargetsFromID(skinId, true);
     }
 
-    // GIF Animation Functions
-
     _stopGifAnimation(skinName) {
-      if (gifAnimationStates[skinName]) {
-        gifAnimationStates[skinName].stopped = true;
-        delete gifAnimationStates[skinName];
-      }
-      if (gifDecoders[skinName]) {
-        delete gifDecoders[skinName];
-      }
-      // Clean up frame cache for this skin
-      if (gifFrameCache[skinName]) {
-        delete gifFrameCache[skinName];
+      const animator = gifState.animations.get(skinName);
+      if (animator) {
+        animator.cleanup();
       }
     }
 
     _stopAllGifAnimations() {
-      for (const skinName in gifAnimationStates) {
-        gifAnimationStates[skinName].stopped = true;
+      for (const animator of gifState.animations.values()) {
+        animator.cleanup();
       }
-      gifAnimationStates = {};
-      gifDecoders = {};
-      gifFrameCache = {};
+      gifState.animations.clear();
+      gifState.decoders.clear();
+      gifState.frameCache.clear();
     }
 
-    async _renderGifFrame(skinName, frameIndex) {
-      const state = gifAnimationStates[skinName];
-      if (!state || state.stopped) return;
-
-      const skinId = createdSkins[skinName];
-      if (!skinId || !renderer._allSkins[skinId]) return;
-
-      const decoder = gifDecoders[skinName];
-      if (!decoder) return;
-
-      const cache = gifFrameCache[skinName];
-
-      try {
-        let frameBitmap, duration;
-
-        if (cache.frames[frameIndex]) {
-          frameBitmap = cache.frames[frameIndex].bitmap;
-          duration = cache.frames[frameIndex].duration;
-        } else {
-          const result = await decoder.decode({ frameIndex });
-          frameBitmap = await createImageBitmap(result.image);
-          duration = result.image.duration / 1000.0;
-
-          cache.frames[frameIndex] = {
-            bitmap: frameBitmap,
-            duration: duration
-          };
-        }
-
-        renderer.updateBitmapSkin(skinId, frameBitmap, 1);
-
-        const track = decoder.tracks.selectedTrack;
-        let nextFrameIndex;
-
-        if (frameIndex + 1 >= track.frameCount) {
-          nextFrameIndex = 0;
-        } else {
-          nextFrameIndex = frameIndex + 1;
-        }
-
-        state.frameIndex = nextFrameIndex;
-
-        setTimeout(() => {
-          this._renderGifFrame(skinName, nextFrameIndex);
-        }, duration);
-
-      } catch (e) {
-        console.error("Error rendering GIF frame:", e);
-        if (frameIndex !== 0) {
-          state.frameIndex = 0;
-          this._renderGifFrame(skinName, 0);
-        }
-      }
-    }
-
-    async _preloadGifFrames(skinName, decoder, maxFramesToPreload = 10) {
-      const track = decoder.tracks.selectedTrack;
-      const frameCount = Math.min(track.frameCount, maxFramesToPreload);
-
-      for (let i = 1; i < frameCount; i++) {
-        try {
-          const result = await decoder.decode({ frameIndex: i });
-          const bitmap = await createImageBitmap(result.image);
-          const duration = result.image.duration / 1000.0;
-
-          gifFrameCache[skinName].frames[i] = {
-            bitmap: bitmap,
-            duration: duration
-          };
-        } catch (e) {
-          console.warn(`Failed to preload frame ${i}:`, e);
-          break;
-        }
-      }
-    }
-
-    async _decodeGif(skinName, imageByteStream) {
+    async _decodeGif(skinName, buffer) {
       if (!window.ImageDecoder) {
         console.warn("ImageDecoder API not available. GIF animation will not work.");
         return null;
@@ -618,40 +726,35 @@
 
       try {
         const decoder = new ImageDecoder({
-          data: imageByteStream,
+          data: buffer,
           type: "image/gif",
           preferAnimation: true
         });
 
-        gifDecoders[skinName] = decoder;
-        gifAnimationStates[skinName] = {
-          frameIndex: 0,
-          stopped: false
-        };
-
-        gifFrameCache[skinName] = {
-          frames: {}
-        };
-
         const result = await decoder.decode({ frameIndex: 0 });
-        const image = await createImageBitmap(result.image);
-        const duration = result.image.duration / 1000.0;
+        const firstFrame = await createImageBitmap(result.image);
+        const duration = result.image.duration / 1000.0 || 100;
 
-        gifFrameCache[skinName].frames[0] = {
-          bitmap: image,
-          duration: duration
-        };
-
-        const skinId = renderer.createBitmapSkin(image);
-
+        const skinId = renderer.createBitmapSkin(firstFrame);
+        
         const track = decoder.tracks.selectedTrack;
         if (track.frameCount > 1) {
-          this._preloadGifFrames(skinName, decoder, 10).catch(e => {
+          const animator = new GifAnimator(skinName, decoder, skinId, renderer);
+          
+          gifState.decoders.set(skinName, decoder);
+          gifState.animations.set(skinName, animator);
+          
+          const cache = gifState.frameCache.get(skinName);
+          cache.set(0, { bitmap: firstFrame, duration });
+
+          animator.currentDuration = duration;
+
+          animator.preloadFrames(10).catch(e => {
             console.warn("Frame preloading failed:", e);
           });
 
           setTimeout(() => {
-            this._renderGifFrame(skinName, 1);
+            requestAnimationFrame(() => animator.renderFrame(1));
           }, duration);
         }
 
@@ -668,12 +771,17 @@
 
       for (const target of runtime.targets) {
         const drawableID = target.drawableID;
-        const targetSkin = drawables[drawableID].skin.id;
+        if (!drawables[drawableID]) continue;
+        
+        const targetSkin = drawables[drawableID].skin;
+        if (!targetSkin) continue;
+        
+        const targetSkinId = targetSkin.id || targetSkin._id;
 
-        if (targetSkin === skinId) {
+        if (targetSkinId === skinId) {
           target.updateAllDrawableProperties();
-          if (!reset)
-            drawables[drawableID].skin = newId ? skins[newId] : skins[skinId];
+          if (!reset && newId && skins[newId])
+            drawables[drawableID].skin = skins[newId];
         }
       }
     }
@@ -685,9 +793,10 @@
     }
 
     _getSkinNameFromID(skinId) {
-      for (const skinName in createdSkins) {
-        if (createdSkins[skinName] === skinId) return skinName;
+      for (const [skinName, id] of createdSkins) {
+        if (id === skinId) return skinName;
       }
+      return null;
     }
 
     _getTargetFromMenu(targetName, util) {
@@ -699,30 +808,41 @@
 
     async _createURLSkin(URL, rotationCenter, skinName) {
       let imageData;
-      if (await Scratch.canFetch(URL)) {
-        imageData = await Scratch.fetch(URL);
-      } else {
-        return;
+      try {
+        if (await Scratch.canFetch(URL)) {
+          imageData = await Scratch.fetch(URL);
+        } else {
+          return null;
+        }
+      } catch (error) {
+        console.error("Failed to fetch URL:", error);
+        return null;
       }
 
       const contentType = imageData.headers.get("Content-Type");
 
-      if (contentType === "image/svg+xml") {
-        return renderer.createSVGSkin(await imageData.text(), rotationCenter);
-      } else if (contentType === "image/gif") {
-        return await this._decodeGif(skinName, imageData.body);
-      } else if (
-        contentType === "image/png" ||
-        contentType === "image/jpeg" ||
-        contentType === "image/bmp"
-      ) {
-        // eslint-disable-next-line no-restricted-syntax
-        const output = new Image();
-        output.src = URL;
-        output.crossOrigin = "anonymous";
-        await output.decode();
-        return renderer.createBitmapSkin(output);
+      try {
+        if (contentType === "image/svg+xml") {
+          const svgText = await imageData.text();
+          return renderer.createSVGSkin(svgText, rotationCenter);
+        } else if (contentType === "image/gif") {
+          const buffer = await imageData.arrayBuffer();
+          return await this._decodeGif(skinName, buffer);
+        } else if (
+          contentType === "image/png" ||
+          contentType === "image/jpeg" ||
+          contentType === "image/bmp"
+        ) {
+          const blob = await imageData.blob();
+          const bitmap = await createImageBitmap(blob);
+          return renderer.createBitmapSkin(bitmap);
+        }
+      } catch (error) {
+        console.error("Failed to create skin:", error);
+        return null;
       }
+      
+      return null;
     }
 
     _getTargets() {
