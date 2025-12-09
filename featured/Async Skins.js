@@ -15,7 +15,7 @@
 */
 
 /* generated l10n code */Scratch.translate.setup({ "fi": { "_Skins": "Ulkoasu", "_[ATTRIBUTE] of skin [NAME]": "ulkoasun [NAME] [ATTRIBUTE]", "_create SVG skin [SVG] as [NAME]": "luo SVG-ulkoasu [SVG] nimellä [NAME]", "_current skin of [TARGET]": "hahmon [TARGET] nykyinen ulkoasu", "_delete all skins": "poista kaikki ulkoasut", "_delete skin [NAME]": "poista ulkoasu [NAME]", "_height": "korkeus", "_load skin from URL [URL] as [NAME]": "lataa ulkoasu URL-osoitteesta [URL] nimellä [NAME]", "_load skin from [COSTUME] as [NAME]": "lataa ulkoasu asusteesta [COSTUME] nimellä [NAME]", "_restore skin of [TARGET]": "palauta hahmon [TARGET] ulkoasu", "_restore targets with skin [NAME]": "palauta ulkoasua [NAME] käyttävät hahmot", "_set skin of [TARGET] to [NAME]": "aseta hahmon [TARGET] ulkoasuksi [NAME]", "_skin [NAME] is loaded?": "onko ulkoasu [NAME] ladattu? ", "_width": "leveys" }, "it": { "_Skins": "Altro Costumi Plus ", "_height": "altezza", "_width": "larghezza" }, "ja": { "_Skins": "スキン", "_height": "高さ", "_width": "横幅" }, "ko": { "_Skins": "스킨", "_[ATTRIBUTE] of skin [NAME]": "스킨 [NAME]의 [ATTRIBUTE]", "_create SVG skin [SVG] as [NAME]": "SVG 스킨 [NAME] 만들기 [SVG] ", "_current skin of [TARGET]": "현재 스킨의 [TARGET]", "_delete all skins": "모든 스킨 삭제하기", "_delete skin [NAME]": "스킨 [NAME] 삭제하기", "_height": "높이", "_load skin from URL [URL] as [NAME]": "스킨 [NAME]을(를) URL에서 불러오기 [URL]", "_load skin from [COSTUME] as [NAME]": "스킨 [NAME]을(를) [COSTUME](으)로 불러오기", "_restore skin of [TARGET]": "[TARGET]의 스킨 복구하기", "_set skin of [TARGET] to [NAME]": "[TARGET]의 스킨을 [NAME](으)로 정하기", "_width": "넓이" }, "nb": { "_Skins": "Skinner", "_height": "høyde", "_width": "bredde" }, "nl": { "_[ATTRIBUTE] of skin [NAME]": "[ATTRIBUTE] van skin [NAME]", "_create SVG skin [SVG] as [NAME]": "creëer SVG-skin [SVG] als [NAME]", "_current skin of [TARGET]": "huidige skin van [TARGET]", "_delete all skins": "verwijder alle skins", "_delete skin [NAME]": "verwijder skin [NAME]", "_height": "hoogte", "_load skin from URL [URL] as [NAME]": "laad skin van URL [URL] als [NAME]", "_load skin from [COSTUME] as [NAME]": "laad skin van [COSTUME] als [NAME]", "_restore skin of [TARGET]": "herstel skin van [TARGET]", "_restore targets with skin [NAME]": "herstel alle met skin [NAME]", "_set skin of [TARGET] to [NAME]": "maak skin van [TARGET] [NAME]", "_skin [NAME] is loaded?": "skin [NAME] is geladen?", "_width": "breedte" }, "pl": { "_height": "wysokość", "_width": "szerokość" }, "ru": { "_Skins": "Скины", "_[ATTRIBUTE] of skin [NAME]": "[ATTRIBUTE] скина [NAME]", "_create SVG skin [SVG] as [NAME]": "создать SVG скин [SVG] как [NAME]", "_current skin of [TARGET]": "текущий скин [TARGET]", "_delete all skins": "удалить все скины", "_delete skin [NAME]": "удалить скин [NAME]", "_height": "высота", "_load skin from URL [URL] as [NAME]": "загрузить скин из URL [URL] как [NAME]", "_load skin from [COSTUME] as [NAME]": "загрузить скин из [COSTUME] как [NAME]", "_restore skin of [TARGET]": "восстановить скин [TARGET]", "_restore targets with skin [NAME]": "восстановить цели со скином [NAME]", "_set skin of [TARGET] to [NAME]": "задать скин [TARGET] на [NAME]", "_skin [NAME] is loaded?": "скин [NAME] загружен?", "_width": "ширина" }, "tr": { "_Skins": "Ciltler" }, "uk": { "_Skins": "Скіни", "_height": "висота", "_width": "ширина" }, "zh-cn": { "_Skins": "纹理", "_[ATTRIBUTE] of skin [NAME]": "纹理[NAME]的[ATTRIBUTE]", "_create SVG skin [SVG] as [NAME]": "创建SVG纹理[SVG]并命名为[NAME]", "_current skin of [TARGET]": "[TARGET]的当前纹理", "_delete all skins": "删除所有纹理", "_delete skin [NAME]": "删除纹理[NAME]", "_height": "高度", "_load skin from URL [URL] as [NAME]": "从URL[URL]加载纹理并命名为[NAME]", "_load skin from [COSTUME] as [NAME]": "从[COSTUME]加载纹理并命名为[NAME]", "_restore skin of [TARGET]": "恢复[TARGET]的纹理为原造型", "_restore targets with skin [NAME]": "恢复所有纹理为[NAME]的角色造型", "_set skin of [TARGET] to [NAME]": "将[TARGET]的纹理设为[NAME]", "_skin [NAME] is loaded?": "纹理[NAME]已加载？", "_width": "宽度" } });/* end generated l10n code */
-  
+
 (function (Scratch) {
   "use strict";
 
@@ -57,6 +57,7 @@
   var loadingSkins = [];
   var gifDecoders = {};
   var gifAnimationStates = {};
+  var gifFrameCache = {};
 
   class Skins {
     constructor() {
@@ -277,6 +278,10 @@
                 text: Scratch.translate("height"),
                 value: "height",
               },
+              {
+                text: Scratch.translate("frames"),
+                value: "frames"
+              }
             ],
           },
         },
@@ -310,7 +315,7 @@
       return new Promise((resolve, reject) => {
         var image = new Image();
         image.crossOrigin = "anonymous";
-        image.onload = function() {
+        image.onload = function () {
           var canvas = document.createElement("canvas");
           var ctx = canvas.getContext("2d");
           canvas.width = image.width;
@@ -319,7 +324,7 @@
           ctx.drawImage(image, 0, 0, image.width, image.height);
           resolve(canvas.toDataURL());
         };
-        image.onerror = function() {
+        image.onerror = function () {
           reject(new Error("Failed to load image from URL: " + dataUri));
         };
         image.src = dataUri;
@@ -466,6 +471,8 @@
           return Math.ceil(size[0]);
         case "height":
           return Math.ceil(size[1]);
+        case "frames":
+          return gifFrameCache[skinName] ? Object.keys(gifFrameCache[skinName].frames).length : 0;
         default:
           return 0;
       }
@@ -512,6 +519,10 @@
       if (gifDecoders[skinName]) {
         delete gifDecoders[skinName];
       }
+      // Clean up frame cache for this skin
+      if (gifFrameCache[skinName]) {
+        delete gifFrameCache[skinName];
+      }
     }
 
     _stopAllGifAnimations() {
@@ -520,54 +531,81 @@
       }
       gifAnimationStates = {};
       gifDecoders = {};
+      gifFrameCache = {};
     }
 
-    async _renderGifFrame(skinName, result, canvas) {
+    async _renderGifFrame(skinName, frameIndex) {
       const state = gifAnimationStates[skinName];
       if (!state || state.stopped) return;
 
-      const canvasContext = canvas.getContext("2d");
-      canvasContext.clearRect(0, 0, canvas.width, canvas.height);
-      canvasContext.drawImage(result.image, 0, 0);
-
       const skinId = createdSkins[skinName];
-      if (skinId && renderer._allSkins[skinId]) {
-        renderer.updateBitmapSkin(skinId, canvas, 1);
-      }
+      if (!skinId || !renderer._allSkins[skinId]) return;
 
       const decoder = gifDecoders[skinName];
       if (!decoder) return;
 
-      const track = decoder.tracks.selectedTrack;
-
-      if (decoder.complete) {
-        if (track.frameCount === 1) return;
-        if (state.frameIndex + 1 >= track.frameCount) {
-          state.frameIndex = 0;
-        } else {
-          state.frameIndex++;
-        }
-      } else {
-        state.frameIndex++;
-      }
+      const cache = gifFrameCache[skinName];
 
       try {
-        const nextResult = await decoder.decode({ frameIndex: state.frameIndex });
-        const duration = result.image.duration / 1000.0;
-        setTimeout(() => {
-          this._renderGifFrame(skinName, nextResult, canvas);
-        }, duration);
-      } catch (e) {
-        if (e instanceof RangeError) {
-          state.frameIndex = 0;
-          try {
-            const nextResult = await decoder.decode({ frameIndex: state.frameIndex });
-            this._renderGifFrame(skinName, nextResult, canvas);
-          } catch (err) {
-            console.error("Error decoding GIF frame:", err);
-          }
+        let frameBitmap, duration;
+
+        if (cache.frames[frameIndex]) {
+          frameBitmap = cache.frames[frameIndex].bitmap;
+          duration = cache.frames[frameIndex].duration;
         } else {
-          console.error("Error in GIF animation:", e);
+          const result = await decoder.decode({ frameIndex });
+          frameBitmap = await createImageBitmap(result.image);
+          duration = result.image.duration / 1000.0;
+
+          cache.frames[frameIndex] = {
+            bitmap: frameBitmap,
+            duration: duration
+          };
+        }
+
+        renderer.updateBitmapSkin(skinId, frameBitmap, 1);
+
+        const track = decoder.tracks.selectedTrack;
+        let nextFrameIndex;
+
+        if (frameIndex + 1 >= track.frameCount) {
+          nextFrameIndex = 0;
+        } else {
+          nextFrameIndex = frameIndex + 1;
+        }
+
+        state.frameIndex = nextFrameIndex;
+
+        setTimeout(() => {
+          this._renderGifFrame(skinName, nextFrameIndex);
+        }, duration);
+
+      } catch (e) {
+        console.error("Error rendering GIF frame:", e);
+        if (frameIndex !== 0) {
+          state.frameIndex = 0;
+          this._renderGifFrame(skinName, 0);
+        }
+      }
+    }
+
+    async _preloadGifFrames(skinName, decoder, maxFramesToPreload = 10) {
+      const track = decoder.tracks.selectedTrack;
+      const frameCount = Math.min(track.frameCount, maxFramesToPreload);
+
+      for (let i = 1; i < frameCount; i++) {
+        try {
+          const result = await decoder.decode({ frameIndex: i });
+          const bitmap = await createImageBitmap(result.image);
+          const duration = result.image.duration / 1000.0;
+
+          gifFrameCache[skinName].frames[i] = {
+            bitmap: bitmap,
+            duration: duration
+          };
+        } catch (e) {
+          console.warn(`Failed to preload frame ${i}:`, e);
+          break;
         }
       }
     }
@@ -579,19 +617,43 @@
       }
 
       try {
-        const decoder = new ImageDecoder({ data: imageByteStream, type: "image/gif" });
+        const decoder = new ImageDecoder({
+          data: imageByteStream,
+          type: "image/gif",
+          preferAnimation: true
+        });
+
         gifDecoders[skinName] = decoder;
-        gifAnimationStates[skinName] = { frameIndex: 0, stopped: false };
+        gifAnimationStates[skinName] = {
+          frameIndex: 0,
+          stopped: false
+        };
+
+        gifFrameCache[skinName] = {
+          frames: {}
+        };
 
         const result = await decoder.decode({ frameIndex: 0 });
-        
-        const canvas = document.createElement("canvas");
-        canvas.width = result.image.displayWidth;
-        canvas.height = result.image.displayHeight;
+        const image = await createImageBitmap(result.image);
+        const duration = result.image.duration / 1000.0;
 
-        const skinId = renderer.createBitmapSkin(canvas);
-        
-        this._renderGifFrame(skinName, result, canvas);
+        gifFrameCache[skinName].frames[0] = {
+          bitmap: image,
+          duration: duration
+        };
+
+        const skinId = renderer.createBitmapSkin(image);
+
+        const track = decoder.tracks.selectedTrack;
+        if (track.frameCount > 1) {
+          this._preloadGifFrames(skinName, decoder, 10).catch(e => {
+            console.warn("Frame preloading failed:", e);
+          });
+
+          setTimeout(() => {
+            this._renderGifFrame(skinName, 1);
+          }, duration);
+        }
 
         return skinId;
       } catch (e) {
@@ -599,8 +661,6 @@
         return null;
       }
     }
-
-    // Utility Functions
 
     _refreshTargetsFromID(skinId, reset, newId) {
       const drawables = renderer._allDrawables;
@@ -646,7 +706,7 @@
       }
 
       const contentType = imageData.headers.get("Content-Type");
-      
+
       if (contentType === "image/svg+xml") {
         return renderer.createSVGSkin(await imageData.text(), rotationCenter);
       } else if (contentType === "image/gif") {
