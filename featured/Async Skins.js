@@ -534,7 +534,7 @@
 
       await svgSkinFinishedLoading(renderer._allSkins[skinId]);
 
-      if (oldSkinId) {
+      if (oldSkinId && renderer._allSkins[oldSkinId]) {
         this._refreshTargetsFromID(oldSkinId, false, skinId);
         renderer.destroySkin(oldSkinId);
       }
@@ -607,7 +607,7 @@
         if (!skinId) return;
         createdSkins.set(skinName, skinId);
 
-        if (oldSkinId) {
+        if (oldSkinId && renderer._allSkins[oldSkinId]) {
           this._refreshTargetsFromID(oldSkinId, false, skinId);
           renderer.destroySkin(oldSkinId);
         }
@@ -645,7 +645,7 @@
       
       createdSkins.set(skinName, skinId);
 
-      if (oldSkinId) {
+      if (oldSkinId && renderer._allSkins[oldSkinId]) {
         this._refreshTargetsFromID(oldSkinId, false, skinId);
         renderer.destroySkin(oldSkinId);
       }
@@ -669,7 +669,7 @@
         if (!skinId) return;
         createdSkins.set(skinName, skinId);
 
-        if (oldSkinId) {
+        if (oldSkinId && renderer._allSkins[oldSkinId]) {
           this._refreshTargetsFromID(oldSkinId, false, skinId);
           renderer.destroySkin(oldSkinId);
         }
@@ -757,7 +757,9 @@
 
       this._stopGifAnimation(skinName);
       this._refreshTargetsFromID(skinId, true);
-      renderer.destroySkin(skinId);
+      if (renderer._allSkins[skinId]) {
+        renderer.destroySkin(skinId);
+      }
       createdSkins.delete(skinName);
       loadingSkins.delete(skinName);
     }
@@ -767,7 +769,9 @@
       this._stopAllGifAnimations();
       
       for (const [skinName, skinId] of createdSkins) {
-        renderer.destroySkin(skinId);
+        if (renderer._allSkins[skinId]) {
+          renderer.destroySkin(skinId);
+        }
       }
       
       createdSkins.clear();
@@ -841,7 +845,7 @@
       createdSkins.set(newSkinName, clonedSkinId);
 
       // Refresh targets using the old skin
-      if (oldSkinId) {
+      if (oldSkinId && renderer._allSkins[oldSkinId]) {
         this._refreshTargetsFromID(oldSkinId, false, clonedSkinId);
         renderer.destroySkin(oldSkinId);
       }
