@@ -50,7 +50,7 @@
 
   const vm = Scratch.vm;
   const runtime = vm.runtime;
-  const renderer = runtime.renderer;
+  const renderer = vm.renderer;
   const Cast = Scratch.Cast;
 
   const createdSkins = new Map();
@@ -353,7 +353,7 @@
 
           {
             opcode: "cloneSkin",
-            blockType: Scratch.BlockType.REPORTER,
+            blockType: Scratch.BlockType.COMMAND,
             text: "clone skin [SKIN] as [NAME]",
             arguments: {
               SKIN: {
@@ -782,6 +782,11 @@
       // Create ImageData from pixels
       const imageData = new ImageData(new Uint8ClampedArray(pixels), width, height);
 
+      // Check if skin already exists
+      let oldSkinId = null;
+      if (createdSkins.has(newSkinName)) {
+        oldSkinId = createdSkins.get(newSkinName);
+      }
       // Create new bitmap skin
       const clonedSkinId = renderer.createBitmapSkin(
         imageData,
@@ -791,6 +796,12 @@
       
       // Store the new skin
       createdSkins.set(newSkinName, clonedSkinId);
+
+      // Refresh targets using the old skin
+      if (oldSkinId) {
+        this._refreshTargetsFromID(oldSkinId, false, clonedSkinId);
+        renderer.destroySkin(oldSkinId);
+      }
       
       return Cast.toString(args.NAME);
     }
@@ -815,19 +826,23 @@
         return;
       }
 
-      // Clone the skin first
-      const cloneResult = this.cloneSkin({
-        SKIN: args.SKIN,
-        NAME: args.NAME
-      });
+      const newSkinId = createdSkins.get(newSkinName);
+      if (!newSkinId) {
 
-      if (!cloneResult) return;
+        // Clone the skin first
+        const cloneResult = this.cloneSkin({
+          SKIN: args.SKIN,
+          NAME: args.NAME
+        });
+
+        if (!cloneResult) return;
+      }
 
       // Now blur the cloned skin
-      const clonedSkinId = createdSkins.get(newSkinName);
-      const skinToBlur = renderer._allSkins[clonedSkinId];
+      const skinToBlur = renderer._allSkins[newSkinId];
 
       await this._blurSkinTexture(skinToBlur, passes);
+      this._refreshTargetsOfSkin(newSkinId);
     }
 
     async _blurSkinTexture(skin, passes) {
@@ -1073,6 +1088,26 @@
           target.updateAllDrawableProperties();
           if (!reset && newId && skins[newId])
             drawables[drawableID].skin = skins[newId];
+        }
+      }
+    }
+
+    _refreshTargetsOfSkin(skinId) {
+      const drawables = renderer._allDrawables;
+      const skins = renderer._allSkins;
+
+      for (const target of runtime.targets) {
+        const drawableID = target.drawableID;
+        if (!drawables[drawableID]) continue;
+        
+        const targetSkin = drawables[drawableID].skin;
+        if (!targetSkin) continue;
+        
+        const targetSkinId = targetSkin.id || targetSkin._id;
+
+        if (targetSkinId === skinId) {
+          target.updateAllDrawableProperties();
+          drawables[drawableID]._skinWasAltered()
         }
       }
     }
