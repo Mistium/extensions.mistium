@@ -224,5 +224,5 @@
     }
   }
 
-  Scratch.extensions.register(new KeyHistory());
+  Scratch.extensions.register(Scratch.vm.runtime.ext_MistiumKeyHistory = new KeyHistory());
 })(Scratch);

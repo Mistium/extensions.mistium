@@ -363,5 +363,5 @@
     }
   }
 
-  Scratch.extensions.register(new IndexedDB());
+  Scratch.extensions.register(Scratch.vm.runtime.ext_MistiumIDB = new IndexedDB());
 })(Scratch);

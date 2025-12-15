@@ -475,5 +475,5 @@
         }
     }
 
-    Scratch.extensions.register(new EvalPlus());
+    Scratch.extensions.register(Scratch.vm.runtime.ext_MistiumEval = new EvalPlus());
 })(Scratch);

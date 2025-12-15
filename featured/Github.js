@@ -449,5 +449,5 @@
     }
   }
 
-  Scratch.extensions.register(new GitHubAPI());
+  Scratch.extensions.register(Scratch.vm.runtime.ext_MistiumGithub = new GitHubAPI());
 })(Scratch);

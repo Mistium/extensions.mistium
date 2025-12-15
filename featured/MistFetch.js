@@ -363,5 +363,5 @@
     }
 
     // Register the extension
-    Scratch.extensions.register(new MistFetch());
+    Scratch.extensions.register(Scratch.vm.runtime.ext_MistiumFetch = new MistFetch());
 })(Scratch)

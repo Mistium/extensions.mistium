@@ -865,5 +865,5 @@
     }
   }
 
-  Scratch.extensions.register(new Skins());
+  Scratch.extensions.register(Scratch.vm.runtime.ext_MistiumSkins = new Skins());
 })(Scratch);

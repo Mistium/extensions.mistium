@@ -508,5 +508,5 @@
 
     }
 
-    Scratch.extensions.register(new IframePlusExtension());
+    Scratch.extensions.register(Scratch.vm.runtime.ext_MistiumIframe = new IframePlusExtension());
 })(Scratch);
