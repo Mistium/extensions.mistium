@@ -352,6 +352,43 @@
           "---",
 
           {
+            opcode: "cloneSkin",
+            blockType: Scratch.BlockType.REPORTER,
+            text: "clone skin [SKIN] as [NAME]",
+            arguments: {
+              SKIN: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "my skin",
+              },
+              NAME: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "my clone",
+              },
+            },
+          },
+          {
+            opcode: "blurExistingSkin",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "blur skin [SKIN] by [PASSES] passes as [NAME]",
+            arguments: {
+              SKIN: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "my skin",
+              },
+              PASSES: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 1,
+              },
+              NAME: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "blurred skin",
+              },
+            },
+          },
+
+          "---",
+
+          {
             opcode: "setSkin",
             blockType: Scratch.BlockType.COMMAND,
             text: Scratch.translate("set skin of [TARGET] to [NAME]"),
@@ -700,6 +737,260 @@
       const skinId = createdSkins.get(skinName);
 
       this._refreshTargetsFromID(skinId, true);
+    }
+
+    cloneSkin(args) {
+      const sourceSkinName = `lms-${Cast.toString(args.SKIN)}`;
+      const newSkinName = `lms-${Cast.toString(args.NAME)}`;
+      
+      if (!createdSkins.has(sourceSkinName)) {
+        console.warn(`Source skin "${args.SKIN}" not found`);
+        return "";
+      }
+
+      const sourceSkinId = createdSkins.get(sourceSkinName);
+      const originalSkin = renderer._allSkins[sourceSkinId];
+      
+      if (!originalSkin || !originalSkin._texture) {
+        console.warn(`Source skin "${args.SKIN}" has no texture`);
+        return "";
+      }
+      
+      const gl = renderer.gl;
+      const width = originalSkin._textureSize[0];
+      const height = originalSkin._textureSize[1];
+      
+      // Create framebuffer to read texture data
+      const fb = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER, 
+        gl.COLOR_ATTACHMENT0, 
+        gl.TEXTURE_2D, 
+        originalSkin._texture, 
+        0
+      );
+      
+      // Read pixels from texture
+      const pixels = new Uint8Array(width * height * 4);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      
+      // Clean up framebuffer
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.deleteFramebuffer(fb);
+
+      // Create ImageData from pixels
+      const imageData = new ImageData(new Uint8ClampedArray(pixels), width, height);
+
+      // Create new bitmap skin
+      const clonedSkinId = renderer.createBitmapSkin(
+        imageData,
+        originalSkin._costumeResolution,
+        originalSkin._rotationCenter.slice()
+      );
+      
+      // Store the new skin
+      createdSkins.set(newSkinName, clonedSkinId);
+      
+      return Cast.toString(args.NAME);
+    }
+
+    async blurExistingSkin(args) {
+      const sourceSkinName = `lms-${Cast.toString(args.SKIN)}`;
+      const newSkinName = `lms-${Cast.toString(args.NAME)}`;
+      const passes = Cast.toNumber(args.PASSES);
+      
+      if (!createdSkins.has(sourceSkinName)) {
+        console.warn(`Source skin "${args.SKIN}" not found`);
+        return;
+      }
+
+      if (passes < 1) return;
+
+      const sourceSkinId = createdSkins.get(sourceSkinName);
+      const originalSkin = renderer._allSkins[sourceSkinId];
+      
+      if (!originalSkin || !originalSkin._texture) {
+        console.warn(`Source skin "${args.SKIN}" has no texture`);
+        return;
+      }
+
+      // Clone the skin first
+      const cloneResult = this.cloneSkin({
+        SKIN: args.SKIN,
+        NAME: args.NAME
+      });
+
+      if (!cloneResult) return;
+
+      // Now blur the cloned skin
+      const clonedSkinId = createdSkins.get(newSkinName);
+      const skinToBlur = renderer._allSkins[clonedSkinId];
+
+      await this._blurSkinTexture(skinToBlur, passes);
+    }
+
+    async _blurSkinTexture(skin, passes) {
+      const gl = renderer.gl;
+      if (!gl) return;
+
+      const texture = skin._texture;
+      if (!texture) return;
+      
+      const width = skin._textureSize[0];
+      const height = skin._textureSize[1];
+
+      // Set texture parameters
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+      // Create framebuffer helper
+      const createFBO = (tex) => {
+        const fbo = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        return fbo;
+      };
+
+      // Create temporary texture
+      const tempTex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tempTex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      const fboTemp = createFBO(tempTex);
+      const fboOutput = createFBO(texture);
+
+      // Shader code
+      const vs = `
+        attribute vec2 aPos;
+        varying vec2 vUV;
+        void main() {
+          vUV = aPos * 0.5 + 0.5;
+          gl_Position = vec4(aPos, 0.0, 1.0);
+        }
+      `;
+
+      const fs = (dirX, dirY) => `
+        precision mediump float;
+        uniform sampler2D uTex;
+        uniform vec2 uTexel;
+        varying vec2 vUV;
+        
+        vec4 sampleTex(vec2 uv) {
+          // Return transparent black if outside bounds
+          if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+            return vec4(0.0);
+          }
+          return texture2D(uTex, uv);
+        }
+        
+        void main() {
+          vec2 direction = vec2(float(${dirX}), float(${dirY}));
+          vec4 sum = sampleTex(vUV) * 0.227027;
+          sum += sampleTex(vUV + uTexel * direction * 1.0) * 0.1945946;
+          sum += sampleTex(vUV - uTexel * direction * 1.0) * 0.1945946;
+          sum += sampleTex(vUV + uTexel * direction * 2.0) * 0.1216216;
+          sum += sampleTex(vUV - uTexel * direction * 2.0) * 0.1216216;
+          sum += sampleTex(vUV + uTexel * direction * 3.0) * 0.0540541;
+          sum += sampleTex(vUV - uTexel * direction * 3.0) * 0.0540541;
+          sum += sampleTex(vUV + uTexel * direction * 4.0) * 0.0162162;
+          sum += sampleTex(vUV - uTexel * direction * 4.0) * 0.0162162;
+          gl_FragColor = sum;
+        }
+      `;
+
+      // Compile shaders
+      const compileShader = (type, src) => {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          console.error(gl.getShaderInfoLog(s));
+        }
+        return s;
+      };
+
+      const createProgram = (vsSrc, fsSrc) => {
+        const p = gl.createProgram();
+        gl.attachShader(p, compileShader(gl.VERTEX_SHADER, vsSrc));
+        gl.attachShader(p, compileShader(gl.FRAGMENT_SHADER, fsSrc));
+        gl.linkProgram(p);
+        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+          console.error(gl.getProgramInfoLog(p));
+        }
+        return p;
+      };
+
+      const hProg = createProgram(vs, fs(1, 0));
+      const vProg = createProgram(vs, fs(0, 1));
+
+      // Create quad VBO
+      const quadVBO = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, quadVBO);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+
+      // Draw quad helper
+      const drawQuad = (program, tex) => {
+        gl.useProgram(program);
+        const loc = gl.getAttribLocation(program, 'aPos');
+        gl.bindBuffer(gl.ARRAY_BUFFER, quadVBO);
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.uniform1i(gl.getUniformLocation(program, 'uTex'), 0);
+        gl.uniform2f(gl.getUniformLocation(program, 'uTexel'), 1 / width, 1 / height);
+
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      };
+
+      // Save GL state
+      const oldViewport = gl.getParameter(gl.VIEWPORT);
+      const oldFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
+      const oldBlend = gl.getParameter(gl.BLEND);
+
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+      // Perform blur passes
+      for (let i = 0; i < passes; i++) {
+        // Horizontal pass
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fboTemp);
+        gl.viewport(0, 0, width, height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        drawQuad(hProg, texture);
+
+        // Vertical pass
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fboOutput);
+        gl.viewport(0, 0, width, height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        drawQuad(vProg, tempTex);
+      }
+
+      // Restore GL state
+      gl.bindFramebuffer(gl.FRAMEBUFFER, oldFramebuffer);
+      gl.viewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
+      if (!oldBlend) gl.disable(gl.BLEND);
+
+      // Clean up
+      gl.deleteFramebuffer(fboTemp);
+      gl.deleteFramebuffer(fboOutput);
+      gl.deleteTexture(tempTex);
+      gl.deleteProgram(hProg);
+      gl.deleteProgram(vProg);
+      gl.deleteBuffer(quadVBO);
+
+      renderer.dirty = true;
     }
 
     _stopGifAnimation(skinName) {
