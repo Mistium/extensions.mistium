@@ -566,7 +566,7 @@
     }
 
     // Register an existing skin with the extension, no cloning or anything
-    async loadSkinFromId(args) {
+    loadSkinFromId(args) {
       const skinName = `lms-${Cast.toString(args.NAME)}`;
       const skinId = Cast.toNumber(args.ID);
 
