@@ -508,6 +508,10 @@
               {
                 text: Scratch.translate("frames"),
                 value: "frames"
+              },
+              {
+                text: Scratch.translate("id"),
+                value: "id"
               }
             ],
           },
@@ -739,6 +743,8 @@
         case "frames":
           const cache = gifState.frameCache.get(skinName);
           return cache ? cache.size : 0;
+        case "id":
+          return skinId;
         default:
           return 0;
       }
