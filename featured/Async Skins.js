@@ -581,7 +581,7 @@
 
       createdSkins.set(skinName, skinId);
 
-      if (oldSkinId) {
+      if (oldSkinId && renderer._allSkins[oldSkinId]) {
         this._refreshTargetsFromID(oldSkinId, false, skinId);
         renderer.destroySkin(oldSkinId);
       }
