@@ -303,6 +303,21 @@
             },
           },
           {
+            opcode: "loadSkinFromId",
+            blockType: Scratch.BlockType.COMMAND,
+            text: Scratch.translate("load skin from ID [ID] as [NAME]"),
+            arguments: {
+              ID: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 0,
+              },
+              NAME: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "my skin",
+              },
+            },
+          },
+          {
             opcode: "registerBlurredURLSkin",
             blockType: Scratch.BlockType.COMMAND,
             text: Scratch.translate("load skin from URL [URL] as [NAME] and blur by [BLUR] pixels"),
@@ -544,6 +559,28 @@
         };
         image.src = dataUri;
       });
+    }
+
+    // Register an existing skin with the extension, no cloning or anything
+    async loadSkinFromId(args) {
+      const skinName = `lms-${Cast.toString(args.NAME)}`;
+      const skinId = Cast.toNumber(args.ID);
+
+      let oldSkinId = null;
+      if (createdSkins.has(skinName)) {
+        oldSkinId = createdSkins.get(skinName);
+        this._stopGifAnimation(skinName);
+      }
+
+      const skin = renderer._allSkins[skinId];
+      if (!skin) return;
+
+      createdSkins.set(skinName, skinId);
+
+      if (oldSkinId) {
+        this._refreshTargetsFromID(oldSkinId, false, skinId);
+        renderer.destroySkin(oldSkinId);
+      }
     }
 
     async registerBlurredURLSkin(args) {
