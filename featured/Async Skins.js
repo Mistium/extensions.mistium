@@ -290,6 +290,7 @@
 
       if (this.lastFrameTime === 0) {
         this.lastFrameTime = currentTime;
+        return true;
       }
 
       const deltaTime = currentTime - this.lastFrameTime;
@@ -302,7 +303,9 @@
         await this._cacheFrame(this.frameIndex, cache);
         frameData = cache.get(this.frameIndex);
         if (!frameData) {
-          return false;
+          this.frameIndex = (this.frameIndex + 1) % this.frameCount;
+          this.accumulatedTime = 0;
+          return true;
         }
       }
 
@@ -311,8 +314,14 @@
       if (this.accumulatedTime >= duration) {
         this.accumulatedTime -= duration;
         
-        this.renderer.updateBitmapSkin(this.skinId, bitmap, 1);
         this.frameIndex = (this.frameIndex + 1) % this.frameCount;
+        
+        const nextFrameData = cache.get(this.frameIndex);
+        if (nextFrameData) {
+          this.renderer.updateBitmapSkin(this.skinId, nextFrameData.bitmap, 1);
+        } else {
+          this._cacheFrame(this.frameIndex, cache).catch(() => {});
+        }
         
         if (this.frameIndex % 5 === 0) {
           this._preloadNextFrames();
@@ -384,24 +393,32 @@
       });
     }
 
-    async _updateAllGifAnimations() {
+    _updateAllGifAnimations() {
       if (gifState.animations.size === 0) return;
       
-      const currentTime = Date.now();
+      const currentTime = performance.now();
       const animatorsToRemove = [];
 
       for (const [skinName, animator] of gifState.animations) {
-        const shouldContinue = await animator.update(currentTime);
-        if (!shouldContinue) {
+        animator.update(currentTime).then(shouldContinue => {
+          if (!shouldContinue) {
+            animatorsToRemove.push(skinName);
+          }
+        }).catch(err => {
+          console.warn(`GIF animation error for ${skinName}:`, err);
           animatorsToRemove.push(skinName);
-        }
+        });
       }
 
-      for (const skinName of animatorsToRemove) {
-        const animator = gifState.animations.get(skinName);
-        if (animator) {
-          animator.cleanup();
-        }
+      if (animatorsToRemove.length > 0) {
+        Promise.resolve().then(() => {
+          for (const skinName of animatorsToRemove) {
+            const animator = gifState.animations.get(skinName);
+            if (animator) {
+              animator.cleanup();
+            }
+          }
+        });
       }
     }
 
