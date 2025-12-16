@@ -244,12 +244,8 @@
       this.renderer = renderer;
       this.frameIndex = 0;
       this.stopped = false;
-      this.paused = false;
-      this.timeoutId = null;
-      this.rafId = null;
-      this.remainingTime = 0;
-      this.currentDuration = 0;
-      this.startTime = 0;
+      this.lastFrameTime = 0;
+      this.accumulatedTime = 0;
       this.track = decoder.tracks.selectedTrack;
       this.frameCount = this.track.frameCount;
       
@@ -282,89 +278,64 @@
       }
     }
 
-    async renderFrame(frameIndex) {
-      if (this.stopped || this.paused || !createdSkins.has(this.skinName)) {
-        if (this.stopped) this.cleanup();
-        return;
+    async update(currentTime) {
+      if (this.stopped || !createdSkins.has(this.skinName)) {
+        return false;
       }
 
       const cache = gifState.frameCache.get(this.skinName);
       if (!cache) {
-        this.cleanup();
-        return;
+        return false;
       }
 
-      try {
-        let frameData = cache.get(frameIndex);
-        
-        if (!frameData) {
-          await this._cacheFrame(frameIndex, cache);
-          frameData = cache.get(frameIndex);
-          if (!frameData) {
-            this.stop();
-            return;
-          }
-        }
+      if (this.lastFrameTime === 0) {
+        this.lastFrameTime = currentTime;
+      }
 
-        const { bitmap, duration } = frameData;
+      const deltaTime = currentTime - this.lastFrameTime;
+      this.accumulatedTime += deltaTime;
+      this.lastFrameTime = currentTime;
+
+      let frameData = cache.get(this.frameIndex);
+      
+      if (!frameData) {
+        await this._cacheFrame(this.frameIndex, cache);
+        frameData = cache.get(this.frameIndex);
+        if (!frameData) {
+          return false;
+        }
+      }
+
+      const { bitmap, duration } = frameData;
+
+      if (this.accumulatedTime >= duration) {
+        this.accumulatedTime -= duration;
         
         this.renderer.updateBitmapSkin(this.skinId, bitmap, 1);
-
-        this.frameIndex = (frameIndex + 1) % this.frameCount;
-        this.currentDuration = duration;
-        this.startTime = Date.now();
-
-        this.timeoutId = setTimeout(() => {
-          this.rafId = requestAnimationFrame(() => this.renderFrame(this.frameIndex));
-        }, duration);
-
-      } catch (e) {
-        console.error("Error rendering GIF frame:", e);
-        if (frameIndex !== 0) {
-          this.frameIndex = 0;
-          this.renderFrame(0);
-        } else {
-          this.stop();
+        this.frameIndex = (this.frameIndex + 1) % this.frameCount;
+        
+        if (this.frameIndex % 5 === 0) {
+          this._preloadNextFrames();
         }
       }
+
+      return true;
     }
 
-    pause() {
-      this.paused = true;
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-        this.remainingTime = this.currentDuration - (Date.now() - this.startTime);
-        if (this.remainingTime < 0) this.remainingTime = 0;
-      }
-      if (this.rafId) {
-        cancelAnimationFrame(this.rafId);
-        this.rafId = null;
-      }
-    }
-
-    resume() {
-      if (!this.paused || this.stopped) return;
-      this.paused = false;
-      const timeToWait = this.remainingTime > 0 ? this.remainingTime : this.currentDuration;
-      this.remainingTime = 0;
-      if (timeToWait > 0) {
-        this.timeoutId = setTimeout(() => {
-          this.rafId = requestAnimationFrame(() => this.renderFrame(this.frameIndex));
-        }, timeToWait);
+    _preloadNextFrames() {
+      const cache = gifState.frameCache.get(this.skinName);
+      if (!cache) return;
+      
+      for (let i = 1; i <= 3; i++) {
+        const nextIndex = (this.frameIndex + i) % this.frameCount;
+        if (!cache.has(nextIndex)) {
+          this._cacheFrame(nextIndex, cache).catch(() => {});
+        }
       }
     }
 
     stop() {
       this.stopped = true;
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-      }
-      if (this.rafId) {
-        cancelAnimationFrame(this.rafId);
-        this.rafId = null;
-      }
     }
 
     cleanup() {
@@ -408,20 +379,30 @@
         }
       });
 
-      this.isPaused = vm.runtime.ioDevices?.clock?._paused ?? false;
-      this.pauseChecker = setInterval(() => {
-        const currentPaused = vm.runtime.ioDevices?.clock?._paused ?? false;
-        if (currentPaused !== this.isPaused) {
-          this.isPaused = currentPaused;
-          for (const animator of gifState.animations.values()) {
-            if (this.isPaused) {
-              animator.pause();
-            } else {
-              animator.resume();
-            }
-          }
+      runtime.on("BEFORE_EXECUTE", () => {
+        this._updateAllGifAnimations();
+      });
+    }
+
+    async _updateAllGifAnimations() {
+      if (gifState.animations.size === 0) return;
+      
+      const currentTime = Date.now();
+      const animatorsToRemove = [];
+
+      for (const [skinName, animator] of gifState.animations) {
+        const shouldContinue = await animator.update(currentTime);
+        if (!shouldContinue) {
+          animatorsToRemove.push(skinName);
         }
-      }, 50);
+      }
+
+      for (const skinName of animatorsToRemove) {
+        const animator = gifState.animations.get(skinName);
+        if (animator) {
+          animator.cleanup();
+        }
+      }
     }
 
     getInfo() {
@@ -1203,15 +1184,9 @@
           const cache = gifState.frameCache.get(skinName);
           cache.set(0, { bitmap: firstFrame, duration });
 
-          animator.currentDuration = duration;
-
           animator.preloadFrames(10).catch(e => {
             console.warn("Frame preloading failed:", e);
           });
-
-          setTimeout(() => {
-            requestAnimationFrame(() => animator.renderFrame(1));
-          }, duration);
         }
 
         return skinId;
