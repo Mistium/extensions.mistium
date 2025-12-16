@@ -61,6 +61,181 @@
     animations: new Map(),
     frameCache: new Map(),
   };
+
+  const blurCache = {
+    programs: null,
+    quadVBO: null,
+    fbo1: null,
+    fbo2: null,
+    tempTex1: null,
+    tempTex2: null,
+    lastWidth: 0,
+    lastHeight: 0,
+    supportsHalfFloat: false,
+    // Cache for recent GL state reads to avoid repeated expensive getParameter calls
+    _stateCache: new WeakMap(),
+    init(gl) {
+      if (this.programs) return;
+      
+      const ext = gl.getExtension('OES_texture_half_float') || gl.getExtension('OES_texture_float');
+      this.supportsHalfFloat = !!ext;
+
+      const vs = `
+        attribute vec2 aPos;
+        varying vec2 vUV;
+        void main() {
+          vUV = aPos * 0.5 + 0.5;
+          gl_Position = vec4(aPos, 0.0, 1.0);
+        }
+      `;
+
+      const blurFS = (dirX, dirY) => `
+        precision mediump float;
+        uniform sampler2D uTex;
+        uniform vec2 uTexel;
+        varying vec2 vUV;
+        
+        void main() {
+          vec2 dir = vec2(${dirX}.0, ${dirY}.0) * uTexel;
+          vec4 sum = texture2D(uTex, vUV) * 0.29411764705882354;
+          sum += texture2D(uTex, vUV + dir) * 0.23529411764705882;
+          sum += texture2D(uTex, vUV - dir) * 0.23529411764705882;
+          sum += texture2D(uTex, vUV + dir * 2.0) * 0.11764705882352941;
+          sum += texture2D(uTex, vUV - dir * 2.0) * 0.11764705882352941;
+          gl_FragColor = sum;
+        }
+      `;
+
+      const copyFS = `
+        precision mediump float;
+        uniform sampler2D uTex;
+        varying vec2 vUV;
+        void main() {
+          gl_FragColor = texture2D(uTex, vUV);
+        }
+      `;
+
+      const compileShader = (type, src) => {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+      };
+
+      const createProgram = (vsSrc, fsSrc) => {
+        const p = gl.createProgram();
+        gl.attachShader(p, compileShader(gl.VERTEX_SHADER, vsSrc));
+        gl.attachShader(p, compileShader(gl.FRAGMENT_SHADER, fsSrc));
+        gl.linkProgram(p);
+        return p;
+      };
+
+      const makeProgramObj = (fsSrc) => {
+        const p = createProgram(vs, fsSrc);
+        const obj = { program: p };
+        obj.locs = {
+          aPos: gl.getAttribLocation(p, 'aPos'),
+          uTex: gl.getUniformLocation(p, 'uTex'),
+          uTexel: gl.getUniformLocation(p, 'uTexel')
+        };
+        return obj;
+      };
+
+      this.programs = {
+        hBlur: makeProgramObj(blurFS(1, 0)),
+        vBlur: makeProgramObj(blurFS(0, 1)),
+        copy: makeProgramObj(copyFS)
+      };
+
+      this.quadVBO = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.quadVBO);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    },
+    saveState(gl) {
+      const now = Date.now();
+      const cached = this._stateCache.get(gl);
+      if (cached && now - cached.ts < 200) return cached.state;
+
+      const state = {
+        viewport: gl.getParameter(gl.VIEWPORT),
+        framebuffer: gl.getParameter(gl.FRAMEBUFFER_BINDING),
+        program: gl.getParameter(gl.CURRENT_PROGRAM),
+        blend: gl.isEnabled(gl.BLEND)
+      };
+
+      this._stateCache.set(gl, { ts: now, state });
+      return state;
+    },
+    restoreState(gl, state) {
+      try {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, state.framebuffer);
+        const v = state.viewport;
+        if (v && v.length === 4) gl.viewport(v[0], v[1], v[2], v[3]);
+        gl.useProgram(state.program);
+        if (state.blend) gl.enable(gl.BLEND); else gl.disable(gl.BLEND);
+      } catch (e) {
+        // best-effort restore; ignore failures
+        console.warn('Failed to fully restore GL state:', e);
+      }
+    },
+    ensureTextures(gl, width, height) {
+      if (this.tempTex1 && this.lastWidth === width && this.lastHeight === height) {
+        return;
+      }
+
+      if (this.tempTex1) {
+        gl.deleteTexture(this.tempTex1);
+        gl.deleteTexture(this.tempTex2);
+        gl.deleteFramebuffer(this.fbo1);
+        gl.deleteFramebuffer(this.fbo2);
+      }
+
+      this.lastWidth = width;
+      this.lastHeight = height;
+
+      const texType = gl.UNSIGNED_BYTE;
+      const format = gl.RGBA;
+
+      // Create temp textures
+      this.tempTex1 = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, this.tempTex1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, format, width, height, 0, format, texType, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      this.tempTex2 = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, this.tempTex2);
+      gl.texImage2D(gl.TEXTURE_2D, 0, format, width, height, 0, format, texType, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      this.fbo1 = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo1);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.tempTex1, 0);
+
+      this.fbo2 = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo2);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.tempTex2, 0);
+    },
+    cleanup(gl) {
+      if (this.tempTex1) {
+        gl.deleteTexture(this.tempTex1);
+        gl.deleteTexture(this.tempTex2);
+        gl.deleteFramebuffer(this.fbo1);
+        gl.deleteFramebuffer(this.fbo2);
+        gl.deleteBuffer(this.quadVBO);
+        this.tempTex1 = null;
+        this.tempTex2 = null;
+        this.fbo1 = null;
+        this.fbo2 = null;
+        this.quadVBO = null;
+      }
+    }
+  };
   class GifAnimator {
     constructor(skinName, decoder, skinId, renderer) {
       this.skinName = skinName;
@@ -228,6 +403,9 @@
 
       runtime.on("PROJECT_LOADED", () => {
         this.deleteAllSkins();
+        if (renderer && renderer.gl) {
+          blurCache.cleanup(renderer.gl);
+        }
       });
 
       this.isPaused = vm.runtime.ioDevices?.clock?._paused ?? false;
@@ -548,14 +726,22 @@
         image.crossOrigin = "anonymous";
         image.onload = function () {
           const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          canvas.width = image.width;
-          canvas.height = image.height;
-          ctx.filter = "blur(" + blur + "px)";
-          ctx.drawImage(image, 0, 0, image.width, image.height);
-          const blurredDataUrl = canvas.toDataURL();
+          const ctx = canvas.getContext("2d", { 
+            alpha: true, 
+            willReadFrequently: false,
+            desynchronized: true 
+          });
           
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const scale = Math.min(1, 800 / Math.max(image.width, image.height));
+          canvas.width = Math.floor(image.width * scale);
+          canvas.height = Math.floor(image.height * scale);
+          
+          ctx.filter = `blur(${blur * scale}px)`;
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          
+          const blurredDataUrl = canvas.toDataURL('image/png', 0.92);
+          
+          canvas.width = canvas.height = 0;
           resolve(blurredDataUrl);
         };
         image.onerror = function () {
@@ -853,7 +1039,7 @@
       return Cast.toString(args.NAME);
     }
 
-    async blurExistingSkin(args) {
+    blurExistingSkin(args) {
       const sourceSkinName = `lms-${Cast.toString(args.SKIN)}`;
       const newSkinName = `lms-${Cast.toString(args.NAME)}`;
       const passes = Cast.toNumber(args.PASSES);
@@ -888,11 +1074,11 @@
       // Now blur the cloned skin
       const skinToBlur = renderer._allSkins[newSkinId];
 
-      await this._blurSkinTexture(skinToBlur, passes);
+      this._blurSkinTexture(skinToBlur, passes);
       this._refreshTargetsOfSkin(newSkinId);
     }
 
-    async _blurSkinTexture(skin, passes) {
+    _blurSkinTexture(skin, passes) {
       const gl = renderer.gl;
       if (!gl) return;
 
@@ -902,155 +1088,72 @@
       const width = skin._textureSize[0];
       const height = skin._textureSize[1];
 
-      // Set texture parameters
+      blurCache.init(gl);
+
+      let downscale = 4;
+      const pixelCount = width * height;
+      if (pixelCount > 1000000) downscale = 8;
+      else if (pixelCount > 250000) downscale = 6;
+      else if (pixelCount < 40000) downscale = 2;
+      
+      const smallWidth = Math.max(1, Math.floor(width / downscale));
+      const smallHeight = Math.max(1, Math.floor(height / downscale));
+
+      blurCache.ensureTextures(gl, smallWidth, smallHeight);
+
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-      // Create framebuffer helper
-      const createFBO = (tex) => {
-        const fbo = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-        return fbo;
-      };
+      const fboOutput = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fboOutput);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
-      // Create temporary texture
-      const tempTex = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, tempTex);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      const oldState = blurCache.saveState(gl);
 
-      const fboTemp = createFBO(tempTex);
-      const fboOutput = createFBO(texture);
+      gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.CULL_FACE);
+      gl.disable(gl.BLEND);
+      gl.activeTexture(gl.TEXTURE0);
 
-      // Shader code
-      const vs = `
-        attribute vec2 aPos;
-        varying vec2 vUV;
-        void main() {
-          vUV = aPos * 0.5 + 0.5;
-          gl_Position = vec4(aPos, 0.0, 1.0);
-        }
-      `;
-
-      const fs = (dirX, dirY) => `
-        precision mediump float;
-        uniform sampler2D uTex;
-        uniform vec2 uTexel;
-        varying vec2 vUV;
-        
-        vec4 sampleTex(vec2 uv) {
-          // Return transparent black if outside bounds
-          if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-            return vec4(0.0);
-          }
-          return texture2D(uTex, uv);
-        }
-        
-        void main() {
-          vec2 direction = vec2(float(${dirX}), float(${dirY}));
-          vec4 sum = sampleTex(vUV) * 0.227027;
-          sum += sampleTex(vUV + uTexel * direction * 1.0) * 0.1945946;
-          sum += sampleTex(vUV - uTexel * direction * 1.0) * 0.1945946;
-          sum += sampleTex(vUV + uTexel * direction * 2.0) * 0.1216216;
-          sum += sampleTex(vUV - uTexel * direction * 2.0) * 0.1216216;
-          sum += sampleTex(vUV + uTexel * direction * 3.0) * 0.0540541;
-          sum += sampleTex(vUV - uTexel * direction * 3.0) * 0.0540541;
-          sum += sampleTex(vUV + uTexel * direction * 4.0) * 0.0162162;
-          sum += sampleTex(vUV - uTexel * direction * 4.0) * 0.0162162;
-          gl_FragColor = sum;
-        }
-      `;
-
-      // Compile shaders
-      const compileShader = (type, src) => {
-        const s = gl.createShader(type);
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-          console.error(gl.getShaderInfoLog(s));
-        }
-        return s;
-      };
-
-      const createProgram = (vsSrc, fsSrc) => {
-        const p = gl.createProgram();
-        gl.attachShader(p, compileShader(gl.VERTEX_SHADER, vsSrc));
-        gl.attachShader(p, compileShader(gl.FRAGMENT_SHADER, fsSrc));
-        gl.linkProgram(p);
-        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
-          console.error(gl.getProgramInfoLog(p));
-        }
-        return p;
-      };
-
-      const hProg = createProgram(vs, fs(1, 0));
-      const vProg = createProgram(vs, fs(0, 1));
-
-      // Create quad VBO
-      const quadVBO = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, quadVBO);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-
-      // Draw quad helper
-      const drawQuad = (program, tex) => {
+      gl.bindBuffer(gl.ARRAY_BUFFER, blurCache.quadVBO);
+      
+      const drawQuad = (programObj, tex, w, h) => {
+        const program = programObj.program;
+        const locs = programObj.locs || {};
         gl.useProgram(program);
-        const loc = gl.getAttribLocation(program, 'aPos');
-        gl.bindBuffer(gl.ARRAY_BUFFER, quadVBO);
-        gl.enableVertexAttribArray(loc);
-        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-
-        gl.activeTexture(gl.TEXTURE0);
+        const aPos = locs.aPos !== undefined ? locs.aPos : gl.getAttribLocation(program, 'aPos');
+        gl.enableVertexAttribArray(aPos);
+        gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
         gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.uniform1i(gl.getUniformLocation(program, 'uTex'), 0);
-        gl.uniform2f(gl.getUniformLocation(program, 'uTexel'), 1 / width, 1 / height);
-
+        const uTex = locs.uTex !== undefined ? locs.uTex : gl.getUniformLocation(program, 'uTex');
+        if (uTex) gl.uniform1i(uTex, 0);
+        const uTexel = locs.uTexel;
+        if (uTexel) gl.uniform2f(uTexel, 1 / w, 1 / h);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       };
 
-      // Save GL state
-      const oldViewport = gl.getParameter(gl.VIEWPORT);
-      const oldFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
-      const oldBlend = gl.getParameter(gl.BLEND);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, blurCache.fbo1);
+      gl.viewport(0, 0, smallWidth, smallHeight);
+      drawQuad(blurCache.programs.copy, texture, width, height);
 
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
-      // Perform blur passes
       for (let i = 0; i < passes; i++) {
-        // Horizontal pass
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fboTemp);
-        gl.viewport(0, 0, width, height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        drawQuad(hProg, texture);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, blurCache.fbo2);
+        drawQuad(blurCache.programs.hBlur, blurCache.tempTex1, smallWidth, smallHeight);
 
-        // Vertical pass
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fboOutput);
-        gl.viewport(0, 0, width, height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        drawQuad(vProg, tempTex);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, blurCache.fbo1);
+        drawQuad(blurCache.programs.vBlur, blurCache.tempTex2, smallWidth, smallHeight);
       }
 
-      // Restore GL state
-      gl.bindFramebuffer(gl.FRAMEBUFFER, oldFramebuffer);
-      gl.viewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
-      if (!oldBlend) gl.disable(gl.BLEND);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fboOutput);
+      gl.viewport(0, 0, width, height);
+      drawQuad(blurCache.programs.copy, blurCache.tempTex1, smallWidth, smallHeight);
 
-      // Clean up
-      gl.deleteFramebuffer(fboTemp);
+      blurCache.restoreState(gl, oldState);
+
       gl.deleteFramebuffer(fboOutput);
-      gl.deleteTexture(tempTex);
-      gl.deleteProgram(hProg);
-      gl.deleteProgram(vProg);
-      gl.deleteBuffer(quadVBO);
 
       renderer.dirty = true;
     }
