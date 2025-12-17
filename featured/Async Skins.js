@@ -151,33 +151,6 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, this.quadVBO);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
     },
-    saveState(gl) {
-      const now = Date.now();
-      const cached = this._stateCache.get(gl);
-      if (cached && now - cached.ts < 200) return cached.state;
-
-      const state = {
-        viewport: gl.getParameter(gl.VIEWPORT),
-        framebuffer: gl.getParameter(gl.FRAMEBUFFER_BINDING),
-        program: gl.getParameter(gl.CURRENT_PROGRAM),
-        blend: gl.isEnabled(gl.BLEND)
-      };
-
-      this._stateCache.set(gl, { ts: now, state });
-      return state;
-    },
-    restoreState(gl, state) {
-      try {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, state.framebuffer);
-        const v = state.viewport;
-        if (v && v.length === 4) gl.viewport(v[0], v[1], v[2], v[3]);
-        gl.useProgram(state.program);
-        if (state.blend) gl.enable(gl.BLEND); else gl.disable(gl.BLEND);
-      } catch (e) {
-        // best-effort restore; ignore failures
-        console.warn('Failed to fully restore GL state:', e);
-      }
-    },
     ensureTextures(gl, width, height) {
       if (this.tempTex1 && this.lastWidth === width && this.lastHeight === height) {
         return;
@@ -511,6 +484,7 @@
                 defaultValue: 5,
               },
             },
+            hideFromPalette: true,
           },
           {
             opcode: "getSkinLoaded",
@@ -1109,11 +1083,9 @@
       gl.bindFramebuffer(gl.FRAMEBUFFER, fboOutput);
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
-      const oldState = blurCache.saveState(gl);
-
       gl.disable(gl.DEPTH_TEST);
       gl.disable(gl.CULL_FACE);
-      gl.disable(gl.BLEND);
+      gl.enable(gl.BLEND);
       gl.activeTexture(gl.TEXTURE0);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, blurCache.quadVBO);
@@ -1148,8 +1120,6 @@
       gl.bindFramebuffer(gl.FRAMEBUFFER, fboOutput);
       gl.viewport(0, 0, width, height);
       drawQuad(blurCache.programs.copy, blurCache.tempTex1, smallWidth, smallHeight);
-
-      blurCache.restoreState(gl, oldState);
 
       gl.deleteFramebuffer(fboOutput);
 
