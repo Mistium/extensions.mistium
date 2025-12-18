@@ -4,248 +4,601 @@
       "slug": "async skins",
       "id": "Async Skins",
       "name": "Async Skins",
-      "description": "",
+      "description": "Have your sprites render as other images or costumes.",
       "image": "images/Async Skins.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "Async Skins.js"
     },
     {
       "slug": "canvas",
       "id": "Canvas",
       "name": "Canvas",
-      "description": "",
+      "description": "Create and manipulate canvases with this extension",
       "image": "images/Canvas.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "Canvas.js"
     },
     {
       "slug": "discordbot",
       "id": "DiscordBot",
       "name": "DiscordBot",
-      "description": "",
+      "description": "Make discord bots in turbowarp",
       "image": "images/DiscordBot.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "DiscordBot.js"
     },
     {
       "slug": "evalplus",
       "id": "EvalPlus",
       "name": "EvalPlus",
-      "description": "",
+      "description": "Evaluate JS better (plus some dom stuff)",
       "image": "images/EvalPlus.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "EvalPlus.js"
     },
     {
       "slug": "github",
       "id": "Github",
       "name": "Github",
-      "description": "",
+      "description": "Access github from scratch",
       "image": "images/Github.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "Github.js"
     },
     {
       "slug": "htmlinputs",
       "id": "HTMLInputs",
       "name": "HTMLInputs",
-      "description": "",
+      "description": "Manage html inut elements on the stage",
       "image": "images/HTMLInputs.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "HTMLInputs.js"
     },
     {
-      "slug": "iframe+",
+      "slug": "iframe",
       "id": "Iframe+",
       "name": "Iframe+",
-      "description": "",
+      "description": "Have many iframes at once",
       "image": "images/Iframe+.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "Iframe+.js"
     },
     {
       "slug": "indexeddb",
       "id": "IndexedDB",
       "name": "IndexedDB",
-      "description": "",
+      "description": "Access and write to IndexedDB.",
       "image": "images/IndexedDB.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "IndexedDB.js"
     },
     {
       "slug": "keyhistory",
       "id": "KeyHistory",
       "name": "KeyHistory",
-      "description": "",
+      "description": "Manage previous keys simply",
       "image": "images/KeyHistory.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "KeyHistory.js"
     },
     {
       "slug": "mediautils",
       "id": "MediaUtils",
       "name": "MediaUtils",
-      "description": "",
+      "description": "Just some uilities for media devices",
       "image": "images/MediaUtils.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "MediaUtils.js"
     },
     {
-      "slug": "mist's utils",
+      "slug": "mist s utils",
       "id": "Mist's Utils",
       "name": "Mist's Utils",
-      "description": "",
+      "description": "A bunch of compiled stuff",
       "image": "images/Mist's Utils.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "Mist's Utils.js"
     },
     {
       "slug": "mistfetch",
       "id": "MistFetch",
       "name": "MistFetch",
-      "description": "",
+      "description": "my fetch extension for http and stuff cos i needed a better one for originOS",
       "image": "images/MistFetch.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "MistFetch.js"
     },
     {
       "slug": "oasm",
       "id": "OASM",
       "name": "OASM",
-      "description": "",
+      "description": "Run the full oasm interpreter except very fast.",
       "image": "images/OASM.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "OASM.js"
     },
     {
       "slug": "python",
       "id": "Python",
       "name": "Python",
-      "description": "",
+      "description": "Run python in turbowarp with piodide",
       "image": "images/Python.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "Python.js"
     },
     {
       "slug": "rdf",
       "id": "RDF",
       "name": "RDF",
-      "description": "",
+      "description": "Type restricted data formatting",
       "image": "images/RDF.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "RDF.js"
     },
     {
       "slug": "rotur",
       "id": "Rotur",
       "name": "Rotur",
-      "description": "",
+      "description": "Utilise rotur in your projects",
       "image": "images/Rotur.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
-    },
-    {
-      "slug": "tables",
-      "id": "Tables",
-      "name": "Tables",
-      "description": "",
-      "image": "images/Tables.png",
-      "by": [
-        {
-          "name": "Mistium",
-          "link": "https://github.com/Mistium"
-        }
-      ]
-    },
-    {
-      "slug": "websocketplus",
-      "id": "WebsocketPlus",
-      "name": "WebsocketPlus",
-      "description": "",
-      "image": "images/WebsocketPlus.png",
-      "by": [
-        {
-          "name": "Mistium",
-          "link": "https://github.com/Mistium"
-        }
-      ]
+      ],
+      "featured": true,
+      "filename": "Rotur.js"
     },
     {
       "slug": "roturvoice",
       "id": "roturVoice",
       "name": "roturVoice",
-      "description": "",
+      "description": "Voice and video calling for turbowarp",
       "image": "images/roturVoice.png",
       "by": [
         {
           "name": "Mistium",
           "link": "https://github.com/Mistium"
         }
-      ]
+      ],
+      "featured": true,
+      "filename": "roturVoice.js"
+    },
+    {
+      "slug": "shaders",
+      "id": "Shaders",
+      "name": "Shaders",
+      "description": "Run GLSL shaders on your sprites",
+      "image": "images/Shaders.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": true,
+      "filename": "Shaders.js"
+    },
+    {
+      "slug": "tables",
+      "id": "Tables",
+      "name": "Tables",
+      "description": "basically just compiled 2d arrays",
+      "image": "images/Tables.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": true,
+      "filename": "Tables.js"
+    },
+    {
+      "slug": "websocketplus",
+      "id": "WebsocketPlus",
+      "name": "WebsocketPlus",
+      "description": "Connect and manage multiple websocket connections",
+      "image": "images/WebsocketPlus.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": true,
+      "filename": "WebsocketPlus.js"
+    },
+    {
+      "slug": "camera",
+      "id": "Camera",
+      "name": "Camera",
+      "description": "Use the camera :P",
+      "image": "images/Camera.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Camera.js"
+    },
+    {
+      "slug": "cloudlink4 improved",
+      "id": "Cloudlink4_Improved",
+      "name": "Cloudlink4_Improved",
+      "description": "A powerful WebSocket extension for Scratch.",
+      "image": "images/Cloudlink4_Improved.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Cloudlink4_Improved.js"
+    },
+    {
+      "slug": "compiled comments",
+      "id": "Compiled Comments",
+      "name": "Compiled Comments",
+      "description": "",
+      "image": "images/Compiled Comments.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Compiled Comments.js"
+    },
+    {
+      "slug": "exportspritedatauri",
+      "id": "ExportSpriteDataURI",
+      "name": "ExportSpriteDataURI",
+      "description": "",
+      "image": "images/ExportSpriteDataURI.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "ExportSpriteDataURI.js"
+    },
+    {
+      "slug": "fast list set",
+      "id": "Fast_List_Set",
+      "name": "Fast_List_Set",
+      "description": "",
+      "image": "images/Fast_List_Set.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Fast_List_Set.js"
+    },
+    {
+      "slug": "faster blur uri",
+      "id": "Faster Blur Uri",
+      "name": "Faster Blur Uri",
+      "description": "High-performance WebGL-based stack blur with adaptive downscaling for optimal performance",
+      "image": "images/Faster Blur Uri.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Faster Blur Uri.js"
+    },
+    {
+      "slug": "faster blur uri legacy",
+      "id": "Faster Blur Uri Legacy",
+      "name": "Faster Blur Uri Legacy",
+      "description": "",
+      "image": "images/Faster Blur Uri Legacy.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Faster Blur Uri Legacy.js"
+    },
+    {
+      "slug": "faster blur uri legacy 2",
+      "id": "Faster Blur Uri Legacy 2",
+      "name": "Faster Blur Uri Legacy 2",
+      "description": "A simple extension that just blurs images from urls and data uris as fast as i could make it blur them!!!!",
+      "image": "images/Faster Blur Uri Legacy 2.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Faster Blur Uri Legacy 2.js"
+    },
+    {
+      "slug": "fastobject",
+      "id": "FastObject",
+      "name": "FastObject",
+      "description": "",
+      "image": "images/FastObject.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "FastObject.js"
+    },
+    {
+      "slug": "inputmanager",
+      "id": "InputManager",
+      "name": "InputManager",
+      "description": "Store a list of previously pressed keys. Made primarily for use in originOS (https://github.com/Mistium/Origin-OS).",
+      "image": "images/InputManager.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "InputManager.js"
+    },
+    {
+      "slug": "keyhistory legacy",
+      "id": "KeyHistory Legacy",
+      "name": "KeyHistory Legacy",
+      "description": "Manage previous keys simply",
+      "image": "images/KeyHistory Legacy.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "KeyHistory Legacy.js"
+    },
+    {
+      "slug": "lowlevelskins",
+      "id": "LowLevelSkins",
+      "name": "LowLevelSkins",
+      "description": "",
+      "image": "images/LowLevelSkins.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "LowLevelSkins.js"
+    },
+    {
+      "slug": "originosl",
+      "id": "originOSL",
+      "name": "originOSL",
+      "description": "Run OSL code in the originOSL environment through the live embed system",
+      "image": "images/originOSL.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "originOSL.js"
+    },
+    {
+      "slug": "random",
+      "id": "Random",
+      "name": "Random",
+      "description": "",
+      "image": "images/Random.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Random.js"
+    },
+    {
+      "slug": "roturvoice advanced",
+      "id": "roturVoice Advanced",
+      "name": "roturVoice Advanced",
+      "description": "",
+      "image": "images/roturVoice Advanced.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "roturVoice Advanced.js"
+    },
+    {
+      "slug": "soundutils",
+      "id": "SoundUtils",
+      "name": "SoundUtils",
+      "description": "",
+      "image": "images/SoundUtils.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "SoundUtils.js"
+    },
+    {
+      "slug": "tabutils",
+      "id": "TabUtils",
+      "name": "TabUtils",
+      "description": "Detect when the tab key is pressed and allow it to be disabled and enabled.",
+      "image": "images/TabUtils.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "TabUtils.js"
+    },
+    {
+      "slug": "uri utilities",
+      "id": "URI Utilities",
+      "name": "URI Utilities",
+      "description": "",
+      "image": "images/URI Utilities.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "URI Utilities.js"
+    },
+    {
+      "slug": "usb",
+      "id": "USB",
+      "name": "USB",
+      "description": "Just some blocks for the web usb api",
+      "image": "images/USB.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "USB.js"
+    },
+    {
+      "slug": "virtual file system",
+      "id": "Virtual File System",
+      "name": "Virtual File System",
+      "description": "in memory file system as an ext goes pretty crazy :sunglasses:",
+      "image": "images/Virtual File System.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Virtual File System.js"
     }
   ]
 }

@@ -20,57 +20,57 @@
     <div id="topbar"></div>
     <header class="site-hero" role="banner">
         <div class="inner">
-            <div class="hero-head">
-                <img class="brand-avatar" src="https://avatars.rotur.dev/mist" alt="Mistium avatar" />
-                <h1 class="site-title">Mistium Extensions</h1>
+            <div class="hero-content">
+                <div class="hero-left">
+                    <img class="brand-avatar" src="https://avatars.rotur.dev/mist" alt="Mistium avatar" />
+                    <div class="hero-text">
+                        <h1 class="site-title">Extensions</h1>
+                        <p class="tagline">Scratch / TurboWarp helper extensions</p>
+                    </div>
+                </div>
+                <div class="hero-right">
+                    <label class="toggle" title="Toggle theme">
+                        <input type="checkbox" id="themeToggle" aria-label="Toggle dark / light theme">
+                        <span class="toggle-track"><span class="toggle-thumb" aria-hidden="true"></span></span>
+                        <span class="toggle-text" id="themeLabel">Dark</span>
+                    </label>
+                </div>
             </div>
-            <p class="tagline">A collection of my experimental TurboWarp extensions.</p>
-            <p class="disclaimer" role="note">I build these for fun in my spare time. Some may be unstable or unfinished
-                &mdash; use with curiosity. Found a bug? Consider opening a pull request instead of relying on a quick
-                fix.</p>
+            <p class="disclaimer" role="note">Built for fun in my spare time. Some may be experimental or unfinished.
+                Found a bug? Consider opening a pull request.</p>
+        </div>
+    </header>
+    <div class="controls-bar">
+        <div class="inner">
             <div class="controls" aria-label="Extension browsing controls">
                 <div class="search-wrapper">
                     <input id="searchInput" type="search" placeholder="Search extensions..."
                         aria-label="Search extensions" autocomplete="off" />
-                    <button id="clearSearch" class="icon-btn" aria-label="Clear search" title="Clear search"
+                    <button id="clearSearch" class="icon-btn clear-btn" aria-label="Clear search" title="Clear search"
                         hidden>&times;</button>
                 </div>
                 <select id="sortSelect" aria-label="Sort extensions">
-                    <option value="featured-first">Sort: Featured first</option>
-                    <option value="a-z">Sort: A → Z</option>
-                    <option value="z-a">Sort: Z → A</option>
-                    <option value="new-updated">Sort: New & Updated</option>
+                    <option value="featured-first">Featured first</option>
+                    <option value="a-z">A → Z</option>
+                    <option value="z-a">Z → A</option>
+                    <option value="new-updated">New & Updated</option>
                 </select>
-                <label class="toggle" title="Toggle theme">
-                    <input type="checkbox" id="themeToggle" aria-label="Toggle dark / light theme">
-                    <span class="toggle-track"><span class="toggle-thumb" aria-hidden="true"></span></span>
-                    <span class="toggle-text" id="themeLabel">Dark</span>
-                </label>
             </div>
         </div>
-    </header>
+    </div>
     <main id="main" class="content" tabindex="-1">
         <section aria-labelledby="featuredHeading" class="section-block">
-            <div class="section-head">
-                <h2 id="featuredHeading">Featured</h2>
-                <p class="section-sub">Hand‑picked highlights</p>
-            </div>
-            <div id="featuredCards" class="card-grid" data-grid="featured" aria-live="polite"></div>
+            <h2 id="featuredHeading" class="section-title">Featured Extensions</h2>
+            <div id="featuredCards" class="card-grid featured-grid" data-grid="featured" aria-live="polite"></div>
         </section>
         <section aria-labelledby="allHeading" class="section-block">
-            <div class="section-head">
-                <h2 id="allHeading">All Extensions</h2>
-                <p class="section-sub">Full list (some may be experimental)</p>
-            </div>
+            <h2 id="allHeading" class="section-title">All Extensions</h2>
             <div id="fileCards" class="card-grid" data-grid="all" aria-live="polite"></div>
             <div id="emptyState" class="empty-state" hidden>No extensions match your search.</div>
         </section>
         <section aria-labelledby="otherHeading" class="section-block">
-            <div class="section-head">
-                <h2 id="otherHeading">Other Extension Galleries</h2>
-                <p class="section-sub">Explore more community resources</p>
-            </div>
-            <div id="otherGalleries" class="card-grid small" aria-live="polite"></div>
+            <h2 id="otherHeading" class="section-title">Community Galleries</h2>
+            <div id="otherGalleries" class="gallery-grid" aria-live="polite"></div>
         </section>
         <footer class="site-footer">
             <p><strong>Tip:</strong> Right‑click an extension link and copy its URL to add it to TurboWarp.</p>
@@ -82,7 +82,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            initCardEffects();
             initTheme();
             initKeyboardFocusStyles();
             fetch('https://raw.githubusercontent.com/Mistium/Origin-OS/main/topbar.html')
@@ -90,8 +89,10 @@
                 .then(html => { document.getElementById('topbar').innerHTML = html; })
                 .catch(error => console.error('Error fetching topbar HTML:', error));
 
-            fetchAndCacheVersions().then(() => {
-                generateProfileCards().then(() => {
+            Promise.all([fetchAndCacheVersions(), fetchExtensionMetadata()]).then(([versions, metadata]) => {
+                console.log('Versions loaded:', Object.keys(versions).length);
+                console.log('Metadata loaded:', metadata.length, 'extensions');
+                generateProfileCards(metadata).then(() => {
                     setupFilteringAndSorting();
                 });
                 generateOtherGalleries();
@@ -99,23 +100,6 @@
             document.getElementById('year').textContent = new Date().getFullYear();
         });
 
-        // Card interactive effects
-        function initCardEffects() {
-            document.addEventListener('mousemove', e => {
-                const cards = document.querySelectorAll('.profile-card, .gallery-card, .project-card, .about');
-
-                cards.forEach(card => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-
-                    card.style.setProperty('--mouse-x', `${x}px`);
-                    card.style.setProperty('--mouse-y', `${y}px`);
-                });
-            });
-        }
-
-        // Function to fetch versions data and cache it
         async function fetchAndCacheVersions() {
             try {
                 const response = await fetch('https://raw.githubusercontent.com/Mistium/extensions.mistium/main/versions.json');
@@ -128,27 +112,49 @@
             }
         }
 
-        // Function to fetch data from GitHub API
-        async function fetchData() {
+        async function fetchExtensionMetadata() {
             try {
-                const [featuredResponse, filesResponse] = await Promise.all([
-                    fetch('https://api.github.com/repos/Mistium/extensions.mistium/contents/featured'),
-                    fetch('https://api.github.com/repos/Mistium/extensions.mistium/contents/files')
-                ]);
-                const featuredData = await featuredResponse.json();
-                const filesData = await filesResponse.json();
-                return { featured: featuredData, files: filesData };
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const metadataUrl = isLocal
+                    ? './generated-metadata/extensions-v0.json'
+                    : 'https://raw.githubusercontent.com/Mistium/extensions.mistium/main/generated-metadata/extensions-v0.json';
+
+                console.log('Fetching metadata from:', metadataUrl);
+                const response = await fetch(metadataUrl);
+                const data = await response.json();
+
+                return data.extensions || [];
             } catch (error) {
-                console.error('Error fetching data:', error);
-                return { featured: [], files: [] };
+                console.error('Error fetching extension metadata:', error);
+                return [];
             }
         }
 
-        // Function to generate profile cards
-        async function generateProfileCards() {
+        function processMetadata(metadata) {
+            const featured = [];
+            const files = [];
+
+            metadata.forEach(ext => {
+                const item = {
+                    name: ext.filename,
+                    download_url: `https://raw.githubusercontent.com/Mistium/extensions.mistium/main/${ext.featured ? 'featured' : 'files'}/${ext.filename}`,
+                    metadata: ext
+                };
+
+                if (ext.featured) {
+                    featured.push(item);
+                } else {
+                    files.push(item);
+                }
+            });
+
+            return { featured, files };
+        }
+
+        async function generateProfileCards(metadata = []) {
             const featuredCardsContainer = document.getElementById("featuredCards");
             const fileCardsContainer = document.getElementById("fileCards");
-            const data = await fetchData();
+            const data = processMetadata(metadata);
 
             let cachedVersions = {};
             try {
@@ -162,7 +168,7 @@
             if (!data || !data.featured || !Array.isArray(data.featured) || !data.files || !Array.isArray(data.files)) return;
 
             data.featured.forEach(item => {
-                const itemName = item.name.split('.')[0]; // Remove file extension
+                const itemName = item.name.split('.')[0];
                 const isJsFile = item.name.endsWith('.js');
 
                 if (isJsFile) {
@@ -196,7 +202,6 @@
                     const platformHeading = document.createElement("h2");
                     platformHeading.textContent = itemName;
 
-                    // Check if the extension is new or updated
                     const versionTag = document.createElement("span");
                     versionTag.classList.add("version-tag");
                     if (!cachedVersions[item.name]) {
@@ -211,20 +216,19 @@
                     cardContent.appendChild(platformHeading);
                     const desc = document.createElement('p');
                     desc.className = 'ext-desc';
-                    desc.textContent = 'Loading description...';
+                    desc.textContent = item.metadata?.description || 'No description available yet.';
                     cardContent.appendChild(desc);
                     if (versionTag.textContent) {
                         platformHeading.appendChild(versionTag);
                     }
 
-                    // Actions
                     const actions = document.createElement('div');
                     actions.className = 'card-actions';
                     const copyBtn = document.createElement('button');
                     copyBtn.type = 'button';
                     copyBtn.className = 'icon-btn copy-btn';
                     copyBtn.setAttribute('aria-label', 'Copy extension URL');
-                    copyBtn.innerHTML = '<span class="icon">Copy Url</span>';
+                    copyBtn.innerHTML = '<span>Copy URL</span>';
                     copyBtn.dataset.url = download_url;
                     const warpLink = document.createElement('a');
                     warpLink.className = 'icon-btn warp-btn';
@@ -232,7 +236,7 @@
                     warpLink.target = '_blank';
                     warpLink.rel = 'noopener noreferrer';
                     warpLink.setAttribute('aria-label', 'Open in MistWarp');
-                    warpLink.innerHTML = '<span class="icon">MistWarp</span>';
+                    warpLink.innerHTML = '<span>Open in Warp</span>';
                     actions.append(copyBtn, warpLink);
 
                     profileCard.appendChild(cardContent);
@@ -243,7 +247,7 @@
             });
 
             data.files.forEach(item => {
-                const itemName = item.name.split('.')[0]; // Remove file extension
+                const itemName = item.name.split('.')[0];
                 const isJsFile = item.name.endsWith('.js');
 
                 if (isJsFile) {
@@ -266,7 +270,7 @@
 
                     const cardContent = document.createElement("div");
                     cardContent.classList.add("card-content");
-                    
+
                     const platformHeading = document.createElement("h2");
                     platformHeading.textContent = itemName;
                     const versionTag = document.createElement("span");
@@ -282,7 +286,7 @@
                     cardContent.appendChild(platformHeading);
                     const desc = document.createElement('p');
                     desc.className = 'ext-desc';
-                    desc.textContent = 'Loading description...';
+                    desc.textContent = item.metadata?.description || 'No description available yet.';
                     cardContent.appendChild(desc);
 
                     const actions = document.createElement('div');
@@ -291,7 +295,7 @@
                     copyBtn.type = 'button';
                     copyBtn.className = 'icon-btn copy-btn';
                     copyBtn.setAttribute('aria-label', 'Copy extension URL');
-                    copyBtn.innerHTML = '<span>Copy Url</span>';
+                    copyBtn.innerHTML = '<span>Copy URL</span>';
                     copyBtn.dataset.url = download_url;
                     const warpLink = document.createElement('a');
                     warpLink.className = 'icon-btn warp-btn';
@@ -299,7 +303,7 @@
                     warpLink.target = '_blank';
                     warpLink.rel = 'noopener noreferrer';
                     warpLink.setAttribute('aria-label', 'Open in MistWarp');
-                    warpLink.innerHTML = '<span class="icon">MistWarp</span>';
+                    warpLink.innerHTML = '<span>Open in Warp</span>';
                     actions.append(copyBtn, warpLink);
 
                     profileCard.appendChild(cardContent);
@@ -309,14 +313,10 @@
                 }
             });
 
-            // Update the cached versions to the latest versions
             localStorage.setItem('extensionVersions', JSON.stringify(versions));
-            // After initial render load descriptions
-            loadDescriptions();
             return true;
         }
 
-        // Function to generate other extension gallery links
         function generateOtherGalleries() {
             const galleries = [
                 { name: "PenguinMod", url: "https://extensions.penguinmod.com" },
@@ -330,7 +330,7 @@
                 { name: "Dino Mod :P", url: "https://github.com/GabsTheCuriousKid/FirstExtension/tree/main/extensions" },
                 { name: "Pen Group", url: "https://pen-group.github.io/extensions" },
                 { name: "Lemon", url: "https://bludisanlemon.github.io/lemons-gallery" },
-                { name: "Kubi's Extensions", url: "https://sillikubi.github.io/ExtensionPage/Projectspage.html" },
+                { name: "LeafiDev's Extensions", url: "https://leafidev.github.io/ExtensionPage/Projectspage.html?ref=mistium" },
                 { name: "CST's Extensions", url: "https://cst1229.eu.org/extensions" },
                 { name: "ElmoBear's Extensions", url: "https://kylekart.github.io/ScratchExtensions" },
                 { name: "Flufi's Gallery", url: "https://gallery.flufi.gay" },
@@ -348,25 +348,20 @@
                 galleryLink.setAttribute('data-name', gallery.name.toLowerCase());
 
                 const galleryCard = document.createElement("div");
-                galleryCard.classList.add("profile-card");
+                galleryCard.classList.add("gallery-card");
                 galleryCard.setAttribute('tabindex', '0');
                 galleryCard.setAttribute('role', 'article');
                 galleryCard.setAttribute('aria-label', gallery.name + ' gallery link');
 
-                const cardContent = document.createElement("div");
-                cardContent.classList.add("card-content");
-
                 const galleryHeading = document.createElement("h2");
                 galleryHeading.textContent = gallery.name;
 
-                cardContent.appendChild(galleryHeading);
-                galleryCard.appendChild(cardContent);
+                galleryCard.appendChild(galleryHeading);
                 galleryLink.appendChild(galleryCard);
                 otherGalleriesContainer.appendChild(galleryLink);
             });
         }
 
-        // === UX Enhancements ===
         function setupFilteringAndSorting() {
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearch');
@@ -392,9 +387,7 @@
 
                 emptyState.hidden = visibleCount !== 0;
 
-                // Sorting
                 function nameOf(el) { return el.getAttribute('data-name'); }
-                // We'll always sort ONLY the non-featured list except when user explicitly picks a-z or z-a and wants consistency
                 const nonFeatured = allCards.filter(el => !el.hasAttribute('hidden'));
                 if (sort === 'a-z') nonFeatured.sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
                 else if (sort === 'z-a') nonFeatured.sort((a, b) => nameOf(b).localeCompare(nameOf(a)));
@@ -407,8 +400,6 @@
                         if (bs - as !== 0) return bs - as;
                         return nameOf(a).localeCompare(nameOf(b));
                     });
-                } else if (sort === 'featured-first') {
-                    // No changes to containers; ensure featured visible ones unaffected
                 }
                 if (sort !== 'featured-first') {
                     const frag = document.createDocumentFragment();
@@ -449,7 +440,6 @@
             window.addEventListener('keydown', handleFirstTab);
         }
 
-        // Copy button handler (event delegation)
         document.addEventListener('click', e => {
             const btn = e.target.closest('.copy-btn');
             if (!btn) return;
@@ -465,34 +455,6 @@
                 setTimeout(() => { btn.innerHTML = '<span class="icon">📋</span>'; }, 1500);
             });
         });
-
-        // Load descriptions from raw JS files (looks for // Description: ... )
-        function loadDescriptions() {
-            const links = Array.from(document.querySelectorAll('.gallery-link'));
-            const tasks = links.map(link => ({ link, raw: link.getAttribute('data-raw-url') }));
-            const limit = 5; // concurrency limit
-            let index = 0;
-            function next() {
-                if (index >= tasks.length) return;
-                const batch = tasks.slice(index, index + limit);
-                index += limit;
-                Promise.all(batch.map(t => fetch(t.raw).then(r => r.ok ? r.text() : '').then(txt => ({ ...t, txt })).catch(() => ({ ...t, txt: '' }))))
-                    .then(results => {
-                        results.forEach(res => {
-                            if (!res.txt) return;
-                            const m = res.txt.match(/^[ \t]*\/\/\s*Description\s*:\s*(.+)$/im);
-                            const descText = m ? m[1].trim() : null;
-                            const p = res.link.querySelector('.ext-desc');
-                            if (p) {
-                                p.textContent = descText ? truncate(descText, 140) : 'No description available yet.';
-                            }
-                        });
-                        next();
-                    });
-            }
-            function truncate(str, max) { return str.length > max ? str.slice(0, max - 1) + '…' : str; }
-            next();
-        }
     </script>
 
 </body>
