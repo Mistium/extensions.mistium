@@ -29,6 +29,11 @@
                 color2: '#4a67d6',
                 blocks: [
                     {
+                        opcode: 'openExampleProject',
+                        blockType: Scratch.BlockType.BUTTON,
+                        text: 'open example project',
+                    },
+                    {
                         opcode: 'connect',
                         blockType: Scratch.BlockType.COMMAND,
                         text: 'connect to origin'
@@ -94,6 +99,10 @@
                     }
                 }
             };
+        }
+
+        openExampleProject() {
+            window.open("https://warp.mistium.com/editor?project_url=https://extensions.mistium.com/examples/originOSL%20example.sb3")
         }
 
         connect() {

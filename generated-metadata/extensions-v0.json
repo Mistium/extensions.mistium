@@ -286,6 +286,21 @@
       "filename": "Tables.js"
     },
     {
+      "slug": "virtual file system",
+      "id": "Virtual File System",
+      "name": "Virtual File System",
+      "description": "in memory file system as an ext goes pretty crazy :sunglasses:",
+      "image": "images/Virtual File System.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": true,
+      "filename": "Virtual File System.js"
+    },
+    {
       "slug": "websocketplus",
       "id": "WebsocketPlus",
       "name": "WebsocketPlus",
@@ -584,21 +599,6 @@
       ],
       "featured": false,
       "filename": "USB.js"
-    },
-    {
-      "slug": "virtual file system",
-      "id": "Virtual File System",
-      "name": "Virtual File System",
-      "description": "in memory file system as an ext goes pretty crazy :sunglasses:",
-      "image": "images/Virtual File System.png",
-      "by": [
-        {
-          "name": "Mistium",
-          "link": "https://github.com/Mistium"
-        }
-      ],
-      "featured": false,
-      "filename": "Virtual File System.js"
     }
   ]
 }
