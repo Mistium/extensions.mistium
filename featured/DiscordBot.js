@@ -28,6 +28,10 @@
       this.status = "online";
       this.activity = null;
       
+      this.messageCache = new Map();
+      this.maxCachePerChannel = 100;
+      this.guildCache = new Map();
+      
       this.conn = {
         isConnecting: false,
         attempts: 0,
@@ -81,6 +85,22 @@
             opcode: 'botinfo',
             blockType: Scratch.BlockType.REPORTER,
             text: 'bot information',
+          },
+          {
+            opcode: 'getGuilds',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get all guilds',
+          },
+          {
+            opcode: 'getGuildInfo',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get guild info [GUILD_ID]',
+            arguments: {
+              GUILD_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'guild_id'
+              }
+            }
           },
           
           '---',
@@ -240,6 +260,39 @@
             opcode: 'totalMessages',
             blockType: Scratch.BlockType.REPORTER,
             text: 'total messages',
+          },
+          
+          '---',
+          
+          // ========================
+          //       Cache
+          // ========================
+          {
+            opcode: 'clearCache',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'clear message cache for channel [CHANNEL_ID]',
+            arguments: {
+              CHANNEL_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'channel_id'
+              }
+            }
+          },
+          {
+            opcode: 'clearAllCache',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'clear all message cache',
+          },
+          {
+            opcode: 'getCacheSize',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'cached messages in channel [CHANNEL_ID]',
+            arguments: {
+              CHANNEL_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'channel_id'
+              }
+            }
           },
           
           '---',
@@ -446,11 +499,54 @@
     }
 
     connected() {
-      return this.client && this.client.readyState === WebSocket.OPEN;
+      return (this.client && this.client.readyState === WebSocket.OPEN) || false;
     }
 
     botinfo() {
       return bot_data ? JSON.stringify(bot_data) : "{}";
+    }
+
+    getGuilds() {
+      if (this.guildCache.size > 0) {
+        const guilds = Array.from(this.guildCache.values());
+        return Promise.resolve(JSON.stringify(guilds));
+      }
+      
+      return new Promise(resolve => {
+        this._apiRequest('/users/@me/guilds')
+          .then(data => {
+            if (Array.isArray(data)) {
+              data.forEach(guild => this._cacheGuild(guild));
+              resolve(JSON.stringify(data));
+            } else {
+              resolve('[]');
+            }
+          })
+          .catch(err => {
+            util.err('Get guilds error:', err);
+            resolve('[]');
+          });
+      });
+    }
+
+    getGuildInfo({ GUILD_ID }) {
+      const guildId = util.s(GUILD_ID);
+      
+      if (this.guildCache.has(guildId)) {
+        return Promise.resolve(JSON.stringify(this.guildCache.get(guildId)));
+      }
+      
+      return new Promise(resolve => {
+        this._apiRequest(`/guilds/${guildId}`)
+          .then(data => {
+            this._cacheGuild(data);
+            resolve(JSON.stringify(data));
+          })
+          .catch(err => {
+            util.err('Get guild info error:', err);
+            resolve('{"error": "Failed to get guild info"}');
+          });
+      });
     }
 
     _connect(resume = false) {
@@ -564,15 +660,95 @@
           this.conn.isConnecting = false;
           this.conn.attempts = 0;
           break;
+        case 'GUILD_CREATE':
+          this._cacheGuild(data.d);
+          break;
+        case 'GUILD_UPDATE':
+          this._cacheGuild(data.d);
+          break;
+        case 'GUILD_DELETE':
+          this.guildCache.delete(data.d.id);
+          break;
         case 'MESSAGE_CREATE':
           this.messages.push(JSON.stringify(data.d));
           util.limit(this.messages, 100);
+          this._cacheMessage(data.d);
+          break;
+        case 'MESSAGE_UPDATE':
+          this._updateCachedMessage(data.d);
+          break;
+        case 'MESSAGE_DELETE':
+          this._deleteCachedMessage(data.d.channel_id, data.d.id);
           break;
         case 'INTERACTION_CREATE':
           this.interactions.push(JSON.stringify(data.d));
           util.limit(this.interactions, 100);
           break;
       }
+    }
+
+    _cacheMessage(message) {
+      if (!message.channel_id || !message.id) return;
+      
+      if (!this.messageCache.has(message.channel_id)) {
+        this.messageCache.set(message.channel_id, []);
+      }
+      
+      const cache = this.messageCache.get(message.channel_id);
+      
+      const existingIndex = cache.findIndex(m => m.id === message.id);
+      if (existingIndex !== -1) {
+        cache[existingIndex] = message;
+      } else {
+        cache.unshift(message);
+      }
+      
+      while (cache.length > this.maxCachePerChannel) {
+        cache.pop();
+      }
+    }
+
+    _updateCachedMessage(messageUpdate) {
+      if (!messageUpdate.channel_id || !messageUpdate.id) return;
+      
+      const cache = this.messageCache.get(messageUpdate.channel_id);
+      if (!cache) return;
+      
+      const index = cache.findIndex(m => m.id === messageUpdate.id);
+      if (index !== -1) {
+        cache[index] = { ...cache[index], ...messageUpdate };
+      }
+    }
+
+    _deleteCachedMessage(channelId, messageId) {
+      const cache = this.messageCache.get(channelId);
+      if (!cache) return;
+      
+      const index = cache.findIndex(m => m.id === messageId);
+      if (index !== -1) {
+        cache.splice(index, 1);
+      }
+    }
+
+    _cacheGuild(guild) {
+      if (!guild.id) return;
+      this.guildCache.set(guild.id, guild);
+    }
+
+    clearCache({ CHANNEL_ID }) {
+      const channelId = util.s(CHANNEL_ID);
+      this.messageCache.delete(channelId);
+    }
+
+    clearAllCache() {
+      this.messageCache.clear();
+      this.guildCache.clear();
+    }
+
+    getCacheSize({ CHANNEL_ID }) {
+      const channelId = util.s(CHANNEL_ID);
+      const cache = this.messageCache.get(channelId);
+      return cache ? cache.length : 0;
     }
 
     // ==============================================
@@ -640,9 +816,23 @@
     }
 
     getMessage({ MESSAGE_ID, CHANNEL_ID }) {
+      const messageId = util.s(MESSAGE_ID);
+      const channelId = util.s(CHANNEL_ID);
+      
+      const cache = this.messageCache.get(channelId);
+      if (cache) {
+        const cachedMsg = cache.find(m => m.id === messageId);
+        if (cachedMsg) {
+          return Promise.resolve(JSON.stringify(cachedMsg));
+        }
+      }
+      
       return new Promise(resolve => {
-        this._apiRequest(`/channels/${util.s(CHANNEL_ID)}/messages/${util.s(MESSAGE_ID)}`)
-          .then(data => resolve(JSON.stringify(data)))
+        this._apiRequest(`/channels/${channelId}/messages/${messageId}`)
+          .then(data => {
+            this._cacheMessage(data);
+            resolve(JSON.stringify(data));
+          })
           .catch(err => {
             util.err('Get msg error:', err);
             resolve('{"error": "Failed to get message"}');
@@ -652,10 +842,23 @@
 
     getChannelMessages({ AMOUNT, CHANNEL_ID }) {
       let amount = Math.min(Math.max(parseInt(AMOUNT) || 1, 1), 100);
+      const channelId = util.s(CHANNEL_ID);
+      
+      const cache = this.messageCache.get(channelId);
+      if (cache && cache.length >= amount) {
+        return Promise.resolve(JSON.stringify(cache.slice(0, amount)));
+      }
       
       return new Promise(resolve => {
-        this._apiRequest(`/channels/${util.s(CHANNEL_ID)}/messages?limit=${amount}`)
-          .then(data => resolve(JSON.stringify(Array.isArray(data) ? data : [])))
+        this._apiRequest(`/channels/${channelId}/messages?limit=${amount}`)
+          .then(data => {
+            if (Array.isArray(data)) {
+              data.forEach(msg => this._cacheMessage(msg));
+              resolve(JSON.stringify(data));
+            } else {
+              resolve('[]');
+            }
+          })
           .catch(() => resolve('[]'));
       });
     }
@@ -676,10 +879,18 @@
     }
 
     deleteMessage({ MESSAGE_ID, CHANNEL_ID }) {
+      const channelId = util.s(CHANNEL_ID);
+      const messageId = util.s(MESSAGE_ID);
+      
       return this._apiRequest(
-        `/channels/${util.s(CHANNEL_ID)}/messages/${util.s(MESSAGE_ID)}`, 
+        `/channels/${channelId}/messages/${messageId}`, 
         { method: 'DELETE' }
-      ).catch(err => util.err('Delete error:', err));
+      )
+      .then(result => {
+        this._deleteCachedMessage(channelId, messageId);
+        return result;
+      })
+      .catch(err => util.err('Delete error:', err));
     }
 
     sendReply({ REPLY, MESSAGE_ID, CHANNEL_ID }) {
@@ -797,7 +1008,6 @@
     }
 
     addCommandOption({ TYPE, NAME, DESCRIPTION, REQUIRED, OPTIONS }) {
-      // Map menu selection to Discord API type values
       const typeMap = {
         'string': 3,
         'integer': 4,
@@ -807,7 +1017,7 @@
       };
       
       return this._addOptionToList({
-        type: typeMap[TYPE] || 3, // Default to string if invalid type
+        type: typeMap[TYPE] || 3,
         name: util.s(NAME),
         description: util.s(DESCRIPTION),
         required: Boolean(REQUIRED)
