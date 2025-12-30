@@ -54,7 +54,7 @@
           {
             opcode: 'setToken',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'set token to [TOKEN]',
+            text: 'set token to [TOKEN] (THIS ALLOWS FULL ACCESS TO YOUR BOT, DO NOT SHARE EVER)',
             arguments: {
               TOKEN: {
                 type: Scratch.ArgumentType.STRING,
