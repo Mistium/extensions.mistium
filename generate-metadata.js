@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 
 const FEATURED_DIR = path.join(__dirname, 'featured');
-const FILES_DIR = path.join(__dirname, 'files');
 const OUTPUT_FILE = path.join(__dirname, 'generated-metadata', 'extensions-v0.json');
 
 function extractDescription(content) {
@@ -70,14 +69,11 @@ function generateMetadata() {
   
   console.log('Processing featured extensions:');
   const featuredExtensions = processExtensions(FEATURED_DIR, true);
-  
-  console.log('\nProcessing file extensions:');
-  const fileExtensions = processExtensions(FILES_DIR, false);
+
   
   featuredExtensions.sort((a, b) => a.name.localeCompare(b.name));
-  fileExtensions.sort((a, b) => a.name.localeCompare(b.name));
   
-  const allExtensions = [...featuredExtensions, ...fileExtensions];
+  const allExtensions = featuredExtensions;
   
   const metadata = {
     extensions: allExtensions.map(ext => ({
@@ -102,7 +98,6 @@ function generateMetadata() {
   console.log(`\n✓ Metadata generated successfully!`);
   console.log(`  Total extensions: ${allExtensions.length}`);
   console.log(`  Featured: ${featuredExtensions.length}`);
-  console.log(`  Other: ${fileExtensions.length}`);
   console.log(`  Output: ${OUTPUT_FILE}`);
 }
 
