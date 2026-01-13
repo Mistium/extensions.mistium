@@ -451,6 +451,21 @@
       "filename": "FastObject.js"
     },
     {
+      "slug": "idbfs",
+      "id": "idbFS",
+      "name": "idbFS",
+      "description": "Persistent file system using IndexedDB",
+      "image": "images/idbFS.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "idbFS.js"
+    },
+    {
       "slug": "inputmanager",
       "id": "InputManager",
       "name": "InputManager",
