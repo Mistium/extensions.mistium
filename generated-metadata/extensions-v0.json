@@ -196,6 +196,21 @@
       "filename": "OASM.js"
     },
     {
+      "slug": "persistent file system",
+      "id": "Persistent File System",
+      "name": "Persistent File System",
+      "description": "Persistent file system using IndexedDB",
+      "image": "images/Persistent File System.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": true,
+      "filename": "Persistent File System.js"
+    },
+    {
       "slug": "python",
       "id": "Python",
       "name": "Python",
@@ -449,21 +464,6 @@
       ],
       "featured": false,
       "filename": "FastObject.js"
-    },
-    {
-      "slug": "idbfs",
-      "id": "idbFS",
-      "name": "idbFS",
-      "description": "Persistent file system using IndexedDB",
-      "image": "images/idbFS.png",
-      "by": [
-        {
-          "name": "Mistium",
-          "link": "https://github.com/Mistium"
-        }
-      ],
-      "featured": false,
-      "filename": "idbFS.js"
     },
     {
       "slug": "inputmanager",
