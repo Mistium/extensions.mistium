@@ -44,6 +44,20 @@ class IndexedDBFileSystem {
         });
     }
 
+    async _setDatabaseName(name) {
+        if (!name || typeof name !== 'string') return;
+
+        if (this.db) {
+            this.db.close();
+            this.db = null;
+            this.ready = false;
+        }
+
+        this.dbName = name;
+        this.initPromise = this._initDB();
+        await this.initPromise;
+    }
+
     async _ensureReady() {
         if (!this.ready) {
             await this.initPromise;
@@ -214,6 +228,14 @@ class IndexedDBFileSystem {
             request.onsuccess = () => resolve(request.result || []);
             request.onerror = () => reject(request.error);
         });
+    }
+
+    async setDatabaseId({ DB_ID }) {
+        try {
+            await this._setDatabaseName(String(DB_ID));
+        } catch (e) {
+            console.error('Error setting DB ID:', e);
+        }
     }
 
     async createFile({ FILE_PATH }) {
@@ -614,6 +636,18 @@ class IndexedDBFileSystem {
             color1: '#4a90e2',
             color2: '#357abd',
             blocks: [
+                {
+                    opcode: 'setDatabaseId',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'set database id to [DB_ID]',
+                    arguments: {
+                        DB_ID: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'MyProjectVFS'
+                        }
+                    }
+                },
+                '---',
                 {
                     opcode: 'createFile',
                     blockType: Scratch.BlockType.COMMAND,
