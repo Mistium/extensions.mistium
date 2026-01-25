@@ -784,7 +784,7 @@
       const rotationCenterY = costume.rotationCenterY;
 
       let rotationCenter = [rotationCenterX, rotationCenterY];
-      if (!rotationCenterX || !rotationCenterY) rotationCenter = null;
+      if (!rotationCenterX || !rotationCenterY) rotationCenter = undefined;
 
       let oldSkinId = null;
       if (createdSkins.has(skinName)) {
@@ -815,7 +815,7 @@
 
       loadingSkins.add(skinName);
       try {
-        const skinId = await this._createURLSkin(url, null, skinName);
+        const skinId = await this._createURLSkin(url, undefined, skinName);
         loadingSkins.delete(skinName);
 
         if (!skinId) return;
