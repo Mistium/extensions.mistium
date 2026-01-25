@@ -753,7 +753,7 @@
       loadingSkins.add(skinName);
       try {
         const dataUri = await this.blurImage({ URL: url, BLUR: blur });
-        const skinId = await this._createURLSkin(dataUri, null, skinName);
+        const skinId = await this._createURLSkin(dataUri, undefined, skinName);
         loadingSkins.delete(skinName);
 
         if (!skinId) return;
