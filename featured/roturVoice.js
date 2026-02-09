@@ -208,7 +208,7 @@
             text: 'call partner name'
           },
           {
-            opcode: 'openExampleProject',
+            func: 'openExampleProject',
             blockType: Scratch.BlockType.BUTTON,
             text: 'open example project',
           }
