@@ -934,23 +934,24 @@
       ctx.stroke()
     }
 
-    stampImage({ CANVAS_ID, URL, X, Y, WIDTH, HEIGHT }) {
+    async stampImage({ CANVAS_ID, URL, X, Y, WIDTH, HEIGHT }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return;
       WIDTH = cast.toNumber(WIDTH);
       HEIGHT = cast.toNumber(HEIGHT);
+      X = cast.toNumber(X);
+      Y = cast.toNumber(Y);
       const ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.src = cast.toString(URL);
-      img.onload = () => {
-        const translatedX1 = (canvas.width / 2) + cast.toNumber(X) - (WIDTH / 2);
-        const translatedY1 = (canvas.height / 2) - cast.toNumber(Y) - (HEIGHT / 2);
-        ctx.drawImage(img, translatedX1, translatedY1, WIDTH, HEIGHT);
-      }
-      img.onerror = (err) => {
-        console.log(`Error loading image: ${err}`);
-      }
+
+      const bitmap = await fetch(URL)
+        .then(r => r.blob())
+        .then(b => createImageBitmap(b));
+
+      const translatedX = (canvas.width / 2) + X - (WIDTH / 2);
+      const translatedY = (canvas.height / 2) - Y - (HEIGHT / 2);
+      ctx.drawImage(bitmap, translatedX, translatedY, WIDTH, HEIGHT);
+      bitmap.close();
     }
 
     createPattern({ CANVAS_ID, URL, DIRECTION, X, Y, WIDTH, HEIGHT }) {
