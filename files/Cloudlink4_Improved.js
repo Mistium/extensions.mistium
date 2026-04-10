@@ -1,14 +1,9 @@
-// Name: Cloudlink
+// Name: Cloudlink V4 Improved
 // ID: cloudlink
 // Description: A powerful WebSocket extension for Scratch.
 // By: MikeDEV
 // License: MIT
 
-/* eslint-disable */
-// prettier-ignore
-/* generated l10n code */
-Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my username": "(VANHA - ÄLÄ KÄYTÄ UUSISSA PROJEKTEISSA) oma käyttäjänimi", "_A name": "nimi", "_All data": "kaikki data", "_Another name": "toinen nimi", "_Apple": "omena", "_Banana": "banaani", "_Direct data": "kohdennettu data", "_Global data": "globaali data", "_Global variables": "globaalit muuttujat", "_Hide old blocks": "Piilota vanhat lohkot", "_ID [ID] connected?": "onko tunniste [ID] yhdistetty?", "_Private data": "yksityinen data", "_Private variables": "yksityiset muuttujat", "_Show old blocks": "Näytä vanhat lohkot", "_Status code": "tilakoodi", "_When I receive new [TYPE] data for [VAR]": "kun vastaanotan uuden kohteen [TYPE] datan muuttujalle [VAR]", "_[NUM] from JSON array [ARRAY]": "[NUM] JSON-taulukossa [ARRAY]", "_[PATH] of [JSON_STRING]": "[PATH] JSON-koodissa [JSON_STRING]", "_attach listener [ID] to next packet": "lisää kuuntelija [ID] seuraavaan datapakettiin", "_clear all packets for [TYPE]": "tyhjennä kaikki kohteen [TYPE] datapaketit", "_connect to [IP]": "yhdistä palvelimeen [IP]", "_connect to server [ID]": "yhdistä palvelimeen nro [ID]", "_connected?": "onko yhdistetty?", "_convert [toBeJSONified] to JSON": "muunna [toBeJSONified] JSON-muotoon", "_direct": "kohdennettu", "_direct data": "kohdennettu data", "_disconnect": "katkaise yhteys", "_extension version": "laajennuksen versio", "_failed to connnect?": "epäonnistuiko yhteyden muodostaminen?", "_fetch data from URL [url]": "hae data URL-osoitteesta [url]", "_global data": "globaali data", "_got new [TYPE] data for variable [VAR]?": "onko uusi [TYPE] [VAR] data saapunut?", "_got new [TYPE]?": "onko uusi [TYPE] saapunut?", "_got new packet with listener [ID]?": "onko uusi datapaketti kuuntelijalla [ID] saapunut?", "_id": "tunniste", "_is [JSON_STRING] valid JSON?": "onko [JSON_STRING] kelvollista JSON-koodia?", "_link status": "yhteyden tila", "_link to room(s) [ROOMS]": "yhdistä huoneisiin [ROOMS]", "_linked to rooms?": "onko yhdistetty huoneisiin?", "_lost connection?": "katkesiko yhteys?", "_my IP address": "oma IP-osoite", "_my user object": "oma käyttäjäolio", "_my username": "oma käyttäjänimi", "_packet queue for [TYPE]": "kohteen [TYPE] datapakettijono", "_private data": "yksityinen data", "_reset got new [ID] listener status": "nollaa uusi kuuntelijan [ID] tila", "_reset got new [TYPE] [VAR] status": "nollaa uusi kohteen [TYPE] muuttujan [VAR] tila", "_reset got new [TYPE] status": "nollaa uusi kohteen [TYPE] tila", "_response for listener [ID]": "vastaus kuuntelijalle [ID]", "_select room(s) [ROOMS] for next packet": "valitse huoneet [ROOMS] seuraavalle datapaketille", "_send [DATA]": "lähetä [DATA]", "_send [DATA] to [ID]": "lähetä [DATA] käyttäjälle [ID]", "_send command [CMD] [ID] [DATA]": "lähetä komento [CMD] [ID] [DATA]", "_send command without ID [CMD] [DATA]": "lähetä komento ilman tunnistetta [CMD] [DATA]", "_send request with method [method] for URL [url] with data [data] and headers [headers]": "lähetä pyyntö menetelmällä [method] URL-osoitteeseen [url] datalla [data] ja otsakkeilla [headers]", "_send variable [VAR] to [ID] with data [DATA]": "lähetä muuttuja [VAR] käyttäjälle [ID] datalla [DATA]", "_send variable [VAR] with data [DATA]": "lähetä muuttuja [VAR] datalla [DATA]", "_server MOTD": "palvelimen viesti", "_server list": "palvelinluettelo", "_server version": "palvelimen versio", "_set [NAME] as username": "aseta käyttäjänimeksi [NAME]", "_size of queue for [TYPE]": "kohteen [TYPE] jonon koko", "_status code": "tilakoodi", "_unlink from all rooms": "katkaise yhteys kaikkiin huoneisiin", "_username synced?": "onko käyttäjänimi synkronoitu?", "_usernames": "käyttäjänimet", "_val": "arvo", "_when I receive new [TYPE] message": "kun vastaanotan uuden kohteen [TYPE] viestin", "_when I receive new message with listener [ID]": "kun vastaanotan uuden viestin kuuntelijalla [ID]", "_when connected": "kun yhteys muodostuu", "_when disconnected": "kun yhteys katkeaa" }, "nl": { "_[PATH] of [JSON_STRING]": "[PATH] van [JSON_STRING]", "_id": "ID" }, "ru": { "_[PATH] of [JSON_STRING]": "[PATH] из [JSON_STRING]", "_id": "ID" }, "zh-cn": { "_(OLD - DO NOT USE IN NEW PROJECTS) my username": "(旧版 - 不要在新项目中使用它) 我的用户名", "_A name": "一个名字", "_All data": "所有数据", "_Another name": "另一个名称", "_Apple": "苹果", "_Banana": "香蕉", "_Direct data": "直接数据", "_Global data": "全局数据", "_Global variables": "全局变量", "_Hide old blocks": "隐藏旧积木", "_ID [ID] connected?": "ID[ID]连接？", "_Private data": "私有数据", "_Private variables": "私有变量", "_Show old blocks": "显示旧积木", "_Status code": "状态码", "_When I receive new [TYPE] data for [VAR]": "当我收到新的用于[VAR]的[TYPE]信息", "_[NUM] from JSON array [ARRAY]": "JSON数组[ARRAY]的[NUM]", "_[PATH] of [JSON_STRING]": "[JSON_STRING]中的[PATH]", "_[TYPE] [VAR] data": "[TYPE][VAR]数据", "_attach listener [ID] to next packet": "附加监听器 [ID] 到下一个数据包", "_clear all packets for [TYPE]": "清空[TYPE]的所有数据包", "_connect to [IP]": "连接到[IP]", "_connect to server [ID]": "连接到服务器[ID]", "_connected?": "已连接？", "_convert [toBeJSONified] to JSON": "将[toBeJSONified]转为JSON", "_direct": "直接", "_direct data": "直接数据", "_disconnect": "断开连接", "_extension version": "扩展版本", "_failed to connnect?": "连接失败？", "_fetch data from URL [url]": "从 URL [url]获取数据", "_global data": "全局数据", "_got new [TYPE] data for variable [VAR]?": "收到新的用于变量[VAR]的[TYPE]数据？", "_got new [TYPE]?": "收到新的[TYPE]？", "_got new packet with listener [ID]?": "从监听器[ID]收到新的包？", "_id": "ID", "_is [JSON_STRING] valid JSON?": "[JSON_STRING]是合法JSON？", "_link status": "链接状态", "_link to room(s) [ROOMS]": "连接到房间(列表)[ROOMS]", "_linked to rooms?": "已连接到房间？", "_lost connection?": "连接丢失？", "_my IP address": "我的IP地址", "_my user object": "我的用户对象", "_my username": "我的用户名", "_packet queue for [TYPE]": "[TYPE]的包队列", "_private data": "私有数据", "_reset got new [ID] listener status": "重置收到新的[ID]监听器的状态", "_reset got new [TYPE] [VAR] status": "重置收到新的[TYPE][VAR]状态", "_reset got new [TYPE] status": "重置收到新的[TYPE]状态", "_response for listener [ID]": "监听器[ID]的回应", "_select room(s) [ROOMS] for next packet": "为下一个数据包选择房间(列表)[ROOMS]", "_send [DATA]": "发送[DATA]", "_send [DATA] to [ID]": "发送[DATA]给[ID]", "_send command [CMD] [ID] [DATA]": "发送命令[CMD][ID][DATA]", "_send command without ID [CMD] [DATA]": "发送没有ID[CMD][DATA]的命令", "_send request with method [method] for URL [url] with data [data] and headers [headers]": "发送[method]方法的请求给URL[url]携带数据[data]头部信息 [headers]", "_send variable [VAR] to [ID] with data [DATA]": "发送变量[VAR]给[ID]附带数据[DATA]", "_send variable [VAR] with data [DATA]": "发送变量[VAR]附带数据[DATA]", "_server MOTD": "服务器MOTD", "_server list": "服务器列表", "_server version": "服务器版本", "_set [NAME] as username": "设置[NAME]为用户名", "_size of queue for [TYPE]": "[TYPE]的队列大小", "_status code": "状态码", "_unlink from all rooms": "从所有房间断开连接", "_username synced?": "已同步用户名？", "_usernames": "用户名列表", "_when I receive new [TYPE] message": "当我收到新的[TYPE]信息", "_when I receive new message with listener [ID]": "当我通过监听器[ID]接收到新消息时`", "_when connected": "当建立连接", "_when disconnected": "当断开连接" } });
-/* end generated l10n code */
 (function (Scratch) {
 
   /*
@@ -330,7 +325,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     }
 
     // See if the outgoing val argument can be converted into JSON
-    if (message.hasOwnProperty("val")) {
+    if (Object.prototype.hasOwnProperty.call(message, "val")) {
       try {
         message.val = JSON.parse(message.val);
       } catch { }
@@ -344,7 +339,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
         message.listener = clVars.listeners.enablerValue;
 
         // Create listener
-        clVars.listeners.varStates[String(args.ID)] = {
+        clVars.listeners.varStates[message.listener] = {
           hasNew: false,
           varState: {},
           eventHatTick: false,
@@ -467,7 +462,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     };
 
     // Handle packet commands
-    if (!packet.hasOwnProperty("cmd")) {
+    if (!Object.prototype.hasOwnProperty.call(packet, "cmd")) {
       //console.error("[CloudLink] Incoming message read failure! This message doesn't contain the required \"cmd\" key. Is this really a CloudLink server?", packet);
       return;
     }
@@ -509,7 +504,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
 
       case "direct":
         // Handle events from older server versions
-        if (packet.val.hasOwnProperty("cmd")) {
+        if (Object.prototype.hasOwnProperty.call(packet.val, "cmd")) {
           switch (packet.val.cmd) {
             // Server 0.1.5 (at least)
             case "vers":
@@ -555,7 +550,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
         else {
 
           // Handle setup listeners
-          if (packet.hasOwnProperty("listener")) {
+          if (Object.prototype.hasOwnProperty.call(packet, "listener")) {
             switch (packet.listener) {
               case "username_cfg":
 
@@ -646,7 +641,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
         // Protocol v3-v4 (0.1.9.x - latest, 0.2.0) uses "mode" to add/set/remove entries to the userlist.
         else {
           // Check for "mode" key
-          if (!packet.hasOwnProperty("mode")) {
+          if (!Object.prototype.hasOwnProperty.call(packet, "mode")) {
             //console.warn("[CloudLink] Userlist message did not specify \"mode\" while running in protocol mode 3 or 4.");
             return;
           };
@@ -704,7 +699,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     }
 
     // Handle listeners
-    if (packet.hasOwnProperty("listener")) {
+    if (Object.prototype.hasOwnProperty.call(packet, "listener")) {
       if (clVars.listeners.current.includes(String(packet.listener))) {
 
         // Remove the listener from the currently listening list
@@ -825,7 +820,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     getInfo() {
       return {
         id: 'cloudlink',
-        name: 'CloudLink',
+        name: 'CloudLink V4',
         docsURI: "https://github.com/MikeDev101/cloudlink/wiki/Scratch-Client",
         blocks: [
 
@@ -1712,7 +1707,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     // Reporter - Returns data for a specific listener ID.
     // ID - String (listener ID)
     returnListenerData(args) {
-      if (!clVars.listeners.varStates.hasOwnProperty(String(args.ID))) {
+      if (!Object.prototype.hasOwnProperty.call(clVars.listeners.varStates, String(args.ID))) {
         //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
         return "";
       }
@@ -1797,6 +1792,8 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
           return clVars.gvar.queue.length > 0;
         case 'Private variables':
           return clVars.pvar.queue.length > 0;
+        default:
+          return false;
       }
     }
 
@@ -1825,6 +1822,8 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
             clVars.gvar.queue.length +
             clVars.pvar.queue.length
           );
+        default:
+          return 0;
       }
     }
 
@@ -1853,6 +1852,8 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
             gvar: clVars.gvar.queue,
             pvar: clVars.pvar.queue
           });
+        default:
+          return "";
       }
     }
 
@@ -1861,17 +1862,19 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     returnVarData(args) {
       switch (args.TYPE) {
         case 'Global variables':
-          if (!clVars.gvar.varStates.hasOwnProperty(String(args.VAR))) {
+          if (!Object.prototype.hasOwnProperty.call(clVars.gvar.varStates, String(args.VAR))) {
             //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
             return "";
           }
           return clVars.gvar.varStates[String(args.VAR)].varState;
         case 'Private variables':
-          if (!clVars.pvar.varStates.hasOwnProperty(String(args.VAR))) {
+          if (!Object.prototype.hasOwnProperty.call(clVars.pvar.varStates, String(args.VAR))) {
             //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
             return "";
           }
           return clVars.pvar.varStates[String(args.VAR)].varState;
+        default:
+          return "";
       }
     }
 
@@ -1958,7 +1961,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
       if (clVars.linkState.status != 2) return false;
 
       // Listener must exist
-      if (!clVars.listeners.varStates.hasOwnProperty(args.ID)) return false;
+      if (!Object.prototype.hasOwnProperty.call(clVars.listeners.varStates, args.ID)) return false;
 
       // Run event
       if (clVars.listeners.varStates[args.ID].eventHatTick) {
@@ -2034,7 +2037,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
         case 'Global variables':
 
           // Variable must exist
-          if (!clVars.gvar.varStates.hasOwnProperty(String(args.VAR))) break;
+          if (!Object.prototype.hasOwnProperty.call(clVars.gvar.varStates, String(args.VAR))) break;
           if (clVars.gvar.varStates[String(args.VAR)].eventHatTick) {
             clVars.gvar.varStates[String(args.VAR)].eventHatTick = false;
             return true;
@@ -2045,7 +2048,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
         case 'Private variables':
 
           // Variable must exist
-          if (!clVars.pvar.varStates.hasOwnProperty(String(args.VAR))) break;
+          if (!Object.prototype.hasOwnProperty.call(clVars.pvar.varStates, String(args.VAR))) break;
           if (clVars.pvar.varStates[String(args.VAR)].eventHatTick) {
             clVars.pvar.varStates[String(args.VAR)].eventHatTick = false;
             return true;
@@ -2123,13 +2126,13 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     returnIsNewVarData(args) {
       switch (args.TYPE) {
         case 'Global variables':
-          if (!clVars.gvar.varStates.hasOwnProperty(String(args.VAR))) {
+          if (!Object.prototype.hasOwnProperty.call(clVars.gvar.varStates, String(args.VAR))) {
             //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
             return false;
           }
           return clVars.gvar.varStates[String(args.ID)].hasNew;
         case 'Private variables':
-          if (!clVars.pvar.varStates.hasOwnProperty(String(args.VAR))) {
+          if (!Object.prototype.hasOwnProperty.call(clVars.pvar.varStates, String(args.VAR))) {
             //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
             return false;
           }
@@ -2140,7 +2143,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     // Boolean - Returns true if a listener has a new value.
     // ID - String (listener ID)
     returnIsNewListener(args) {
-      if (!clVars.listeners.varStates.hasOwnProperty(String(args.ID))) {
+      if (!Object.prototype.hasOwnProperty.call(clVars.listeners.varStates, String(args.ID))) {
         //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
         return false;
       }
@@ -2200,7 +2203,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
         //console.warn("[CloudLink] Already connected to a server.");
         return;
       };
-      if (!clVars.serverList.hasOwnProperty(String(args.ID))) {
+      if (!Object.prototype.hasOwnProperty.call(clVars.serverList, String(args.ID))) {
         //console.warn("[CloudLink] Not a valid server ID!");
         return;
       };
@@ -2480,13 +2483,14 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     resetNewVarData(args) {
       switch (args.TYPE) {
         case 'Global variables':
-          if (!clVars.gvar.varStates.hasOwnProperty(String(args.VAR))) {
+          if (!Object.prototype.hasOwnProperty.call(clVars.gvar.varStates, String(args.VAR))) {
             //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
             return;
           }
           clVars.gvar.varStates[String(args.ID)].hasNew = false;
+          break;
         case 'Private variables':
-          if (!clVars.pvar.varStates.hasOwnProperty(String(args.VAR))) {
+          if (!Object.prototype.hasOwnProperty.call(clVars.pvar.varStates, String(args.VAR))) {
             //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
             return false;
           }
@@ -2497,7 +2501,7 @@ Scratch.translate.setup({ "fi": { "_(OLD - DO NOT USE IN NEW PROJECTS) my userna
     // Command - Resets the "returnIsNewListener" boolean state.
     // ID - Listener ID
     resetNewListener(args) {
-      if (!clVars.listeners.varStates.hasOwnProperty(String(args.ID))) {
+      if (!Object.prototype.hasOwnProperty.call(clVars.listeners.varStates, String(args.ID))) {
         //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
         return;
       }
