@@ -5,6 +5,7 @@ const path = require('path');
 
 const FEATURED_DIR = path.join(__dirname, 'featured');
 const FILES_DIR = path.join(__dirname, 'files');
+const HIDDEN_EXTENSIONS = new Set(['Rotur.js']);
 const OUTPUT_FILE = path.join(__dirname, 'generated-metadata', 'extensions-v0.json');
 const SITE_DATA_FILE = path.join(__dirname, 'site-data.js');
 const VERSIONS_FILE = path.join(__dirname, 'versions.json');
@@ -30,7 +31,8 @@ function processExtensions(dir, isFeatured = false) {
   
   for (const file of files) {
     if (!file.endsWith('.js')) continue;
-    
+    if (HIDDEN_EXTENSIONS.has(file)) continue;
+
     const filePath = path.join(dir, file);
     const stats = fs.statSync(filePath);
     

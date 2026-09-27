@@ -287,21 +287,6 @@ window.extensionSiteData = {
         "filename": "RDF.js"
       },
       {
-        "slug": "rotur",
-        "id": "Rotur",
-        "name": "Rotur",
-        "description": "Utilise rotur in your projects",
-        "image": "images/Rotur.png",
-        "by": [
-          {
-            "name": "Mistium",
-            "link": "https://github.com/Mistium"
-          }
-        ],
-        "featured": true,
-        "filename": "Rotur.js"
-      },
-      {
         "slug": "roturvoice",
         "id": "roturVoice",
         "name": "roturVoice",
