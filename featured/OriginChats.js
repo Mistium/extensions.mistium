@@ -143,6 +143,11 @@
       // the scoped token from rotur.dev/auth, kept for this page only so logins don't prompt again
       this.roturToken = null;
       this.autoReconnect = true;
+      // sent with every login, like the official client's connectionIdentity()
+      this.clientName = "scratch";
+      this.device = "auto";
+      this.serverPassword = "";
+      this.inviteCode = "";
       this.reconnectTimer = null;
       this.reconnecting = false;
       this.reconnectAttempts = 0;
@@ -159,10 +164,13 @@
         color1: "#6f5bd8",
         blocks: [
           { blockType: BlockType.LABEL, text: "Connection" },
-          { opcode: "connect", blockType: BlockType.COMMAND, text: "connect to [URL]", arguments: { URL: text("wss://osl.originchats.com") } },
+          { opcode: "connect", blockType: BlockType.COMMAND, text: "connect to [URL]", arguments: { URL: text("wss://chats.mistwarp.org") } },
           { opcode: "loginWithRotur", blockType: BlockType.COMMAND, text: "log in with rotur" },
           { opcode: "login", blockType: BlockType.COMMAND, text: "log in with server account [USERNAME] password [PASSWORD]", arguments: { USERNAME: text("mybot"), PASSWORD: text("password") } },
           { opcode: "registerBot", blockType: BlockType.COMMAND, text: "create server bot account [USERNAME] password [PASSWORD]", arguments: { USERNAME: text("mybot"), PASSWORD: text("password") } },
+          { opcode: "setClient", blockType: BlockType.COMMAND, text: "set client name to [CLIENT] and device to [DEVICE]", arguments: { CLIENT: text("scratch"), DEVICE: { type: ArgumentType.STRING, menu: "device" } } },
+          { opcode: "setServerPassword", blockType: BlockType.COMMAND, text: "set server password to [PASSWORD]", arguments: { PASSWORD: text("") } },
+          { opcode: "setInviteCode", blockType: BlockType.COMMAND, text: "set invite code to [CODE]", arguments: { CODE: text("") } },
           { opcode: "disconnect", blockType: BlockType.COMMAND, text: "disconnect" },
           { opcode: "isConnected", blockType: BlockType.BOOLEAN, text: "connected?" },
           { opcode: "isLoggedIn", blockType: BlockType.BOOLEAN, text: "logged in?" },
@@ -233,6 +241,7 @@
           whichUsers: menu(["online", "all"]),
           status: menu(["online", "idle", "dnd", "invisible"]),
           onOff: menu(["on", "off"]),
+          device: menu(["auto", "computer", "mobile", "console", "terminal"]),
         },
       };
     }
@@ -275,10 +284,16 @@
       }
     }
 
+    // One new thread per event for every script with this hat, each carrying its own event.
+    // startHats won't start a script that's still running, so events arriving while a handler
+    // was busy (waiting, sending...) were dropped; restarting instead would kill the older run.
     _startHats(opcode, context) {
-      const threads = runtime.startHats(`${ID}_${opcode}`) || [];
-      for (const thread of threads) thread[CONTEXT] = context;
+      runtime.allScriptsByOpcodeDo(`${ID}_${opcode}`, (script, target) => {
+        const thread = runtime._pushThread(script.blockId, target);
+        thread[CONTEXT] = context;
+      });
     }
+
     _context(util) {
       return util.thread[CONTEXT] || {};
     }
@@ -517,20 +532,29 @@
     async _authenticate(packet) {
       if (!this.handshake) throw new Error("Connect to a server first");
       if (this.me) throw new Error("Already logged in");
-      const reply = await this._request({ client: "scratch", device: "computer", ...packet });
+      const extras = {};
+      if (this.serverPassword) extras.server_password = this.serverPassword;
+      if (this.inviteCode) extras.invite_code = this.inviteCode;
+      const reply = await this._request({ client: this.clientName, device: this._device(), ...extras, ...packet });
       if (reply.cmd !== "auth_success") throw new Error(str(reply.val ?? "Login failed"));
       // "ready" follows auth_success; wait for it so "my username" works on the next block
       for (let i = 0; i < 100 && !this.me; i++) await new Promise((r) => setTimeout(r, 20));
     }
 
     // auth: { type: "rotur", token } | { type: "login" | "register", username, password }
-    async _login(auth) {
-      const mode = this.handshake?.auth_mode;
-      if (auth.type === "rotur" && mode === "cracked-only") throw new Error("This server only allows server accounts");
-      if (auth.type !== "rotur" && mode === "rotur") throw new Error("This server only allows rotur accounts");
-      if (auth.type === "register" && !(this.handshake?.capabilities || []).includes("register")) {
+    // fails early, before any popup, when the server can't take this kind of login
+    _checkLoginType(type) {
+      if (!this.handshake) throw new Error("Connect to a server first");
+      const mode = this.handshake.auth_mode;
+      if (type === "rotur" && mode === "cracked-only") throw new Error("This server only allows server accounts");
+      if (type !== "rotur" && mode === "rotur") throw new Error("This server only allows rotur accounts");
+      if (type === "register" && !(this.handshake.capabilities || []).includes("register")) {
         throw new Error("This server doesn't allow creating accounts");
       }
+    }
+
+    async _login(auth) {
+      this._checkLoginType(auth.type);
       if (auth.type === "rotur") {
         const key = str(this.handshake?.validator_key);
         // The key names the server it was made for. Refuse to sign in if that isn't the server
@@ -565,7 +589,7 @@
 
     loginWithRotur() {
       return this._try(async () => {
-        if (!this.handshake) throw new Error("Connect to a server first");
+        this._checkLoginType("rotur");
         if (!this.roturToken) this.roturToken = await roturLogin();
         await this._login({ type: "rotur", token: this.roturToken });
       });
@@ -577,6 +601,34 @@
 
     registerBot({ USERNAME, PASSWORD }) {
       return this._try(() => this._login({ type: "register", username: str(USERNAME), password: str(PASSWORD) }));
+    }
+
+    // same detection as the official client
+    _device() {
+      if (this.device !== "auto") return this.device;
+      const ua = navigator.userAgent;
+      if (/PlayStation|Xbox|Nintendo/i.test(ua)) return "console";
+      const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      return mobile ? "mobile" : "computer";
+    }
+
+    setClient({ CLIENT, DEVICE }) {
+      // servers accept 1-50 of a-z 0-9 . - and silently ignore anything else, so say so here
+      const client = str(CLIENT).trim().toLowerCase();
+      if (!/^[a-z0-9.-]{1,50}$/.test(client)) {
+        this.errorText = "Client names use 1-50 letters, numbers, dots or dashes";
+        return;
+      }
+      this.clientName = client;
+      this.device = str(DEVICE) || "auto";
+    }
+
+    setServerPassword({ PASSWORD }) {
+      this.serverPassword = str(PASSWORD);
+    }
+
+    setInviteCode({ CODE }) {
+      this.inviteCode = str(CODE).trim().toUpperCase();
     }
 
     setAutoReconnect({ STATE }) {
