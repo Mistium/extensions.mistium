@@ -43,7 +43,8 @@ window.extensionSiteData = {
     "originOSL.js": "2",
     "roturVoice Advanced.js": "2",
     "xml.js": "2",
-    "Timing.js": "1"
+    "Timing.js": "1",
+    "Databases.js": "1"
   },
   "metadata": {
     "extensions": [
@@ -76,6 +77,21 @@ window.extensionSiteData = {
         ],
         "featured": true,
         "filename": "Canvas.js"
+      },
+      {
+        "slug": "databases",
+        "id": "Databases",
+        "name": "Databases",
+        "description": "Databases of tables with SQL queries, saved with your project",
+        "image": "images/Databases.png",
+        "by": [
+          {
+            "name": "Mistium",
+            "link": "https://github.com/Mistium"
+          }
+        ],
+        "featured": true,
+        "filename": "Databases.js"
       },
       {
         "slug": "discordbot",
@@ -316,21 +332,6 @@ window.extensionSiteData = {
         ],
         "featured": true,
         "filename": "Shaders.js"
-      },
-      {
-        "slug": "tables",
-        "id": "Tables",
-        "name": "Tables",
-        "description": "basically just compiled 2d arrays",
-        "image": "images/Tables.png",
-        "by": [
-          {
-            "name": "Mistium",
-            "link": "https://github.com/Mistium"
-          }
-        ],
-        "featured": true,
-        "filename": "Tables.js"
       },
       {
         "slug": "timing",
@@ -631,6 +632,21 @@ window.extensionSiteData = {
         ],
         "featured": false,
         "filename": "SoundUtils.js"
+      },
+      {
+        "slug": "tables",
+        "id": "Tables",
+        "name": "Tables",
+        "description": "Legacy compiled 2d arrays. Use Databases for new projects.",
+        "image": "images/Tables.png",
+        "by": [
+          {
+            "name": "Mistium",
+            "link": "https://github.com/Mistium"
+          }
+        ],
+        "featured": false,
+        "filename": "Tables.js"
       },
       {
         "slug": "tabutils",

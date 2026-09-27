@@ -31,6 +31,21 @@
       "filename": "Canvas.js"
     },
     {
+      "slug": "databases",
+      "id": "Databases",
+      "name": "Databases",
+      "description": "Databases of tables with SQL queries, saved with your project",
+      "image": "images/Databases.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": true,
+      "filename": "Databases.js"
+    },
+    {
       "slug": "discordbot",
       "id": "DiscordBot",
       "name": "DiscordBot",
@@ -269,21 +284,6 @@
       ],
       "featured": true,
       "filename": "Shaders.js"
-    },
-    {
-      "slug": "tables",
-      "id": "Tables",
-      "name": "Tables",
-      "description": "basically just compiled 2d arrays",
-      "image": "images/Tables.png",
-      "by": [
-        {
-          "name": "Mistium",
-          "link": "https://github.com/Mistium"
-        }
-      ],
-      "featured": true,
-      "filename": "Tables.js"
     },
     {
       "slug": "timing",
@@ -584,6 +584,21 @@
       ],
       "featured": false,
       "filename": "SoundUtils.js"
+    },
+    {
+      "slug": "tables",
+      "id": "Tables",
+      "name": "Tables",
+      "description": "Legacy compiled 2d arrays. Use Databases for new projects.",
+      "image": "images/Tables.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": false,
+      "filename": "Tables.js"
     },
     {
       "slug": "tabutils",

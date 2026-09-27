@@ -1,6 +1,6 @@
 // Name: Tables
 // Author: Mistium
-// Description: basically just compiled 2d arrays
+// Description: Legacy compiled 2d arrays. Use Databases for new projects.
 
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
