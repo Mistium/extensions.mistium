@@ -20,13 +20,20 @@ class IndexedDBFileSystem {
         this.initPromise = this._initDB();
     }
 
-    async _initDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(this.dbName, this.dbVersion);
+    _initDB() {
+        const name = this.dbName;
+        const promise = new Promise((resolve, reject) => {
+            const request = indexedDB.open(name, this.dbVersion);
 
             request.onerror = () => reject(request.error);
             
             request.onsuccess = () => {
+                // A newer set database id call won the race, drop this connection
+                if (name !== this.dbName) {
+                    request.result.close();
+                    resolve();
+                    return;
+                }
                 this.db = request.result;
                 this.ready = true;
                 resolve();
@@ -46,10 +53,13 @@ class IndexedDBFileSystem {
                 }
             };
         });
+        promise.catch(() => {}); // surfaced by _ensureReady instead
+        return promise;
     }
 
     async _setDatabaseName(name) {
         if (!name || typeof name !== 'string') return;
+        if (name === this.dbName && this.db) return;
 
         if (this.db) {
             this.db.close();
@@ -63,13 +73,28 @@ class IndexedDBFileSystem {
     }
 
     async _ensureReady() {
-        if (!this.ready) {
-            await this.initPromise;
-        }
+        // Re-check in case the database id changed while we were waiting
+        let promise;
+        do {
+            promise = this.initPromise;
+            await promise;
+        } while (promise !== this.initPromise);
+    }
+
+    // Runs fn(transaction) in one readwrite transaction, resolving once it commits
+    async _tx(storeNames, fn) {
+        await this._ensureReady();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(storeNames, 'readwrite');
+            fn(transaction);
+            transaction.oncomplete = () => resolve(true);
+            transaction.onerror = transaction.onabort = () => reject(transaction.error);
+        });
     }
 
     _normalizePath(path) {
-        if (!path || typeof path !== 'string') return [];
+        path = Scratch.Cast.toString(path);
+        if (!path) return [];
         
         const parts = path.replace(/^\/+|\/+$/g, '')
             .split('/')
@@ -146,31 +171,22 @@ class IndexedDBFileSystem {
         const parts = this._normalizePath(path);
         if (!parts || parts.length <= 1) return;
 
-        let currentPath = '';
-        for (let i = 0; i < parts.length - 1; i++) {
-            currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
-            await this._createDirectory(currentPath);
-        }
+        await this._createDirectory(parts.slice(0, -1).join('/'));
     }
 
+    // Creates the directory and any missing parents (so they show up in listings)
     async _createDirectory(path) {
-        await this._ensureReady();
-        const normalizedPath = this._normalizePath(path)?.join('/');
-        if (!normalizedPath) return false;
+        const parts = this._normalizePath(path);
+        if (!parts || parts.length === 0) return false;
 
-        return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(['directories'], 'readwrite');
+        return this._tx(['directories'], transaction => {
             const store = transaction.objectStore('directories');
-            
-            const dirData = {
-                path: normalizedPath,
-                created: Date.now()
-            };
-
-            const request = store.put(dirData);
-
-            request.onsuccess = () => resolve(true);
-            request.onerror = () => reject(request.error);
+            for (let i = 1; i <= parts.length; i++) {
+                store.put({
+                    path: parts.slice(0, i).join('/'),
+                    created: Date.now()
+                });
+            }
         });
     }
 
@@ -183,31 +199,39 @@ class IndexedDBFileSystem {
         const allFiles = await this._getAllFiles();
         const allDirs = await this._getAllDirectories();
 
-        const filesToDelete = allFiles.filter(f => f.path.startsWith(normalizedPath + '/'));
-        const dirsToDelete = allDirs.filter(d => d.path.startsWith(normalizedPath + '/'));
+        const prefix = normalizedPath + '/';
 
-        for (const file of filesToDelete) {
-            await this._deleteFile(file.path);
-        }
-
-        for (const dir of dirsToDelete) {
-            const transaction = this.db.transaction(['directories'], 'readwrite');
-            const store = transaction.objectStore('directories');
-            await new Promise(resolve => {
-                store.delete(dir.path);
-                transaction.oncomplete = resolve;
-            });
-        }
-
-        // Delete the directory itself
-        return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(['directories'], 'readwrite');
-            const store = transaction.objectStore('directories');
-            const request = store.delete(normalizedPath);
-
-            request.onsuccess = () => resolve(true);
-            request.onerror = () => reject(request.error);
+        return this._tx(['files', 'directories'], transaction => {
+            const fileStore = transaction.objectStore('files');
+            const dirStore = transaction.objectStore('directories');
+            for (const file of allFiles) {
+                if (file.path.startsWith(prefix)) fileStore.delete(file.path);
+            }
+            for (const dir of allDirs) {
+                if (dir.path.startsWith(prefix)) dirStore.delete(dir.path);
+            }
+            dirStore.delete(normalizedPath);
         });
+    }
+
+    // Copies a directory's subdirectories and files to a new path
+    async _copyDirectory(from, to, keepTimes) {
+        const allFiles = await this._getAllFiles();
+        const allDirs = await this._getAllDirectories();
+        const prefix = from + '/';
+
+        await this._createDirectory(to);
+        for (const dir of allDirs) {
+            if (dir.path.startsWith(prefix)) {
+                await this._createDirectory(to + dir.path.substring(from.length));
+            }
+        }
+        for (const file of allFiles) {
+            if (file.path.startsWith(prefix)) {
+                await this._putFile(to + file.path.substring(from.length), file.content,
+                    keepTimes ? { created: file.created, modified: file.modified } : {});
+            }
+        }
     }
 
     async _getAllFiles() {
@@ -309,14 +333,19 @@ class IndexedDBFileSystem {
 
     async moveFile({ FILE_PATH, NEW_FILE_PATH }) {
         try {
-            const file = await this._getFile(FILE_PATH);
+            const from = this._normalizePath(FILE_PATH)?.join('/');
+            const to = this._normalizePath(NEW_FILE_PATH)?.join('/');
+            // Same path would put then delete the file; invalid destination would just delete it
+            if (!from || !to || from === to) return;
+
+            const file = await this._getFile(from);
             if (!file) return;
 
-            await this._putFile(NEW_FILE_PATH, file.content, {
+            await this._putFile(to, file.content, {
                 created: file.created,
                 modified: file.modified
             });
-            await this._deleteFile(FILE_PATH);
+            await this._deleteFile(from);
         } catch (error) {
             console.error('Error moving file:', error);
         }
@@ -353,6 +382,23 @@ class IndexedDBFileSystem {
         }
     }
 
+    async renameDirectory({ DIR_PATH, NEW_DIR_NAME }) {
+        try {
+            const parts = this._normalizePath(DIR_PATH);
+            if (!parts || parts.length === 0) return;
+
+            const newName = this._normalizePath(NEW_DIR_NAME);
+            if (!newName || newName.length !== 1) return;
+
+            const parentPath = parts.slice(0, -1).join('/');
+            const newPath = parentPath ? `${parentPath}/${newName[0]}` : newName[0];
+
+            await this.moveDirectory({ DIR_PATH, NEW_DIR_PATH: newPath });
+        } catch (error) {
+            console.error('Error renaming directory:', error);
+        }
+    }
+
     async deleteFile({ FILE_PATH }) {
         try {
             await this._deleteFile(FILE_PATH);
@@ -381,23 +427,13 @@ class IndexedDBFileSystem {
         try {
             const normalizedOld = this._normalizePath(DIR_PATH)?.join('/');
             const normalizedNew = this._normalizePath(NEW_DIR_PATH)?.join('/');
-            if (!normalizedOld || !normalizedNew) return;
+            if (!normalizedOld || !normalizedNew || normalizedOld === normalizedNew) return;
+            // Moving into itself would copy then delete everything
+            if (normalizedNew.startsWith(normalizedOld + '/')) return;
+            if (!(await this.directoryExists({ DIR_PATH: normalizedOld }))) return;
 
-            const allFiles = await this._getAllFiles();
-            const filesToMove = allFiles.filter(f => 
-                f.path === normalizedOld || f.path.startsWith(normalizedOld + '/')
-            );
-
-            for (const file of filesToMove) {
-                const relativePath = file.path.substring(normalizedOld.length);
-                const newPath = normalizedNew + relativePath;
-                await this._putFile(newPath, file.content, {
-                    created: file.created,
-                    modified: file.modified
-                });
-            }
-
-            await this._deleteDirectory(DIR_PATH);
+            await this._copyDirectory(normalizedOld, normalizedNew, true);
+            await this._deleteDirectory(normalizedOld);
         } catch (error) {
             console.error('Error moving directory:', error);
         }
@@ -407,21 +443,10 @@ class IndexedDBFileSystem {
         try {
             const normalizedOld = this._normalizePath(DIR_PATH)?.join('/');
             const normalizedNew = this._normalizePath(NEW_DIR_PATH)?.join('/');
-            if (!normalizedOld || !normalizedNew) return;
+            if (!normalizedOld || !normalizedNew || normalizedOld === normalizedNew) return;
+            if (!(await this.directoryExists({ DIR_PATH: normalizedOld }))) return;
 
-            const allFiles = await this._getAllFiles();
-            const filesToCopy = allFiles.filter(f => 
-                f.path === normalizedOld || f.path.startsWith(normalizedOld + '/')
-            );
-
-            for (const file of filesToCopy) {
-                const relativePath = file.path.substring(normalizedOld.length);
-                const newPath = normalizedNew + relativePath;
-                await this._putFile(newPath, file.content, {
-                    created: Date.now(),
-                    modified: Date.now()
-                });
-            }
+            await this._copyDirectory(normalizedOld, normalizedNew, false);
         } catch (error) {
             console.error('Error copying directory:', error);
         }
@@ -430,7 +455,7 @@ class IndexedDBFileSystem {
     async listDirectory({ DIR_PATH }) {
         try {
             const normalizedPath = this._normalizePath(DIR_PATH)?.join('/');
-            if (normalizedPath === null) return 'Error: Invalid directory path';
+            if (normalizedPath == null) return 'Error: Invalid directory path';
 
             const allFiles = await this._getAllFiles();
             const allDirs = await this._getAllDirectories();
@@ -499,7 +524,7 @@ class IndexedDBFileSystem {
         try {
             await this._ensureReady();
             const normalizedPath = this._normalizePath(DIR_PATH)?.join('/');
-            if (normalizedPath === null) return false;
+            if (normalizedPath == null) return false;
             if (normalizedPath === '') return true; // Root always exists
 
             const allDirs = await this._getAllDirectories();
@@ -532,16 +557,18 @@ class IndexedDBFileSystem {
         try {
             switch (EXPORT) {
                 case 'json':
-                    const parsed = JSON.parse(FILES);
+                    const parsed = JSON.parse(Scratch.Cast.toString(FILES));
+                    if (!Array.isArray(parsed)) return;
                     for (const file of parsed) {
-                        await this._putFile(file.path, file.content, {
+                        if (!file || typeof file !== 'object') continue;
+                        await this._putFile(file.path, Scratch.Cast.toString(file.content ?? ''), {
                             created: file.created,
                             modified: file.modified
                         });
                     }
                     break;
                 case 'zip':
-                    let zipData = FILES;
+                    let zipData = Scratch.Cast.toString(FILES);
                     if (zipData.startsWith('data:application/zip;base64,')) {
                         zipData = zipData.substring('data:application/zip;base64,'.length);
                     }
@@ -557,20 +584,9 @@ class IndexedDBFileSystem {
         try {
             await this._ensureReady();
             
-            // Clear files
-            const fileTransaction = this.db.transaction(['files'], 'readwrite');
-            const fileStore = fileTransaction.objectStore('files');
-            await new Promise(resolve => {
-                fileStore.clear();
-                fileTransaction.oncomplete = resolve;
-            });
-
-            // Clear directories
-            const dirTransaction = this.db.transaction(['directories'], 'readwrite');
-            const dirStore = dirTransaction.objectStore('directories');
-            await new Promise(resolve => {
-                dirStore.clear();
-                dirTransaction.oncomplete = resolve;
+            await this._tx(['files', 'directories'], transaction => {
+                transaction.objectStore('files').clear();
+                transaction.objectStore('directories').clear();
             });
         } catch (error) {
             console.error('Error clearing all:', error);
@@ -579,7 +595,7 @@ class IndexedDBFileSystem {
 
     async exportAsZip() {
         try {
-            const JSZip = vm.exports.JSZip;
+            const JSZip = Scratch.vm.exports.JSZip;
             if (!JSZip) {
                 return 'Error: JSZip not available';
             }
@@ -606,7 +622,7 @@ class IndexedDBFileSystem {
 
     async importFromZip({ ZIP_DATA }) {
         try {
-            const JSZip = vm.exports.JSZip;
+            const JSZip = Scratch.vm.exports.JSZip;
             if (!JSZip) {
                 return;
             }
@@ -615,11 +631,18 @@ class IndexedDBFileSystem {
             await zip.loadAsync(ZIP_DATA, { base64: true });
 
             const files = [];
+            const dirs = [];
             zip.forEach((relativePath, file) => {
-                if (!file.dir) {
+                if (file.dir) {
+                    dirs.push(relativePath);
+                } else {
                     files.push({ path: relativePath, file });
                 }
             });
+
+            for (const dir of dirs) {
+                await this._createDirectory(dir);
+            }
 
             for (const { path, file } of files) {
                 const content = await file.async('string');
@@ -843,6 +866,21 @@ class IndexedDBFileSystem {
                     }
                 },
                 {
+                    opcode: 'renameDirectory',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'rename directory [DIR_PATH] to [NEW_DIR_NAME]',
+                    arguments: {
+                        DIR_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2'
+                        },
+                        NEW_DIR_NAME: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir3'
+                        }
+                    }
+                },
+                {
                     opcode: 'listDirectory',
                     blockType: Scratch.BlockType.REPORTER,
                     text: 'list directory [DIR_PATH]',
@@ -901,7 +939,7 @@ class IndexedDBFileSystem {
                         },
                         FILES: {
                             type: Scratch.ArgumentType.STRING,
-                            defaultValue: '{}'
+                            defaultValue: '[]'
                         }
                     }
                 },

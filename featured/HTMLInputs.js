@@ -27,6 +27,7 @@
     constructor() {
       this.inputs = {};
       this.addFontLink();
+      runtime.on('RUNTIME_DISPOSED', () => this.removeAllInputs());
     }
 
     addFontLink() {
@@ -163,6 +164,17 @@
             opcode: 'resetInputChanged',
             blockType: Scratch.BlockType.COMMAND,
             text: 'reset input [ID] changed',
+            arguments: {
+              ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'input1',
+              },
+            },
+          },
+          {
+            opcode: 'inputSubmitted',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: 'enter pressed in input [ID]?',
             arguments: {
               ID: {
                 type: Scratch.ArgumentType.STRING,
@@ -492,11 +504,11 @@
     }
 
     getLists() {
-      let global = vm.runtime.getTargetForStage().variables
+      let global = runtime.getTargetForStage()?.variables
       global ??= {}
       global = Object.values(global).filter(v => v.type === 'list')
 
-      let local = vm.editingTarget.variables
+      let local = Scratch.vm.editingTarget?.variables
       local ??= {}
       local = Object.values(local).filter(v => v.type === 'list')
 
@@ -527,8 +539,12 @@
       input.style.fontFamily = "'Share Tech Mono', monospace";
       input.style.transform = 'translate(-50%, -50%)';
       input.changed = false;
+      input.submitted = false;
       input.addEventListener('input', () => {
         input.changed = true;
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') input.submitted = true;
       });
       Scratch.renderer.addOverlay(input);
       this.inputs[ID] = input;
@@ -620,11 +636,12 @@
       LIST = Cast.toString(LIST);
       if (this.inputs[ID]) {
         let list = util.target.lookupVariableById(LIST);
-        if (list.type !== 'list' || !list) {
+        if (!list || list.type !== 'list') {
           list = util.target.lookupVariableByNameAndType(LIST, "list");
         }
         if (list) {
           list.value = this.inputs[ID].value.split('\n');
+          list._monitorUpToDate = false;
         }
       }
     }
@@ -637,6 +654,14 @@
         return changed;
       }
       return false;
+    }
+
+    inputSubmitted({ ID }) {
+      ID = Cast.toString(ID);
+      const input = this.inputs[ID];
+      if (!input?.submitted) return false;
+      input.submitted = false;
+      return true;
     }
 
     resetInputChanged({ ID }) {
@@ -683,7 +708,7 @@
     getSelectionData({ ID }) {
       ID = Cast.toString(ID);
       if (!this.inputs[ID]) return "";
-      return this.getText(this.inputs[ID]);
+      return this.getText(this.inputs[ID]) ?? "";
     }
 
     getSelectionPosition({ ID }) {
@@ -747,10 +772,11 @@
           this.inputs[ID].style.pointerEvents = 'auto';
           break;
         case "Hide":
-          this.inputs[ID].style.opacity = '0';
+          // visibility (not opacity) so a hidden input can't still be clicked and typed in
+          this.inputs[ID].style.visibility = 'hidden';
           break;
         case "Show":
-          this.inputs[ID].style.opacity = '1';
+          this.inputs[ID].style.visibility = '';
           break;
       }
     }
@@ -793,7 +819,7 @@
     getAttribute({ ID, ATTR }) {
       ID = Cast.toString(ID);
       ATTR = Cast.toString(ATTR);
-      return this.inputs[ID] ? this.inputs[ID][ATTR] : '';
+      return this.inputs[ID] ? (this.inputs[ID][ATTR] ?? '') : '';
     }
 
     setAttribute({ ID, ATTR, VALUE }) {

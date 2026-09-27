@@ -97,6 +97,21 @@
             }
           },
           {
+            opcode: 'deleteProperty',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'delete [property] from RDF object [id]',
+            arguments: {
+              property: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'name'
+              },
+              id: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'myObject'
+              }
+            }
+          },
+          {
             opcode: 'getPropertyValue',
             blockType: Scratch.BlockType.REPORTER,
             text: 'get [property] from RDF object [id]',
@@ -105,6 +120,17 @@
                 type: Scratch.ArgumentType.STRING,
                 defaultValue: 'name'
               },
+              id: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'myObject'
+              }
+            }
+          },
+          {
+            opcode: 'getKeys',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'properties of RDF object [id]',
+            arguments: {
               id: {
                 type: Scratch.ArgumentType.STRING,
                 defaultValue: 'myObject'
@@ -180,7 +206,7 @@
     parseRDF(args) {
       try {
         this._lastResult.success = false;
-        this._lastParseResult = window.RDF.parse(args.text);
+        this._lastParseResult = window.RDF.parse(Scratch.Cast.toString(args.text));
         this._objectCache[args.id] = this._lastParseResult;
         this._lastResult.success = true;
         this._lastResult.message = '';
@@ -207,6 +233,7 @@
           return '';
         }
         this._lastResult.success = true;
+        this._lastResult.message = '';
         return window.RDF.stringify(obj, parseInt(args.indent, 10) || 0);
       } catch (e) {
         this._lastResult.success = false;
@@ -226,6 +253,7 @@
         
         const value = obj[args.property];
         this._lastResult.success = true;
+        this._lastResult.message = '';
         
         if (value === undefined) return '';
         if (typeof value === 'object') {
@@ -248,14 +276,22 @@
           return;
         }
         
-        // Try to parse the value if it's a number or boolean
-        let value = args.value;
-        if (value === 'true') value = true;
-        else if (value === 'false') value = false;
-        else if (!isNaN(Number(value))) value = Number(value);
+        // Coerce the text to the property's declared type (or guess if untyped)
+        const fieldType = Object.getOwnPropertyDescriptor(obj, args.property)?.set?.fieldType;
+        let value = Scratch.Cast.toString(args.value);
+        if (fieldType !== 'string') {
+          const trimmed = value.trim();
+          if (trimmed === 'true') value = true;
+          else if (trimmed === 'false') value = false;
+          else if (trimmed !== '' && !isNaN(Number(trimmed))) value = Number(trimmed);
+          else if ((fieldType === 'array' && trimmed.startsWith('[')) || (fieldType === 'object' && trimmed.startsWith('{'))) {
+            value = JSON.parse(trimmed);
+          }
+        }
         
         obj[args.property] = value;
         this._lastResult.success = true;
+        this._lastResult.message = '';
       } catch (e) {
         this._lastResult.success = false;
         this._lastResult.message = e.message;
@@ -266,6 +302,7 @@
       try {
         this._objectCache[args.id] = window.RDF.parse('{}');
         this._lastResult.success = true;
+        this._lastResult.message = '';
       } catch (e) {
         this._lastResult.success = false;
         this._lastResult.message = e.message;
@@ -281,8 +318,9 @@
           return;
         }
         
-        window.RDF.setProperty(obj, args.definition);
+        window.RDF.setProperty(obj, Scratch.Cast.toString(args.definition));
         this._lastResult.success = true;
+        this._lastResult.message = '';
       } catch (e) {
         this._lastResult.success = false;
         this._lastResult.message = e.message;
@@ -299,10 +337,34 @@
         
         delete this._objectCache[args.id];
         this._lastResult.success = true;
+        this._lastResult.message = '';
       } catch (e) {
         this._lastResult.success = false;
         this._lastResult.message = e.message;
       }
+    }
+
+    deleteProperty(args) {
+      try {
+        const obj = this._objectCache[args.id];
+        if (!obj) {
+          this._lastResult.success = false;
+          this._lastResult.message = `Object '${args.id}' not found`;
+          return;
+        }
+
+        delete obj[args.property];
+        this._lastResult.success = true;
+        this._lastResult.message = '';
+      } catch (e) {
+        this._lastResult.success = false;
+        this._lastResult.message = e.message;
+      }
+    }
+
+    getKeys(args) {
+      const obj = this._objectCache[args.id];
+      return obj ? JSON.stringify(Object.keys(obj)) : '[]';
     }
 
     objectExists(args) {
@@ -311,9 +373,11 @@
 
     evaluateExpression(args) {
       try {
-        const result = window.RDF.rtrExp.evaluate(args.expr);
+        const result = window.RDF.rtrExp.evaluate(Scratch.Cast.toString(args.expr));
         this._lastResult.success = true;
-        return result !== undefined ? result.toString() : '';
+        this._lastResult.message = '';
+        if (result === undefined || result === null) return '';
+        return typeof result === 'object' ? JSON.stringify(result) : result.toString();
       } catch (e) {
         this._lastResult.success = false;
         this._lastResult.message = e.message;

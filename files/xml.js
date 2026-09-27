@@ -240,10 +240,23 @@
             };
         }
 
+        // Returns the parsed document, or null if the XML is invalid
+        parseXML(str) {
+            const doc = this.domParser.parseFromString(str, "application/xml");
+            return doc.getElementsByTagName("parsererror").length === 0 ? doc : null;
+        }
+
+        escapeXML(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
         isValidXML(args) {
             const str = Scratch.Cast.toString(args.INPUT);
-            const doc = this.domParser.parseFromString(str, "application/xml");
-            return !doc.querySelector("parsererror") && doc.getElementsByTagName("parsererror").length === 0;
+            return this.parseXML(str) !== null;
         }
 
         getAttribute(args) {
@@ -303,7 +316,7 @@
         getElementByIndex(args) {
             const str = Scratch.Cast.toString(args.INPUT);
             const tag = Scratch.Cast.toString(args.TAG);
-            const index = Scratch.Cast.toNumber(args.INDEX);
+            const index = Math.floor(Scratch.Cast.toNumber(args.INDEX));
             try {
                 const doc = this.domParser.parseFromString(str, "application/xml");
                 const elements = doc.querySelectorAll(tag);
@@ -344,11 +357,7 @@
             const tag = Scratch.Cast.toString(args.TAG);
             const content = Scratch.Cast.toString(args.CONTENT);
             const safeTag = tag.replace(/[^a-zA-Z0-9_-]/g, "");
-            const safeContent = content
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;");
-            return `<${safeTag}>${safeContent}</${safeTag}>`;
+            return `<${safeTag}>${this.escapeXML(content)}</${safeTag}>`;
         }
 
         createElementWithAttrs(args) {
@@ -361,10 +370,7 @@
                 let attrString = "";
                 for (const [key, value] of Object.entries(attrs)) {
                     const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, "");
-                    const safeValue = String(value)
-                        .replace(/&/g, "&amp;")
-                        .replace(/"/g, "&quot;");
-                    attrString += ` ${safeKey}="${safeValue}"`;
+                    attrString += ` ${safeKey}="${this.escapeXML(value)}"`;
                 }
                 return `<${safeTag}${attrString} />`;
             } catch {
@@ -400,8 +406,9 @@
         prettifyXML(args) {
             const str = Scratch.Cast.toString(args.INPUT);
             try {
-                const doc = this.domParser.parseFromString(str, "application/xml");
-                return this.formatXML(doc.documentElement, 0);
+                const doc = this.parseXML(str);
+                if (!doc) return str;
+                return this.formatXML(doc.documentElement, 0).trimEnd();
             } catch {
                 return str;
             }
@@ -412,7 +419,7 @@
             let result = indent + "<" + node.tagName;
             
             for (const attr of node.attributes || []) {
-                result += ` ${attr.name}="${attr.value}"`;
+                result += ` ${attr.name}="${this.escapeXML(attr.value)}"`;
             }
             
             if (node.childNodes.length === 0) {
@@ -427,14 +434,21 @@
             
             if (hasElementChildren) {
                 result += "\n";
+                const childIndent = "  ".repeat(level + 1);
                 for (const child of node.childNodes) {
                     if (child.nodeType === 1) {
                         result += this.formatXML(child, level + 1);
+                    } else if (child.nodeType === 3 && child.nodeValue.trim() !== "") {
+                        result += childIndent + this.escapeXML(child.nodeValue.trim()) + "\n";
+                    } else if (child.nodeType === 4) {
+                        result += childIndent + `<![CDATA[${child.nodeValue}]]>\n`;
+                    } else if (child.nodeType === 8) {
+                        result += childIndent + `<!--${child.nodeValue}-->\n`;
                     }
                 }
                 result += indent;
             } else {
-                result += node.textContent;
+                result += this.escapeXML(node.textContent);
             }
             
             result += "</" + node.tagName + ">\n";
@@ -449,7 +463,8 @@
         xmlToJSON(args) {
             const str = Scratch.Cast.toString(args.INPUT);
             try {
-                const doc = this.domParser.parseFromString(str, "application/xml");
+                const doc = this.parseXML(str);
+                if (!doc) return "{}";
                 const result = this.xmlNodeToJSON(doc.documentElement);
                 return JSON.stringify(result);
             } catch {
@@ -467,7 +482,7 @@
                 }
             }
             
-            if (node.childNodes.length === 1 && node.childNodes[0].nodeType === 3) {
+            if (node.childNodes.length === 1 && (node.childNodes[0].nodeType === 3 || node.childNodes[0].nodeType === 4)) {
                 if (obj["@attributes"]) {
                     obj["@text"] = node.textContent;
                 } else {
@@ -479,7 +494,7 @@
                         const childName = child.tagName;
                         const childValue = this.xmlNodeToJSON(child);
                         
-                        if (obj[childName]) {
+                        if (Object.prototype.hasOwnProperty.call(obj, childName)) {
                             if (!Array.isArray(obj[childName])) {
                                 obj[childName] = [obj[childName]];
                             }

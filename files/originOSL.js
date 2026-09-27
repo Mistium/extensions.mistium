@@ -39,6 +39,11 @@
                         text: 'connect to origin'
                     },
                     {
+                        opcode: 'disconnect',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'disconnect from origin'
+                    },
+                    {
                         opcode: 'run',
                         blockType: Scratch.BlockType.COMMAND,
                         text: 'run osl [CODE]',
@@ -121,8 +126,17 @@
             document.body.appendChild(this.iframe);
         }
 
-        _post(msg) {
+        disconnect() {
             if (!this.iframe) return;
+            this.iframe.remove();
+            this.iframe = null;
+            this.connected = false;
+            this.booted = false;
+            this.running = false;
+        }
+
+        _post(msg) {
+            if (!this.iframe || !this.iframe.contentWindow) return;
             this.iframe.contentWindow.postMessage(msg, '*');
         }
 
@@ -152,7 +166,7 @@
                 case 'error':
                     this.logQueue.push({
                         type: msg.type,
-                        message: msg.data || '',
+                        message: msg.data ?? '',
                         timestamp: Date.now()
                     });
                     break;
@@ -173,12 +187,11 @@
         }
 
         getLogProperty(args) {
-            const index = Number(args.INDEX) - 1;
-            if (index < 0 || index >= this.logQueue.length) {
+            const log = this.logQueue[Math.floor(Scratch.Cast.toNumber(args.INDEX)) - 1];
+            if (!log) {
                 return '';
             }
 
-            const log = this.logQueue[index];
             const property = String(args.PROPERTY).toLowerCase();
 
             switch (property) {

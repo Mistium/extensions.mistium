@@ -43,20 +43,33 @@
                             Name: { type: Scratch.ArgumentType.STRING, defaultValue: 'List Name' },
                         },
                     },
+                    {
+                        opcode: 'getlist',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'Selected List As Array',
+                    },
                 ]
             }
         }
-      setlist({ Array }, util) {
+      setlist({ Array: json }) {
+        const list = this.listVariable;
+        if (!list) return;
         try {
-          Array = JSON.parse(Array);
-          this.listVariable = Array;
+          const parsed = JSON.parse(json);
+          if (!Array.isArray(parsed)) return;
+          list.value = parsed.map(item => typeof item === 'object' && item !== null ? JSON.stringify(item) : item);
+          list._monitorUpToDate = false;
         } catch(e) {
           // skip
         }
       }
 
       selectlist({ Name }, util) {
-          this.listVariable = util.target.lookupVariableByNameAndType(Name, "list");
+          this.listVariable = util.target.lookupVariableByNameAndType(Scratch.Cast.toString(Name), "list");
+      }
+
+      getlist() {
+          return this.listVariable ? JSON.stringify(this.listVariable.value) : '[]';
       }
     }
     Scratch.extensions.register(new SetListMist());

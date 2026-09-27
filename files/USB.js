@@ -105,6 +105,14 @@
             }
           },
           {
+            opcode: 'closeDevice',
+            blockType: BlockType.COMMAND,
+            text: 'Close [DEVICE]',
+            arguments: {
+              DEVICE: { menu: 'devices' }
+            }
+          },
+          {
             opcode: 'onconnect',
             blockType: BlockType.EVENT,
             text: 'When USB Device Connected',
@@ -141,7 +149,7 @@
      * Returns a human-readable name for a USB device.
      */
     _deviceGetName(device) {
-      return `${device.manufacturerName} ${device.productName} (${device.productId})`;
+      return `${device.manufacturerName ?? ''} ${device.productName ?? ''} (${device.productId})`.trim();
     }
 
     _deviceKey(device, index = 0) {
@@ -171,7 +179,13 @@
      */
     async _updateDevices() {
       if (!this.supported()) return;
-      this.openedDevices = await navigator.usb.getDevices();
+      try {
+        this.openedDevices = await navigator.usb.getDevices();
+      } catch (error) {
+        // e.g. blocked by a permissions policy inside an iframe
+        console.error('USB device list failed:', error);
+        return;
+      }
       this.deviceObjects = this.openedDevices.reduce((acc, device, index) => {
         acc[this._deviceKey(device, index)] = device;
         return acc;
@@ -223,7 +237,13 @@
       const deviceId = Cast.toString(DEVICE);
       const infoKey = Cast.toString(INFO);
       const device = this.deviceObjects[deviceId];
-      return device ? device[infoKey] : '';
+      if (!device) return '';
+      if (infoKey === 'configuration') {
+        // USBConfiguration is an object; report something Scratch can show
+        return device.configuration ? (device.configuration.configurationName ?? device.configuration.configurationValue) : '';
+      }
+      const value = device[infoKey];
+      return (value === undefined || value === null || typeof value === 'object') ? '' : value;
     }
 
     async _prepareEndpoint(device, direction) {
@@ -237,12 +257,13 @@
 
       for (const iface of device.configuration.interfaces) {
         for (const alternate of iface.alternates) {
-          const endpoint = alternate.endpoints.find(item => item.direction === direction);
+          // transferIn/transferOut don't work on isochronous endpoints
+          const endpoint = alternate.endpoints.find(item => item.direction === direction && item.type !== 'isochronous');
           if (!endpoint) continue;
 
           if (!iface.claimed) await device.claimInterface(iface.interfaceNumber);
           await device.selectAlternateInterface(iface.interfaceNumber, alternate.alternateSetting);
-          return endpoint.endpointNumber;
+          return endpoint;
         }
       }
 
@@ -291,9 +312,14 @@
       const device = this.deviceObjects[deviceId];
       if (!device) return '';
 
-      const endpointNumber = await this._prepareEndpoint(device, 'in');
-      const result = await device.transferIn(endpointNumber, 64);
-      return new TextDecoder().decode(result.data);
+      try {
+        const endpoint = await this._prepareEndpoint(device, 'in');
+        const result = await device.transferIn(endpoint.endpointNumber, endpoint.packetSize || 64);
+        return result.data ? new TextDecoder().decode(result.data) : '';
+      } catch (error) {
+        console.error('USB read failed:', error);
+        return '';
+      }
     }
 
     /**
@@ -307,8 +333,25 @@
       const device = this.deviceObjects[deviceId];
       if (!device) return;
 
-      const endpointNumber = await this._prepareEndpoint(device, 'out');
-      await device.transferOut(endpointNumber, new TextEncoder().encode(dataStr));
+      try {
+        const endpoint = await this._prepareEndpoint(device, 'out');
+        await device.transferOut(endpoint.endpointNumber, new TextEncoder().encode(dataStr));
+      } catch (error) {
+        console.error('USB write failed:', error);
+      }
+    }
+
+    /**
+     * Closes a USB device so other programs can use it.
+     */
+    async closeDevice({ DEVICE }) {
+      const device = this.deviceObjects[Cast.toString(DEVICE)];
+      if (!device || !device.opened) return;
+      try {
+        await device.close();
+      } catch (error) {
+        console.error('USB close failed:', error);
+      }
     }
 
     // Event handler stubs.

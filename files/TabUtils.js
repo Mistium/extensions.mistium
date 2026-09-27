@@ -9,13 +9,20 @@
 (function (Scratch) {
     "use strict";
 
+    if (!Scratch.extensions.unsandboxed) {
+        throw new Error("Tab Utils must run unsandboxed.");
+    }
+
     class TabControlExtension {
         constructor() {
-            this.tabEnabled = true;
+            // When true, Tab is captured as a normal key instead of moving focus
+            this.captureTab = false;
             this.tab_pressed = false;
-            // Disable tab key by default
             document.addEventListener('keydown', this.handleTabKeyDown.bind(this));
             document.addEventListener('keyup', this.handleTabKeyUp.bind(this));
+            window.addEventListener('blur', () => {
+                this.tab_pressed = false;
+            });
         }
 
         getInfo() {
@@ -43,11 +50,11 @@
         }
 
         disableTabKey() {
-            this.tabEnabled = false;
+            this.captureTab = false;
         }
 
         enableTabKey() {
-            this.tabEnabled = true;
+            this.captureTab = true;
         }
 
         tabKeyPressed() {
@@ -55,9 +62,9 @@
         }
 
         handleTabKeyDown(event) {
-            if (event.key === 'Tab' && !this.tabEnabled) {
-                event.preventDefault();
+            if (event.key === 'Tab') {
                 this.tab_pressed = true;
+                if (this.captureTab) event.preventDefault();
             }
         }
 

@@ -85,12 +85,24 @@
               },
             },
           },
+          {
+            opcode: 'getKeys',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'Get Keys',
+          },
+          {
+            opcode: 'clear',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'Clear Object',
+          },
         ],
       };
     }
 
     get({KEY}) {
-      return this.object[KEY] !== undefined ? this.object[KEY] : "";
+      if (!Object.prototype.hasOwnProperty.call(this.object, KEY)) return "";
+      const value = this.object[KEY];
+      return typeof value === "object" && value !== null ? JSON.stringify(value) : value;
     }
 
     set({KEY, VALUE}) {
@@ -106,15 +118,26 @@
     }
     
     keyExists({KEY}) {
-      return this.object.hasOwnProperty(KEY);
+      return Object.prototype.hasOwnProperty.call(this.object, KEY);
     }
 
     setObject({OBJECT}) {
       try {
-        this.object = JSON.parse(OBJECT);
+        const parsed = JSON.parse(OBJECT);
+        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+          this.object = parsed;
+        }
       } catch (e) {
         console.error("Invalid JSON object");
       }
+    }
+
+    getKeys() {
+      return JSON.stringify(Object.keys(this.object));
+    }
+
+    clear() {
+      this.object = {};
     }
   }
 

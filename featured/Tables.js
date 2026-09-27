@@ -43,17 +43,16 @@
     IRGP = IRGenerator.prototype,
     STGP = ScriptTreeGenerator.prototype;
 
-  ConstantInput.prototype.asRaw = function() {
-    return this.constantValue;
-  };
-  TypedInput.prototype.asRaw = function() {
-    return this.asUnknown();
-  };
-  TypedInput.prototype.asSafe = function() {
-    return this.asUnknown();
-  };
-  VariableInput.prototype.asRaw = function() {
-    return this.asSafe();
+  // Table inputs: variables and reporters pass through by reference so blocks edit the table in place.
+  // Typed text is only ever turned into a JSON literal (or a string), never pasted in as code.
+  const ref = (input) => {
+    if (!(input instanceof ConstantInput)) return input.asUnknown();
+    const text = String(input.constantValue);
+    try {
+      return `(${JSON.stringify(JSON.parse(text))})`;
+    } catch {
+      return JSON.stringify(text);
+    }
   };
 
   const PATCHES_ID = 'mistytables_patches';
@@ -81,117 +80,117 @@
       let block = node.block;
       switch (node.kind) {
         case 'mistytables.newTable':
-          this.source += `vm.runtime.visualReport("${block.id}", ([[]]))\n`;
+          this.source += `vm.runtime.visualReport(${JSON.stringify(block.id)}, ([[]]))\n`;
           return;
 
         case 'mistytables.addRow':
-          const addRow_1 = this.descendInput(node.A).asRaw();
-          this.source += `${addRow_1}.push(new Array(${addRow_1}[0].length).fill(""))\n`;
+          const addRow_1 = ref(this.descendInput(node.A));
+          this.source += `${addRow_1}.push(new Array(${addRow_1}[0]?.length ?? 0).fill(""))\n`;
           return;
         case 'mistytables.addColumn':
-          const addColumn_1 = this.descendInput(node.A).asRaw();
+          const addColumn_1 = ref(this.descendInput(node.A));
           this.source += `${addColumn_1}.map(column => (column.push(""), column))\n`;
           return;
         case 'mistytables.deleteRow':
-          const deleteRow_1 = this.descendInput(node.A).asRaw();
+          const deleteRow_1 = ref(this.descendInput(node.A));
           const deleteRow_2 = this.descendInput(node.X).asNumber();
-          this.source += `${deleteRow_1} = (${deleteRow_1}.splice(${deleteRow_2}, 1))\n`;
+          this.source += `(${deleteRow_1}.splice(${deleteRow_2}, 1))\n`;
           return;
         case 'mistytables.deleteColumn':
-          const deleteColumn_1 = this.descendInput(node.A).asRaw();
+          const deleteColumn_1 = ref(this.descendInput(node.A));
           const deleteColumn_2 = this.descendInput(node.X).asNumber();
           this.source += `${deleteColumn_1} = (${deleteColumn_1}.map(column => (column.splice(${deleteColumn_2}, 1), column)))\n`;
           return;
 
         case 'mistytables.addRows':
           const addRows_1 = this.descendInput(node.A).asNumber();
-          const addRows_2 = this.descendInput(node.B).asRaw();
-          this.source += `for (let i = 0; i < ${addRows_1}; i++) { ${addRows_2}.push(new Array(${addRows_2}[0].length).fill("")) }\n`;
+          const addRows_2 = ref(this.descendInput(node.B));
+          this.source += `for (let i = 0; i < ${addRows_1}; i++) { ${addRows_2}.push(new Array(${addRows_2}[0]?.length ?? 0).fill("")) }\n`;
           return;
         case 'mistytables.addColumns':
           const addColumns_1 = this.descendInput(node.A).asNumber();
-          const addColumns_2 = this.descendInput(node.B).asRaw();
+          const addColumns_2 = ref(this.descendInput(node.B));
           this.source += `for (let i = 0; i < ${addColumns_1}; i++) { ${addColumns_2}.map(column => (column.push(""), column)) }\n`;
           return;
         case 'mistytables.deleteRows':
           const deleteRows_1 = this.descendInput(node.A).asNumber();
           const deleteRows_2 = this.descendInput(node.B).asNumber();
-          const deleteRows_3 = this.descendInput(node.C).asRaw();
-          this.source += `${deleteRows_3} = ${deleteRows_3}.splice(${deleteRows_1}, ${deleteRows_2} - ${deleteRows_1} + 1)\n`;
+          const deleteRows_3 = ref(this.descendInput(node.C));
+          this.source += `${deleteRows_3}.splice(${deleteRows_1}, ${deleteRows_2} - ${deleteRows_1} + 1)\n`;
           return;
         case 'mistytables.deleteColumns':
           const deleteColumns_1 = this.descendInput(node.A).asNumber();
           const deleteColumns_2 = this.descendInput(node.B).asNumber();
-          const deleteColumns_3 = this.descendInput(node.C).asRaw();
+          const deleteColumns_3 = ref(this.descendInput(node.C));
           this.source += `${deleteColumns_3} = ${deleteColumns_3}.map(column => (column.splice(${deleteColumns_1}, ${deleteColumns_2} - ${deleteColumns_1} + 1), column))\n`;
           return;
 
         case 'mistytables.setCell':
-          const setCell_1 = this.descendInput(node.A).asRaw();
+          const setCell_1 = ref(this.descendInput(node.A));
           const setCell_2 = this.descendInput(node.X).asNumber();
           const setCell_3 = this.descendInput(node.Y).asNumber();
           const setCell_4 = this.descendInput(node.B).asString();
-          this.source += `(${setCell_1}[${setCell_2}][${setCell_3}] = ${setCell_4})\n`;
+          this.source += `((${setCell_1}[${setCell_2}] ?? [])[${setCell_3}] = ${setCell_4})\n`;
           return;
         case 'mistytables.getCell':
-          const getCell_1 = this.descendInput(node.A).asRaw();
+          const getCell_1 = ref(this.descendInput(node.A));
           const getCell_2 = this.descendInput(node.X).asNumber();
           const getCell_3 = this.descendInput(node.Y).asNumber();
-          this.source += `vm.runtime.visualReport("${block.id}", (${getCell_1}[${getCell_2}][${getCell_3}]))\n`;
+          this.source += `vm.runtime.visualReport(${JSON.stringify(block.id)}, (String(${getCell_1}[${getCell_2}]?.[${getCell_3}] ?? "")))\n`;
           return;
         case 'mistytables.getRow':
-          const getRow_1 = this.descendInput(node.A).asRaw();
+          const getRow_1 = ref(this.descendInput(node.A));
           const getRow_2 = this.descendInput(node.X).asNumber();
-          this.source += `vm.runtime.visualReport("${block.id}", (${getRow_1}[${getRow_2}].join(",")))\n`;
+          this.source += `vm.runtime.visualReport(${JSON.stringify(block.id)}, ((${getRow_1}[${getRow_2}] ?? []).join(",")))\n`;
           return;
         case 'mistytables.getColumn':
-          const getColumn_1 = this.descendInput(node.A).asRaw();
+          const getColumn_1 = ref(this.descendInput(node.A));
           const getColumn_2 = this.descendInput(node.X).asNumber();
-          this.source += `vm.runtime.visualReport("${block.id}", (JSON.stringify(${getColumn_1}.map(row => row[${getColumn_2}]))))\n`;
+          this.source += `vm.runtime.visualReport(${JSON.stringify(block.id)}, (JSON.stringify(${getColumn_1}.map(row => row[${getColumn_2}]))))\n`;
           return;
 
         case 'mistytables.setRow':
-          const setRow_1 = this.descendInput(node.A).asRaw();
+          const setRow_1 = ref(this.descendInput(node.A));
           const setRow_2 = this.descendInput(node.X).asNumber();
           const setRow_3 = this.descendInput(node.B).asString();
           this.source += `(${setRow_1}[${setRow_2}] = JSON.parse(${setRow_3}))\n`;
           return;
         case 'mistytables.setColumn':
-          const setColumn_1 = this.descendInput(node.A).asRaw();
+          const setColumn_1 = ref(this.descendInput(node.A));
           const setColumn_2 = this.descendInput(node.X).asNumber();
           const setColumn_3 = this.descendInput(node.B).asString();
-          this.source += `(const temp = JSON.parse(${setColumn_3}); ${setColumn_1}.map((row, i) => (row[${setColumn_2}] = temp[i], row)))\n`;
+          this.source += `((temp) => ${setColumn_1}.forEach((row, i) => (row[${setColumn_2}] = temp[i] ?? "")))(JSON.parse(${setColumn_3}))\n`;
           return;
         case 'mistytables.setTable':
-          const setTable_1 = this.descendInput(node.A).asRaw();
-          const setTable_2 = this.descendInput(node.B).asRaw();
-          this.source += `(${setTable_1} = ${setTable_2})\n`;
+          const setTable_1 = ref(this.descendInput(node.A));
+          const setTable_2 = ref(this.descendInput(node.B));
+          this.source += `(${setTable_1} = ((t) => typeof t === "string" ? JSON.parse(t) : t.map(row => [...row]))(${setTable_2}))\n`;
           return;
         case 'mistytables.fillTable':
-          const fillTable_1 = this.descendInput(node.A).asRaw();
+          const fillTable_1 = ref(this.descendInput(node.A));
           const fillTable_2 = this.descendInput(node.B).asString();
           this.source += `(${fillTable_1} = ${fillTable_1}.map(row => row.map(cell => ${fillTable_2})))\n`;
           return;
         case 'mistytables.clearTable':
-          const clearTable_1 = this.descendInput(node.A).asRaw();
+          const clearTable_1 = ref(this.descendInput(node.A));
           this.source += `(${clearTable_1} = [[]])\n`;
           return;
 
         case 'mistytables.getTable':
-          const getTable_1 = this.descendInput(node.A).asRaw();
-          this.source += `vm.runtime.visualReport("${block.id}", (JSON.stringify(${getTable_1})))\n`;
+          const getTable_1 = ref(this.descendInput(node.A));
+          this.source += `vm.runtime.visualReport(${JSON.stringify(block.id)}, (JSON.stringify(${getTable_1})))\n`;
           return;
         case 'mistytables.getTableFormatted':
-          const getTableFormatted_1 = this.descendInput(node.A).asRaw();
-          this.source += `vm.runtime.visualReport("${block.id}", (${getTableFormatted_1}.map(row => row.join(',')).join('\n')))\n`;
+          const getTableFormatted_1 = ref(this.descendInput(node.A));
+          this.source += `vm.runtime.visualReport(${JSON.stringify(block.id)}, (${getTableFormatted_1}.map(row => row.join(',')).join('\\n')))\n`;
           return;
         case 'mistytables.getTotalRows':
-          const getTotalRows_1 = this.descendInput(node.A).asRaw();
-          this.source += `vm.runtime.visualReport("${block.id}", (${getTotalRows_1}.length))\n`;
+          const getTotalRows_1 = ref(this.descendInput(node.A));
+          this.source += `vm.runtime.visualReport(${JSON.stringify(block.id)}, (${getTotalRows_1}.length))\n`;
           return;
         case 'mistytables.getTotalColumns':
-          const getTotalColumns_1 = this.descendInput(node.A).asRaw();
-          this.source += `vm.runtime.visualReport("${block.id}", (${getTotalColumns_1}[0].length))\n`;
+          const getTotalColumns_1 = ref(this.descendInput(node.A));
+          this.source += `vm.runtime.visualReport(${JSON.stringify(block.id)}, (${getTotalColumns_1}[0]?.length ?? 0))\n`;
           return;
         default:
           return fn(node, ...args);
@@ -203,93 +202,93 @@
           return new TypedInput(`([[]])`, TYPE_STRING);
 
         case 'mistytables.addRow':
-          const addRow_1 = this.descendInput(node.A).asRaw();
-          return new TypedInput(`${addRow_1}.push(new Array(${addRow_1}[0].length).fill(""))`, TYPE_UNKNOWN);
+          const addRow_1 = ref(this.descendInput(node.A));
+          return new TypedInput(`${addRow_1}.push(new Array(${addRow_1}[0]?.length ?? 0).fill(""))`, TYPE_UNKNOWN);
         case 'mistytables.addColumn':
-          const addColumn_1 = this.descendInput(node.A).asRaw();
+          const addColumn_1 = ref(this.descendInput(node.A));
           return new TypedInput(`${addColumn_1}.map(column => (column.push(""), column))`, TYPE_UNKNOWN);
         case 'mistytables.deleteRow':
-          const deleteRow_1 = this.descendInput(node.A).asRaw();
+          const deleteRow_1 = ref(this.descendInput(node.A));
           const deleteRow_2 = this.descendInput(node.X).asNumber();
-          return new TypedInput(`${deleteRow_1} = (${deleteRow_1}.splice(${deleteRow_2}, 1))`, TYPE_UNKNOWN);
+          return new TypedInput(`(${deleteRow_1}.splice(${deleteRow_2}, 1))`, TYPE_UNKNOWN);
         case 'mistytables.deleteColumn':
-          const deleteColumn_1 = this.descendInput(node.A).asRaw();
+          const deleteColumn_1 = ref(this.descendInput(node.A));
           const deleteColumn_2 = this.descendInput(node.X).asNumber();
           return new TypedInput(`${deleteColumn_1} = (${deleteColumn_1}.map(column => (column.splice(${deleteColumn_2}, 1), column)))`, TYPE_UNKNOWN);
 
         case 'mistytables.addRows':
           const addRows_1 = this.descendInput(node.A).asNumber();
-          const addRows_2 = this.descendInput(node.B).asRaw();
-          return new TypedInput(`for (let i = 0; i < ${addRows_1}; i++) { ${addRows_2}.push(new Array(${addRows_2}[0].length).fill("")) }`, TYPE_UNKNOWN);
+          const addRows_2 = ref(this.descendInput(node.B));
+          return new TypedInput(`for (let i = 0; i < ${addRows_1}; i++) { ${addRows_2}.push(new Array(${addRows_2}[0]?.length ?? 0).fill("")) }`, TYPE_UNKNOWN);
         case 'mistytables.addColumns':
           const addColumns_1 = this.descendInput(node.A).asNumber();
-          const addColumns_2 = this.descendInput(node.B).asRaw();
+          const addColumns_2 = ref(this.descendInput(node.B));
           return new TypedInput(`for (let i = 0; i < ${addColumns_1}; i++) { ${addColumns_2}.map(column => (column.push(""), column)) }`, TYPE_UNKNOWN);
         case 'mistytables.deleteRows':
           const deleteRows_1 = this.descendInput(node.A).asNumber();
           const deleteRows_2 = this.descendInput(node.B).asNumber();
-          const deleteRows_3 = this.descendInput(node.C).asRaw();
-          return new TypedInput(`${deleteRows_3} = ${deleteRows_3}.splice(${deleteRows_1}, ${deleteRows_2} - ${deleteRows_1} + 1)`, TYPE_UNKNOWN);
+          const deleteRows_3 = ref(this.descendInput(node.C));
+          return new TypedInput(`${deleteRows_3}.splice(${deleteRows_1}, ${deleteRows_2} - ${deleteRows_1} + 1)`, TYPE_UNKNOWN);
         case 'mistytables.deleteColumns':
           const deleteColumns_1 = this.descendInput(node.A).asNumber();
           const deleteColumns_2 = this.descendInput(node.B).asNumber();
-          const deleteColumns_3 = this.descendInput(node.C).asRaw();
+          const deleteColumns_3 = ref(this.descendInput(node.C));
           return new TypedInput(`${deleteColumns_3} = ${deleteColumns_3}.map(column => (column.splice(${deleteColumns_1}, ${deleteColumns_2} - ${deleteColumns_1} + 1), column))`, TYPE_UNKNOWN);
 
         case 'mistytables.setCell':
-          const setCell_1 = this.descendInput(node.A).asRaw();
+          const setCell_1 = ref(this.descendInput(node.A));
           const setCell_2 = this.descendInput(node.X).asNumber();
           const setCell_3 = this.descendInput(node.Y).asNumber();
           const setCell_4 = this.descendInput(node.B).asString();
-          return new TypedInput(`(${setCell_1}[${setCell_2}][${setCell_3}] = ${setCell_4})`, TYPE_UNKNOWN);
+          return new TypedInput(`((${setCell_1}[${setCell_2}] ?? [])[${setCell_3}] = ${setCell_4})`, TYPE_UNKNOWN);
         case 'mistytables.getCell':
-          const getCell_1 = this.descendInput(node.A).asRaw();
+          const getCell_1 = ref(this.descendInput(node.A));
           const getCell_2 = this.descendInput(node.X).asNumber();
           const getCell_3 = this.descendInput(node.Y).asNumber();
-          return new TypedInput(`(${getCell_1}[${getCell_2}][${getCell_3}])`, TYPE_STRING);
+          return new TypedInput(`(String(${getCell_1}[${getCell_2}]?.[${getCell_3}] ?? ""))`, TYPE_STRING);
         case 'mistytables.getRow':
-          const getRow_1 = this.descendInput(node.A).asRaw();
+          const getRow_1 = ref(this.descendInput(node.A));
           const getRow_2 = this.descendInput(node.X).asNumber();
-          return new TypedInput(`(${getRow_1}[${getRow_2}].join(","))`, TYPE_STRING);
+          return new TypedInput(`((${getRow_1}[${getRow_2}] ?? []).join(","))`, TYPE_STRING);
         case 'mistytables.getColumn':
-          const getColumn_1 = this.descendInput(node.A).asRaw();
+          const getColumn_1 = ref(this.descendInput(node.A));
           const getColumn_2 = this.descendInput(node.X).asNumber();
           return new TypedInput(`(JSON.stringify(${getColumn_1}.map(row => row[${getColumn_2}])))`, TYPE_STRING);
 
         case 'mistytables.setRow':
-          const setRow_1 = this.descendInput(node.A).asRaw();
+          const setRow_1 = ref(this.descendInput(node.A));
           const setRow_2 = this.descendInput(node.X).asNumber();
           const setRow_3 = this.descendInput(node.B).asString();
           return new TypedInput(`(${setRow_1}[${setRow_2}] = JSON.parse(${setRow_3}))`, TYPE_UNKNOWN);
         case 'mistytables.setColumn':
-          const setColumn_1 = this.descendInput(node.A).asRaw();
+          const setColumn_1 = ref(this.descendInput(node.A));
           const setColumn_2 = this.descendInput(node.X).asNumber();
           const setColumn_3 = this.descendInput(node.B).asString();
-          return new TypedInput(`(const temp = JSON.parse(${setColumn_3}); ${setColumn_1}.map((row, i) => (row[${setColumn_2}] = temp[i], row)))`, TYPE_UNKNOWN);
+          return new TypedInput(`((temp) => ${setColumn_1}.forEach((row, i) => (row[${setColumn_2}] = temp[i] ?? "")))(JSON.parse(${setColumn_3}))`, TYPE_UNKNOWN);
         case 'mistytables.setTable':
-          const setTable_1 = this.descendInput(node.A).asRaw();
-          const setTable_2 = this.descendInput(node.B).asRaw();
-          return new TypedInput(`(${setTable_1} = ${setTable_2})`, TYPE_UNKNOWN);
+          const setTable_1 = ref(this.descendInput(node.A));
+          const setTable_2 = ref(this.descendInput(node.B));
+          return new TypedInput(`(${setTable_1} = ((t) => typeof t === "string" ? JSON.parse(t) : t.map(row => [...row]))(${setTable_2}))`, TYPE_UNKNOWN);
         case 'mistytables.fillTable':
-          const fillTable_1 = this.descendInput(node.A).asRaw();
+          const fillTable_1 = ref(this.descendInput(node.A));
           const fillTable_2 = this.descendInput(node.B).asString();
           return new TypedInput(`(${fillTable_1} = ${fillTable_1}.map(row => row.map(cell => ${fillTable_2})))`, TYPE_UNKNOWN);
         case 'mistytables.clearTable':
-          const clearTable_1 = this.descendInput(node.A).asRaw();
+          const clearTable_1 = ref(this.descendInput(node.A));
           return new TypedInput(`(${clearTable_1} = [[]])`, TYPE_UNKNOWN);
 
         case 'mistytables.getTable':
-          const getTable_1 = this.descendInput(node.A).asRaw();
+          const getTable_1 = ref(this.descendInput(node.A));
           return new TypedInput(`(JSON.stringify(${getTable_1}))`, TYPE_STRING);
         case 'mistytables.getTableFormatted':
-          const getTableFormatted_1 = this.descendInput(node.A).asRaw();
-          return new TypedInput(`(${getTableFormatted_1}.map(row => row.join(',')).join('\n'))`, TYPE_STRING);
+          const getTableFormatted_1 = ref(this.descendInput(node.A));
+          return new TypedInput(`(${getTableFormatted_1}.map(row => row.join(',')).join('\\n'))`, TYPE_STRING);
         case 'mistytables.getTotalRows':
-          const getTotalRows_1 = this.descendInput(node.A).asRaw();
-          return new TypedInput(`(${getTotalRows_1}.length)`, TYPE_STRING);
+          const getTotalRows_1 = ref(this.descendInput(node.A));
+          return new TypedInput(`(${getTotalRows_1}.length)`, TYPE_NUMBER);
         case 'mistytables.getTotalColumns':
-          const getTotalColumns_1 = this.descendInput(node.A).asRaw();
-          return new TypedInput(`(${getTotalColumns_1}[0].length)`, TYPE_STRING);
+          const getTotalColumns_1 = ref(this.descendInput(node.A));
+          return new TypedInput(`(${getTotalColumns_1}[0]?.length ?? 0)`, TYPE_NUMBER);
         default:
           return fn(node, ...args);
       }

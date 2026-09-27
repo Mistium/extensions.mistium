@@ -78,6 +78,14 @@
             }
           },
           {
+            opcode: 'clearMessages',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'clear messages from connection [ID]',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
+            }
+          },
+          {
             opcode: 'isConnected',
             blockType: Scratch.BlockType.BOOLEAN,
             text: 'connection [ID] connected?',
@@ -225,12 +233,22 @@
     }
 
     connectSecure({ URL, PORT }) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const serverId = this.generateRandomId();
         URL = Cast.toString(URL);
         PORT = Cast.toString(PORT);
-        let prepend = (URL.startsWith("wss://") || URL.startsWith("ws://") || URL.startsWith("https://")) ? "" : "wss://";
-        const ws = new WebSocket(prepend+`${URL}:${PORT}`);
+        let prepend = /^(wss?|https?):\/\//i.test(URL) ? "" : "wss://";
+        let ws;
+        try {
+          // insert the port into the host, not after any path/query
+          const parsed = new globalThis.URL(prepend + URL);
+          if (PORT && !parsed.port) parsed.port = PORT;
+          ws = new WebSocket(parsed.href);
+        } catch (e) {
+          console.error(`WebSocket error on ${serverId}:`, e);
+          resolve('');
+          return;
+        }
         
         ws.onopen = () => {
           this.wsServers[serverId] = ws;
@@ -243,24 +261,29 @@
             this.messageQueue[serverId] = [];
           }
           this.messageQueue[serverId].push(event.data);
-          this.runtime.startHats('webSocketPlus_recievedMessage');
           this.lastFrom = serverId;
+          this.runtime.startHats('webSocketPlus_recievedMessage');
         };
         
         ws.onerror = (error) => {
           console.error(`WebSocket error on ${serverId}:`, error);
-          reject('Connection error');
+          resolve('');
         };
         
         ws.onclose = () => {
-          this.lastDisconnect = serverId;
-          delete this.wsServers[serverId];
-          delete this.connectedServers[serverId];
-          if (!this.connectedServers[serverId]) {
-            reject('Connection closed');
-          }
+          // no-op if the connection already opened
+          resolve('');
+          this.markClosed(serverId);
         };
       });
+    }
+
+    markClosed(serverId) {
+      if (!this.connectedServers[serverId]) return;
+      this.lastDisconnect = serverId;
+      delete this.wsServers[serverId];
+      delete this.connectedServers[serverId];
+      this.runtime.startHats('webSocketPlus_whenDisconnected');
     }
 
     recievedMessage() { return ""; }
@@ -294,6 +317,10 @@
       }
     }
 
+    clearMessages({ ID }) {
+      delete this.messageQueue[Cast.toString(ID)];
+    }
+
     isConnected({ ID }) {
       return this.connectedServers[Cast.toString(ID)] || false;
     }
@@ -313,13 +340,11 @@
     }
 
     disconnectFromConnection({ ID }) {
-      const ws = this.wsServers[Cast.toString(ID)];
-      if (ws) {
-        ws.close();
-        delete this.wsServers[Cast.toString(ID)];
-        delete this.messageQueue[Cast.toString(ID)];
-        delete this.connectedServers[Cast.toString(ID)];
-      }
+      ID = Cast.toString(ID);
+      const ws = this.wsServers[ID];
+      if (ws) ws.close();
+      this.markClosed(ID);
+      delete this.messageQueue[ID];
     }
 
     disconnectall() {
@@ -353,9 +378,15 @@
     }
 
     linkrooms({ ROOMS, ID }) {
+      let rooms;
+      try {
+        rooms = JSON.parse(Cast.toString(ROOMS));
+      } catch (e) {
+        rooms = Cast.toString(ROOMS);
+      }
       let msg = {
         "cmd": "link",
-        "val": JSON.parse(ROOMS),
+        "val": rooms,
         "listener": "link"
       };
       sendMessage(this.wsServers[Cast.toString(ID)], JSON.stringify(msg));

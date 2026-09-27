@@ -27,6 +27,7 @@
       this.dbVersion = 1;
       this.db;
       this.initialised = false;
+      this.initializeDatabase();
     }
 
     getInfo() {
@@ -94,6 +95,11 @@
               }
             }
           },
+          {
+            opcode: 'clearDatabase',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'delete all keys from database'
+          },
           label('database info'),
           {
             opcode: 'isinitialised',
@@ -147,29 +153,80 @@
 
     setDBName({ NAME }) {
       this.dbName = cast.toString(NAME);
-      this.initializeDatabase(); // Re-initialize the database with the new name
+      return this.initializeDatabase(); // Re-initialize the database with the new name
     }
 
     initializeDatabase() {
-      const request = window.indexedDB.open(this.dbName, this.dbVersion);
+      const name = this.dbName;
+      if (this.db) this.db.close();
+      this.db = undefined;
+      this.initialised = false;
+      this.ready = new Promise((resolve, reject) => {
+        const request = window.indexedDB.open(name, this.dbVersion);
 
-      request.onerror = function (event) {
-        console.error("IndexedDB error:", event.target.error);
-      };
+        request.onerror = function (event) {
+          console.error("IndexedDB error:", event.target.error);
+          reject("Error opening database");
+        };
 
-      request.onsuccess = (event) => {
-        this.db = event.target.result;
-        console.log("IndexedDB initialized successfully!");
-        this.initialised = true;
-      };
+        request.onsuccess = (event) => {
+          // A newer setDBName call won the race, drop this connection
+          if (name !== this.dbName) {
+            event.target.result.close();
+            resolve();
+            return;
+          }
+          this.db = event.target.result;
+          console.log("IndexedDB initialized successfully!");
+          this.initialised = true;
+          resolve();
+        };
 
-      request.onupgradeneeded = (event) => {
-        this.db = event.target.result;
-        const objectStore = this.db.createObjectStore("data", {
-          keyPath: "key"
-        });
-        console.log("IndexedDB upgrade complete!");
-      };
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains("data")) {
+            db.createObjectStore("data", {
+              keyPath: "key"
+            });
+          }
+          console.log("IndexedDB upgrade complete!");
+        };
+      });
+      this.ready.catch(() => {});
+      return this.ready;
+    }
+
+    // Runs fn(objectStore) in a transaction, resolving with the request result
+    // (or undefined for a readwrite transaction once it has committed).
+    async _run(mode, fn, errorMessage) {
+      let ready;
+      do {
+        ready = this.ready;
+        await ready;
+      } while (ready !== this.ready);
+      return new Promise((resolve, reject) => {
+        const transaction = this.db.transaction(["data"], mode);
+        const request = fn(transaction.objectStore("data"));
+        if (mode === "readwrite") {
+          transaction.oncomplete = () => resolve();
+        } else {
+          request.onsuccess = () => resolve(request.result);
+        }
+        transaction.onerror = transaction.onabort = () => reject(errorMessage);
+      });
+    }
+
+    // Fire-and-forget write once open, so loops don't yield a frame per write.
+    // Later transactions on the same store still see it (IndexedDB orders them).
+    _write(fn, errorMessage) {
+      if (!this.initialised) return this._run("readwrite", fn, errorMessage);
+      const transaction = this.db.transaction(["data"], "readwrite");
+      fn(transaction.objectStore("data"));
+      transaction.onerror = () => console.error(errorMessage);
+    }
+
+    _toValue(value) {
+      return typeof value === "object" && value !== null ? JSON.stringify(value) : cast.toString(value);
     }
 
     isinitialised() {
@@ -177,193 +234,69 @@
     }
 
     writeToDatabase({ VALUE, KEY }) {
-      if (!this.initialised) {
-        console.error("Database not initialised");
-      }
-      const transaction = this.db.transaction(["data"], "readwrite");
-      const objectStore = transaction.objectStore("data");
-      objectStore.put({
+      return this._write(store => store.put({
         key: cast.toString(KEY),
         value: cast.toString(VALUE)
-      });
+      }), "Error writing to database");
     }
 
     async readFromDatabase({ KEY }) {
-      if (!this.initialised) {
-        console.error("Database not initialised");
-      }
-      return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(["data"], "readonly");
-        const objectStore = transaction.objectStore("data");
-        const request = objectStore.get(cast.toString(KEY));
-        request.onsuccess = function (event) {
-          resolve(event.target.result ? event.target.result.value : "");
-        };
-        request.onerror = function (event) {
-          reject("Error reading from database");
-        };
-      });
+      const entry = await this._run("readonly", store => store.get(cast.toString(KEY)), "Error reading from database");
+      return entry ? entry.value : "";
     }
 
     async getAllKeys() {
-      if (!this.initialised) {
-        console.error("Database not initialised");
-      }
-      return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(["data"], "readonly");
-        const objectStore = transaction.objectStore("data");
-        const request = objectStore.getAllKeys();
-        request.onsuccess = function (event) {
-          const keysArray = event.target.result;
-          const keysJSON = JSON.stringify(keysArray); // Convert array to JSON string
-          resolve(keysJSON);
-        };
-        request.onerror = function (event) {
-          reject("Error getting keys from database");
-        };
-      });
+      const keys = await this._run("readonly", store => store.getAllKeys(), "Error getting keys from database");
+      return JSON.stringify(keys);
     }
 
     async keyExists({ KEY }) {
-      if (!this.initialised) {
-        console.error("Database not initialised");
-      }
-      const keys = await this.getAllKeys();
-      return keys.includes(cast.toString(KEY));
+      const count = await this._run("readonly", store => store.count(cast.toString(KEY)), "Error checking key");
+      return count > 0;
     }
 
     deleteFromDatabase({ KEY }) {
-      if (!this.initialised) {
-        console.error("Database not initialised");
-      }
-      const transaction = this.db.transaction(["data"], "readwrite");
-      const objectStore = transaction.objectStore("data");
-      try {
-        objectStore.delete(cast.toString(KEY));
-      } catch (error) {
-        console.error("Error deleting key from database");
-      }
+      return this._write(store => store.delete(cast.toString(KEY)), "Error deleting key from database");
+    }
+
+    clearDatabase() {
+      return this._run("readwrite", store => store.clear(), "Error clearing database");
     }
 
     async exportDatabaseAsJSON() {
-      if (!this.initialised) {
-        console.error("Database not initialised");
-      }
-      if (!this.db) {
-        return Promise.reject("No database connection available");
-      }
-
-      return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(["data"], "readonly");
-        const objectStore = transaction.objectStore("data");
-        const request = objectStore.getAll();
-
-        request.onsuccess = function (event) {
-          const data = event.target.result;
-          try {
-            const formattedData = {};
-            data.forEach(entry => {
-              formattedData[entry.key] = entry.value;
-            });
-            const jsonData = JSON.stringify(formattedData);
-            resolve(jsonData);
-          } catch (error) {
-            reject("Error converting data to JSON");
-          }
-        };
-
-        request.onerror = function (event) {
-          reject("Error exporting database as JSON");
-        };
+      const data = await this._run("readonly", store => store.getAll(), "Error exporting database as JSON");
+      const formattedData = {};
+      data.forEach(entry => {
+        formattedData[entry.key] = entry.value;
       });
+      return JSON.stringify(formattedData);
     }
 
     async importJSONToDatabase({ jsonData }) {
-      if (!this.initialised) {
-        console.error("Database not initialised");
+      let data;
+      try {
+        data = JSON.parse(cast.toString(jsonData));
+      } catch (error) {
+        return;
       }
-      if (!this.db) {
-        return Promise.reject("No database connection available");
-      }
+      if (typeof data !== "object" || data === null) return;
 
-      return new Promise((resolve, reject) => {
-        try {
-          const data = JSON.parse(cast.toString(jsonData));
-          const transaction = this.db.transaction(["data"], "readwrite");
-          const objectStore = transaction.objectStore("data");
-
-          Object.keys(data).forEach(key => {
-            objectStore.put({ key: key, value: data[key] });
-          });
-
-          transaction.oncomplete = function () {
-            resolve("Data imported successfully");
-          };
-
-          transaction.onerror = function (event) {
-            reject("Error importing data into database");
-          };
-        } catch (error) {
-          reject("Error parsing JSON data");
-        }
-      });
+      return this._run("readwrite", store => {
+        Object.keys(data).forEach(key => {
+          store.put({ key: key, value: this._toValue(data[key]) });
+        });
+      }, "Error importing data into database");
     }
 
     async getDatabaseSize() {
-      if (!this.initialised) {
-        console.error("Database not initialised");
-      }
-      if (!this.db) {
-        return Promise.reject("No database connection available");
-      }
-
-      return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(["data"], "readonly");
-        const objectStore = transaction.objectStore("data");
-        const request = objectStore.getAll();
-
-        request.onsuccess = function (event) {
-          const data = event.target.result;
-          try {
-            const totalSize = data.reduce((acc, entry) => acc + entry.key.length + entry.value.length, 0);
-            resolve(totalSize.toString());
-          } catch (error) {
-            reject("Error calculating database size");
-          }
-        };
-
-        request.onerror = function (event) {
-          reject("Error getting database size");
-        };
-      });
+      const data = await this._run("readonly", store => store.getAll(), "Error getting database size");
+      const totalSize = data.reduce((acc, entry) => acc + entry.key.length + String(entry.value).length, 0);
+      return totalSize.toString();
     }
 
     async getKeySize({ KEY }) {
-      if (!this.initialised) {
-        console.error("Database not initialised");
-      }
-      if (!this.db) {
-        return Promise.reject("No database connection available");
-      }
-
-      return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(["data"], "readonly");
-        const objectStore = transaction.objectStore("data");
-        const request = objectStore.get(cast.toString(KEY));
-
-        request.onsuccess = function (event) {
-          const entry = event.target.result;
-          if (entry) {
-            resolve((entry.key.length + entry.value.length).toString());
-          } else {
-            resolve("0");
-          }
-        };
-
-        request.onerror = function (event) {
-          reject("Error getting key size");
-        };
-      });
+      const entry = await this._run("readonly", store => store.get(cast.toString(KEY)), "Error getting key size");
+      return entry ? (entry.key.length + String(entry.value).length).toString() : "0";
     }
   }
 

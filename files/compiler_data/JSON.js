@@ -52,7 +52,7 @@ let blocks = [
     blockType: 'REPORTER',
     returns: 'STRING',
     text: 'delete value of [B] in [A]',
-    code: 'delete [A][[B]]; return [A];',
+    code: '(delete [A][[B]], [A])',
     arguments: {
       A: { type: 'string', val: '{"key":"value"}' },
       B: { type: 'string', val: 'key' },

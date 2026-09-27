@@ -383,6 +383,7 @@ export function buildGetInfo(ext) {
         }),
         blocks.event("whenBalanceChanged", "when balance changed"),
         blocks.reporter("getTransactions", "get transactions"),
+        blocks.reporter("getTransactionCount", "transaction count"),
         blocks.separator(),
         blocks.label("My Keys"),
         blocks.button("Mange My Keys", "openKeyManager"),
@@ -421,7 +422,7 @@ export function buildGetInfo(ext) {
           disableMonitor: true,
           hideFromPalette: true
         }),
-        blocks.reporter("updateItem", "keys - update [KEY] to [DATA] for id: [KEY]", {
+        blocks.reporter("updateItem", "keys - update [KEY] to [DATA] for id: [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "ID",
@@ -435,7 +436,7 @@ export function buildGetInfo(ext) {
             defaultValue: "data",
           },
         }, { hideFromPalette: true }),
-        blocks.reporter("deleteItem", "keys - delete (ID) [KEY]", {
+        blocks.reporter("deleteItem", "keys - delete (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item",
@@ -484,6 +485,7 @@ export function buildGetInfo(ext) {
           },
         }),
         blocks.event("whenCallReceived", "when call received"),
+        blocks.event("whenCallAccepted", "when my call is accepted"),
         blocks.reporter("callData", "call data"),
         blocks.command("acceptCall", "accept call"),
         blocks.separator(),

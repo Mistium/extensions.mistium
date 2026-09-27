@@ -17,11 +17,9 @@
 
   class InputManager {
     constructor() {
-      const textEditingKeys = ['Backspace', 'Delete', 'Enter', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
       this.inputs = {};
       this.currentInput = "";
       this.currentInputChar = 0;
-      this.currentInputLine = 1;
       this.multiline = true;
     }
 
@@ -111,6 +109,11 @@
             text: 'Get current cursor position',
           },
           {
+            opcode: 'getCurrentCursorLine',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'Get current cursor line',
+          },
+          {
             opcode: 'setInput',
             blockType: Scratch.BlockType.COMMAND,
             text: 'Set Input [ID] To [VAL]',
@@ -120,7 +123,7 @@
                 defaultValue: "input1",
               },
               VAL: {
-                type: Scratch.ArgumentType.NUMBER,
+                type: Scratch.ArgumentType.STRING,
                 defaultValue: "",
               },
             },
@@ -152,9 +155,7 @@
 
     deleteAllInputs() {
       this.inputs = {};
-      this.currentInput = "";
-      this.currentInputChar = 0;
-      this.currentInputLine = 1;
+      this.deselectInput();
     }
 
     enableMultiline() {
@@ -166,7 +167,10 @@
     }
     
     setInput({ID,VAL}) {
-      this.inputs[ID] = VAL;
+      this.inputs[ID] = Scratch.Cast.toString(VAL);
+      if (ID === this.currentInput) {
+        this.currentInputChar = Math.min(this.currentInputChar, this.inputs[ID].length);
+      }
     }
 
     GetLinesOf({ID}) {
@@ -174,7 +178,7 @@
         const inputLines = this.inputs[ID].split('\n');
         return JSON.stringify(inputLines);
       } else {
-        return 0;
+        return "[]";
       }
     }
     
@@ -190,11 +194,11 @@
     deselectInput() {
       this.currentInput = "";
       this.currentInputChar = 0;
-      this.currentInputLine = 1;
     }
     
     setCursorPosition({ Char }) {
-      this.currentInputChar = Char;
+      const length = (this.inputs[this.currentInput] ?? "").length;
+      this.currentInputChar = Math.max(0, Math.min(Math.floor(Scratch.Cast.toNumber(Char)), length));
     }
 
     CurrentInputID() {
@@ -211,15 +215,12 @@
       }
       this.currentInput = ID;
       this.currentInputChar = 0;
-      this.currentInputLine = 1;
     }
     
-    deleteInput(ID) {
-      if (this.inputs[ID]) {
-        this.inputs[ID] = '';
-        this.currentInput = "";
-        this.currentInputChar = 0;
-        this.currentInputLine = 1;
+    deleteInput({ ID }) {
+      delete this.inputs[ID];
+      if (this.currentInput === ID) {
+        this.deselectInput();
       }
     }
 
@@ -232,7 +233,7 @@
     }
     
     onKeyDown(event) {
-      if (this.currentInput == "") {
+      if (this.currentInput == "" || typeof this.inputs[this.currentInput] !== "string") {
         return;
       }
       const textEditingKeys = ['Backspace', 'Delete', 'Enter', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']
@@ -266,11 +267,10 @@
             }
             break;
           case 'Enter':
-            if (this.currentInput) {
+            if (this.currentInput && this.multiline) {
               this.inputs[this.currentInput] = this.inputs[this.currentInput].slice(0, this.currentInputChar) + '\n' + this.inputs[this.currentInput].slice(this.currentInputChar);
               // Move cursor to the beginning of the next line
-              this.currentInputLine++;
-              this.currentInputChar+=2;
+              this.currentInputChar++;
             }
             break;
           case 'Tab':
@@ -280,7 +280,7 @@
             }
             break;
           case 'Escape':
-            this.currentInput = "";
+            this.deselectInput();
             break;
           case 'ArrowLeft':
             if (this.currentInputChar > 0) {
@@ -293,28 +293,24 @@
             }
             break;
           case 'ArrowUp':
-            // Move cursor up to the previous line
-            if (this.currentInputLine > 1) {
-              this.currentInputLine--;
-              // Adjust cursor position to the end of the previous line if it's longer than the current line
-              const currentLineLength = this.inputs[this.currentInput].split('\n')[this.currentInputLine - 1].length;
-              if (this.currentInputChar > currentLineLength) {
-                this.currentInputChar = currentLineLength;
-              }
+          case 'ArrowDown': {
+            // Move cursor to the same column on the previous/next line, clamped to that line's length
+            const text = this.inputs[this.currentInput];
+            const lineStart = text.lastIndexOf('\n', this.currentInputChar - 1) + 1;
+            const column = this.currentInputChar - lineStart;
+            if (event.key === 'ArrowUp') {
+              if (lineStart === 0) break;
+              const prevStart = text.lastIndexOf('\n', lineStart - 2) + 1;
+              this.currentInputChar = prevStart + Math.min(column, lineStart - 1 - prevStart);
+            } else {
+              const lineEnd = text.indexOf('\n', this.currentInputChar);
+              if (lineEnd === -1) break;
+              let nextEnd = text.indexOf('\n', lineEnd + 1);
+              if (nextEnd === -1) nextEnd = text.length;
+              this.currentInputChar = lineEnd + 1 + Math.min(column, nextEnd - lineEnd - 1);
             }
             break;
-          case 'ArrowDown':
-            // Move cursor down to the next line
-            const inputLines = this.inputs[this.currentInput].split('\n');
-            if (this.currentInputLine < inputLines.length) {
-              this.currentInputLine++;
-              // Adjust cursor position to the end of the next line if it's longer than the current line
-              const nextLineLength = inputLines[this.currentInputLine - 1].length;
-              if (this.currentInputChar > nextLineLength) {
-                this.currentInputChar = nextLineLength;
-              }
-            }
-            break;
+          }
           default:
             break;
         }
@@ -331,11 +327,18 @@
     getCurrentCursorPosition() {
       return this.currentInputChar;
     }
+
+    getCurrentCursorLine() {
+      const text = this.inputs[this.currentInput] ?? "";
+      return text.slice(0, this.currentInputChar).split('\n').length;
+    }
     
     onPaste(event) {
-      const pastedText = event.clipboardData.getData('text/plain');
-      if (pastedText.trim() !== '') {
-        if (this.currentInput) {
+      let pastedText = event.clipboardData ? event.clipboardData.getData('text/plain') : '';
+      pastedText = pastedText.replace(/\r\n?/g, '\n');
+      if (!this.multiline) pastedText = pastedText.replace(/\n/g, ' ');
+      if (pastedText !== '') {
+        if (this.currentInput && typeof this.inputs[this.currentInput] === "string") {
           // Append pasted text to the current input at the cursor position
           this.inputs[this.currentInput] = this.inputs[this.currentInput].slice(0, this.currentInputChar) + pastedText + this.inputs[this.currentInput].slice(this.currentInputChar);
           this.currentInputChar += pastedText.length;

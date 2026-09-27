@@ -40,6 +40,8 @@
         heartbeatTimer: null,
         seq: null,
         sessionId: null,
+        resumeUrl: null,
+        heartbeatAcked: true,
         rateLimited: false,
         rateLimitReset: 0
       };
@@ -199,6 +201,25 @@
               CHANNEL_ID: {
                 type: Scratch.ArgumentType.STRING,
                 defaultValue: 'channel_id'
+              }
+            }
+          },
+          {
+            opcode: 'editMessage',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'edit message [MESSAGE_ID] in channel [CHANNEL_ID] to [MESSAGE]',
+            arguments: {
+              MESSAGE_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'message_id'
+              },
+              CHANNEL_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'channel_id'
+              },
+              MESSAGE: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'message'
               }
             }
           },
@@ -460,9 +481,11 @@
             items: [
               { text: "string", value: "string" },
               { text: "integer", value: "integer" },
+              { text: "number", value: "number" },
               { text: "boolean", value: "boolean" },
               { text: "user", value: "user" },
-              { text: "channel", value: "channel" }
+              { text: "channel", value: "channel" },
+              { text: "role", value: "role" }
             ]
           }
         }
@@ -479,23 +502,29 @@
 
     connectToDiscord() {
       if (this.conn.isConnecting) return util.log('Already connecting...');
+      if (this.connected()) return util.log('Already connected');
       if (!this.token) return util.err('Token not set');
       
       this.conn.isConnecting = true;
-      this.conn.attempts++;
+      this.conn.attempts = 0;
       this._connect();
     }
 
     disconnectFromDiscord() {
-      if (!this.client || this.client.readyState !== WebSocket.OPEN) return;
-      
       clearInterval(this.conn.heartbeatTimer);
       clearTimeout(this.conn.reconnectTimer);
       this.conn.heartbeatTimer = null;
       this.conn.reconnectTimer = null;
       this.conn.isConnecting = false;
       
-      this.client.close(1000, "User disconnect");
+      // also stops a pending reconnect or a socket that is still connecting
+      if (!this.client) return;
+      this.client.onclose = null;
+      this.client.onmessage = null;
+      if (this.client.readyState !== WebSocket.CLOSED) {
+        this.client.close(1000, "User disconnect");
+      }
+      this.client = null;
     }
 
     connected() {
@@ -550,7 +579,8 @@
     }
 
     _connect(resume = false) {
-      this.client = new WebSocket(WS);
+      this.client = new WebSocket(resume && this.conn.resumeUrl ? `${this.conn.resumeUrl}/?v=10&encoding=json` : WS);
+      this.conn.heartbeatAcked = true;
       
       this.client.onopen = () => {
         if (resume && this.conn.sessionId && this.conn.seq) {
@@ -595,21 +625,32 @@
             case 0:
               this._handleEvent(data);
               break;
+            case 1:
+              this.client.send(JSON.stringify({op: 1, d: this.conn.seq}));
+              break;
             case 7:
               this._reconnect(true);
               break;
             case 9:
-              setTimeout(() => this._reconnect(!data.d), 
+              // d is true when the session can still be resumed
+              if (!data.d) this._resetSession();
+              clearTimeout(this.conn.reconnectTimer);
+              this.conn.reconnectTimer = setTimeout(() => this._reconnect(!!data.d),
                 Math.floor(Math.random() * 4000) + 1000);
               break;
             case 10:
               clearInterval(this.conn.heartbeatTimer);
               this.conn.heartbeatTimer = setInterval(() => {
-                if (this.client?.readyState === WebSocket.OPEN) {
-                  this.client.send(JSON.stringify({op: 1, d: this.conn.seq}));
-                }
+                if (this.client?.readyState !== WebSocket.OPEN) return;
+                // no ACK since the last beat means a zombie connection
+                if (!this.conn.heartbeatAcked) return this._reconnect(true);
+                this.conn.heartbeatAcked = false;
+                this.client.send(JSON.stringify({op: 1, d: this.conn.seq}));
               }, data.d.heartbeat_interval);
               this.client.send(JSON.stringify({op: 1, d: this.conn.seq}));
+              break;
+            case 11:
+              this.conn.heartbeatAcked = true;
               break;
           }
         } catch (err) {
@@ -626,11 +667,15 @@
           return;
         }
         
+        // invalid seq / session timed out: must identify again
+        if (evt.code === 4007 || evt.code === 4009) this._resetSession();
+        
         if (this.conn.attempts >= this.conn.maxAttempts) {
           this.conn.isConnecting = false;
           return util.err('Max reconnect attempts reached');
         }
         
+        this.conn.attempts++;
         const delay = Math.min(Math.pow(2, this.conn.attempts) * 1000, 30000);
         this.conn.reconnectTimer = setTimeout(() => this._reconnect(true), delay);
       };
@@ -639,19 +684,30 @@
     }
 
     _reconnect(tryResume) {
+      clearInterval(this.conn.heartbeatTimer);
+      clearTimeout(this.conn.reconnectTimer);
       if (this.client) {
         this.client.onclose = null;
+        this.client.onmessage = null;
         if (this.client.readyState !== WebSocket.CLOSED) {
-          this.client.close();
+          // non-1000 code keeps the session resumable
+          this.client.close(4000);
         }
       }
       this._connect(tryResume);
+    }
+
+    _resetSession() {
+      this.conn.sessionId = null;
+      this.conn.seq = null;
+      this.conn.resumeUrl = null;
     }
 
     _handleEvent(data) {
       switch (data.t) {
         case 'READY':
           this.conn.sessionId = data.d.session_id;
+          this.conn.resumeUrl = data.d.resume_gateway_url || null;
           bot_data = data.d;
           this.conn.isConnecting = false;
           this.conn.attempts = 0;
@@ -701,6 +757,8 @@
         cache[existingIndex] = message;
       } else {
         cache.unshift(message);
+        // API batches arrive newest-first, so keep the cache sorted by snowflake (newest first)
+        cache.sort((a, b) => b.id.length - a.id.length || (b.id > a.id ? 1 : b.id < a.id ? -1 : 0));
       }
       
       while (cache.length > this.maxCachePerChannel) {
@@ -830,7 +888,6 @@
       return new Promise(resolve => {
         this._apiRequest(`/channels/${channelId}/messages/${messageId}`)
           .then(data => {
-            this._cacheMessage(data);
             resolve(JSON.stringify(data));
           })
           .catch(err => {
@@ -891,6 +948,17 @@
         return result;
       })
       .catch(err => util.err('Delete error:', err));
+    }
+
+    editMessage({ MESSAGE_ID, CHANNEL_ID, MESSAGE }) {
+      const channelId = util.s(CHANNEL_ID);
+      
+      return this._apiRequest(`/channels/${channelId}/messages/${util.s(MESSAGE_ID)}`, {
+        method: 'PATCH',
+        body: { content: util.s(MESSAGE) }
+      })
+      .then(data => this._updateCachedMessage(data))
+      .catch(err => util.err('Edit error:', err));
     }
 
     sendReply({ REPLY, MESSAGE_ID, CHANNEL_ID }) {
@@ -1013,14 +1081,16 @@
         'integer': 4,
         'boolean': 5,
         'user': 6,
-        'channel': 7
+        'channel': 7,
+        'role': 8,
+        'number': 10
       };
       
       return this._addOptionToList({
         type: typeMap[TYPE] || 3,
         name: util.s(NAME),
         description: util.s(DESCRIPTION),
-        required: Boolean(REQUIRED)
+        required: Scratch.Cast.toBoolean(REQUIRED)
       }, OPTIONS);
     }
 

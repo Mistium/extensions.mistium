@@ -4,7 +4,7 @@
 //
 // GENERATED FILE - DO NOT EDIT.
 // Source: src/rotur/extension.js (with src/rotur/helpers.js, src/rotur/getinfo.js)
-// Built: 2026-09-16T18:41:48.979Z by scripts/build-rotur-extension.mjs
+// Built: 2026-09-27T09:22:38.119Z by scripts/build-rotur-extension.mjs
 // Embedded SDK: rotur-sdk@2.4.0 from npm (bundled, no runtime fetch)
 //
 // License: MPL-2.0
@@ -3714,6 +3714,7 @@
         }),
         blocks.event("whenBalanceChanged", "when balance changed"),
         blocks.reporter("getTransactions", "get transactions"),
+        blocks.reporter("getTransactionCount", "transaction count"),
         blocks.separator(),
         blocks.label("My Keys"),
         blocks.button("Mange My Keys", "openKeyManager"),
@@ -3752,7 +3753,7 @@
           disableMonitor: true,
           hideFromPalette: true
         }),
-        blocks.reporter("updateItem", "keys - update [KEY] to [DATA] for id: [KEY]", {
+        blocks.reporter("updateItem", "keys - update [KEY] to [DATA] for id: [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "ID"
@@ -3766,7 +3767,7 @@
             defaultValue: "data"
           }
         }, { hideFromPalette: true }),
-        blocks.reporter("deleteItem", "keys - delete (ID) [KEY]", {
+        blocks.reporter("deleteItem", "keys - delete (ID) [ITEM]", {
           ITEM: {
             type: Scratch.ArgumentType.STRING,
             defaultValue: "item"
@@ -3815,6 +3816,7 @@
           }
         }),
         blocks.event("whenCallReceived", "when call received"),
+        blocks.event("whenCallAccepted", "when my call is accepted"),
         blocks.reporter("callData", "call data"),
         blocks.command("acceptCall", "accept call"),
         blocks.separator(),
@@ -3886,6 +3888,7 @@
   var EXT_VERSION = 9;
   var LEGACY_AUTH_RETIRED = "Username/password login was retired. Use the login prompt or login with token.";
   var SYNC_ROOM = "rotur-ext-sync";
+  var SOCKET_TIMEOUT_MS = 15e3;
   function apiMessage(error, fallback) {
     if (error && typeof error === "object" && "data" in error) {
       const data = error.data;
@@ -3946,8 +3949,8 @@
         delete window._roturAuthHandler;
       };
       try {
-        vm.on("PROJECT_RUN_START", cleanUpLogin);
-        vm.on("PROJECT_RUN_STOP", cleanUpLogin);
+        Scratch.vm.on("PROJECT_RUN_START", cleanUpLogin);
+        Scratch.vm.on("PROJECT_RUN_STOP", cleanUpLogin);
       } catch (_) {
       }
     }
@@ -4111,12 +4114,14 @@
       if (!this.sdk.loggedIn) return Promise.reject(new Error("Login first"));
       if (this._online()) return Promise.resolve();
       if (!this.socketTask) {
-        this.socketTask = this.sdk.connectSocket().catch((error) => {
+        let timer;
+        const timeout = new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error("Connection timed out")), SOCKET_TIMEOUT_MS);
+        });
+        const ready = this.sdk.connectSocket().then((conn) => this._online() ? conn : this.sdk.socket.once("ready"));
+        this.socketTask = Promise.race([ready, timeout]).finally(() => {
+          clearTimeout(timer);
           this.socketTask = null;
-          throw error;
-        }).then((conn) => {
-          this.socketTask = null;
-          return conn;
         });
       }
       return this.socketTask;
@@ -4158,9 +4163,7 @@
         const outgoing = outRes.outgoing || outRes.requests || [];
         if (fireHats) {
           if (incoming.length > this.friends.requests.length) this._hat("whenFriendRequestReceived");
-          else if (incoming.length < this.friends.requests.length) {
-            this._hat("whenFriendRequestAccepted");
-          }
+          if (list.length > this.friends.list.length) this._hat("whenFriendRequestAccepted");
         }
         this.friends = { list, requests: incoming, outgoing };
       } catch (_) {
@@ -4218,6 +4221,7 @@
       }
       if (val.kind === "call_confirm") {
         this.callJson = { ...val.call, confirmed: true };
+        this._hat("whenCallAccepted");
         return;
       }
       const packet = {
@@ -4234,11 +4238,22 @@
     }
     // Connection blocks
     connectToServer(args) {
+      const previous = this.designation;
       this.designation = args.DESIGNATION || "rtr";
       this.system = args.SYSTEM || "rotur";
       this.appVersion = args.VERSION || "v" + EXT_VERSION;
       this.clientInfo = { system: this.system, version: this.appVersion };
       this._ensureClient();
+      if (this._online()) {
+        try {
+          if (previous && previous !== this.designation && previous !== SYNC_ROOM) {
+            this.sdk.socket.leave([previous]);
+            delete this.roomMembers[previous];
+          }
+        } catch (_) {
+        }
+        this._joinRooms();
+      }
       if (this.sdk.loggedIn) {
         this._connectSocket().then(() => this._refreshAll()).catch((error) => console.error("Rotur connect failed:", error));
       }
@@ -4252,6 +4267,7 @@
         this._pollTimer = null;
       }
       this.socketTask = null;
+      const wasOnline = this._online();
       try {
         if (this.sdk) this.sdk.logout();
       } catch (_) {
@@ -4259,6 +4275,8 @@
       this.is_connected = false;
       this.authenticated = false;
       this.account = null;
+      this.roomMembers = {};
+      if (wasOnline) this._hat("whenDisconnected");
     }
     connected() {
       return this._online();
@@ -4298,14 +4316,17 @@
     }
     async loginToken(args) {
       this._ensureClient();
-      if (!args.TOKEN) return "No token provided";
+      const token = Scratch.Cast.toString(args.TOKEN);
+      if (!token) return "No token provided";
+      if (this.sdk.token && this.sdk.token !== token) this.disconnect();
       try {
-        this.sdk.setToken(args.TOKEN);
+        this.sdk.setToken(token);
         await this._connectSocket();
         await this._refreshAll();
         this._hat("whenAuthenticated");
         return "Logged In";
       } catch (error) {
+        this.disconnect();
         return apiMessage(error, "Login failed");
       }
     }
@@ -4522,7 +4543,7 @@
       }
       const room = args.TARGET || this.designation;
       try {
-        this.sdk.socket.join([room]);
+        if (!this.sdk.socket.joinedRooms.includes(room)) this.sdk.socket.join([room]);
       } catch (_) {
       }
       try {
@@ -4550,13 +4571,13 @@
       return true;
     }
     getPacketsFromTarget(args) {
-      return JSON.stringify(this.packets[args.TARGET] || "[]");
+      return JSON.stringify(this.packets[args.TARGET] || []);
     }
     numberOfPacketsOnTarget(args) {
       return this.packets[args.TARGET] ? this.packets[args.TARGET].length : 0;
     }
     getFirstPacketOnTarget(args) {
-      return JSON.stringify(this.packets[args.TARGET]?.[0] || "{}");
+      return JSON.stringify(this.packets[args.TARGET]?.[0] || {});
     }
     dataOfFirstPacketOnTarget(args) {
       const first = this.packets[args.TARGET]?.[0];
@@ -4567,8 +4588,10 @@
           return JSON.stringify(first?.client) || '{"system":"Unknown", "version":"Unknown"}';
         case "source port":
           return first?.source || "Unknown";
-        case "payload":
-          return first?.payload || "";
+        case "payload": {
+          const payload = first?.payload ?? "";
+          return typeof payload === "object" ? JSON.stringify(payload) : payload;
+        }
         case "timestamp":
           return first?.timestamp || "0";
         default:
@@ -4599,7 +4622,7 @@
       return JSON.stringify(this.rawPackets);
     }
     RAWgetFirstPacket() {
-      return JSON.stringify(this.rawPackets?.[0] || "{}");
+      return JSON.stringify(this.rawPackets?.[0] || {});
     }
     RAWdeleteFirstPacket() {
       const packet = this.rawPackets?.[0];
@@ -4682,7 +4705,7 @@
     getSyncedVariable(args) {
       if (!this._online()) return "Not Connected";
       if (!this._authed()) return "Not Logged In";
-      return JSON.stringify(this.syncedVariables[args.USER]?.[args.KEY] || "");
+      return JSON.stringify(this.syncedVariables[args.USER]?.[args.KEY] ?? "");
     }
     deleteSyncedVariable(args) {
       if (!this._online()) return "Not Connected";
@@ -4845,9 +4868,13 @@
         return apiMessage(error, "Failed to get transactions");
       }
     }
-    getTransactionCount() {
+    async getTransactionCount() {
       if (!this._online()) return "Not Connected";
       if (!this._authed()) return "Not Logged In";
+      try {
+        this.transactions = await this.sdk.me.transactions();
+      } catch (_) {
+      }
       return this.transactions.length;
     }
     // Keys blocks (backed by the SDK keys + items namespaces)
@@ -4935,7 +4962,7 @@
       if (!this._online()) return "Not Connected";
       if (!this._authed()) return "Not Logged In";
       try {
-        return JSON.stringify(await this.sdk.keys.update(args.ITEM, { [args.KEY]: args.DATA }));
+        return JSON.stringify(await this.sdk.keys.update(args.ITEM, args.KEY, args.DATA));
       } catch (error) {
         return apiMessage(error, "Failed to update key");
       }

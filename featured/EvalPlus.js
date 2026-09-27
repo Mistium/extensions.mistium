@@ -114,6 +114,11 @@
                         text: 'disable eval',
                         func: 'disableEval'
                     },
+                    {
+                        opcode: 'isEvalEnabled',
+                        blockType: Scratch.BlockType.BOOLEAN,
+                        text: 'eval enabled?'
+                    },
                     "---",
                     {
                         blockType: Scratch.BlockType.LABEL,
@@ -245,6 +250,21 @@
                         }
                     },
                     {
+                        opcode: 'setStyleInTag',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'Set Style In Style Tag [ID] To [STYLE]',
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'styleID'
+                            },
+                            STYLE: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'body { background-color: blue; }'
+                            }
+                        }
+                    },
+                    {
                         opcode: 'deleteStyleTag',
                         blockType: Scratch.BlockType.COMMAND,
                         text: 'Delete Style Tag With ID [ID]',
@@ -371,6 +391,10 @@
             this.enabled = false;
         }
 
+        isEvalEnabled() {
+            return this.enabled;
+        }
+
         addScriptTag(args) {
             const id = cast.toString(args.ID);
             if (!this.tags?.[id]) {
@@ -440,9 +464,13 @@
             const id = cast.toString(args.ID);
             const scriptTag = this.tags?.[id];
             if (scriptTag) {
-                scriptTag.remove();
-                delete this.tags[id];
-                this.addScriptTag({ ID: id });
+                // A script element only ever runs once, so replace it with a fresh copy to re-run it
+                const newTag = document.createElement('script');
+                newTag.id = id;
+                if (scriptTag.src) newTag.src = scriptTag.src;
+                newTag.textContent = scriptTag.textContent;
+                scriptTag.replaceWith(newTag);
+                this.tags[id] = newTag;
             }
         }
 
@@ -468,6 +496,15 @@
                 styleTag.href = src;
                 document.head.appendChild(styleTag);
                 this.tags[id] = styleTag;
+            }
+        }
+
+        setStyleInTag(args) {
+            const id = cast.toString(args.ID);
+            const style = cast.toString(args.STYLE);
+            const styleTag = this.tags?.[id];
+            if (styleTag && styleTag.tagName === 'STYLE') {
+                styleTag.textContent = style;
             }
         }
 

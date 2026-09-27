@@ -69,23 +69,47 @@
                                 defaultValue: '1, 2, 3'
                             }
                         }
+                    },
+                    {
+                        opcode: 'shuffleList',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'shuffle list [LIST]',
+                        arguments: {
+                            LIST: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '1, 2, 3'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'randomUUID',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'random UUID'
                     }
                 ]
             };
         }
 
         randomNumber({ MIN, MAX }) {
+            MIN = Scratch.Cast.toNumber(MIN);
+            MAX = Scratch.Cast.toNumber(MAX);
             return Math.random() * (MAX - MIN) + MIN;
         }
 
         randomInteger({ MIN, MAX }) {
-            return Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
+            MIN = Scratch.Cast.toNumber(MIN);
+            MAX = Scratch.Cast.toNumber(MAX);
+            const low = Math.ceil(Math.min(MIN, MAX));
+            const high = Math.floor(Math.max(MIN, MAX));
+            if (low > high) return Math.round(MIN);
+            return Math.floor(Math.random() * (high - low + 1)) + low;
         }
 
         randomString({ LENGTH }) {
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const length = Scratch.Cast.toNumber(LENGTH);
             let result = '';
-            for (let i = 0; i < LENGTH; i++) {
+            for (let i = 0; i < length; i++) {
                 result += characters.charAt(Math.floor(Math.random() * characters.length));
             }
             return result;
@@ -96,8 +120,21 @@
         }
 
         randomList({ LIST }) {
-            const items = LIST.split(',').map(item => item.trim());
+            const items = Scratch.Cast.toString(LIST).split(',').map(item => item.trim());
             return items[Math.floor(Math.random() * items.length)];
+        }
+
+        shuffleList({ LIST }) {
+            const items = Scratch.Cast.toString(LIST).split(',').map(item => item.trim());
+            for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [items[i], items[j]] = [items[j], items[i]];
+            }
+            return items.join(', ');
+        }
+
+        randomUUID() {
+            return crypto.randomUUID();
         }
     }
 

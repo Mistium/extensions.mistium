@@ -13,12 +13,18 @@ if (!Scratch.extensions.unsandboxed) {
 
 class VirtualFileSystem {
     constructor() {
-        this.vfs = {};
+        this.vfs = this._newDir();
         this.FILE_MARKER = Symbol('file');
     }
 
+    // Null prototype so entries named "constructor", "__proto__" etc. are plain keys
+    _newDir() {
+        return Object.create(null);
+    }
+
     _normalizePath(path) {
-        if (!path || typeof path !== 'string') return [];
+        path = Scratch.Cast.toString(path);
+        if (!path) return [];
         
         const parts = path.replace(/^\/+|\/+$/g, '')
             .split('/')
@@ -41,10 +47,11 @@ class VirtualFileSystem {
             
             if (!current[part]) {
                 if (!createDirs) return null;
-                current[part] = {};
+                current[part] = this._newDir();
             }
             
-            if (current[part][this.FILE_MARKER] && i < parts.length - 1) return null;
+            // Paths never resolve into a file (otherwise createFile("a.txt/b") writes into a.txt)
+            if (this._isFile(current[part])) return null;
             
             current = current[part];
         }
@@ -103,9 +110,20 @@ class VirtualFileSystem {
 
         if (!destDir || destDir[destName] !== undefined) return;
 
-        destDir[destName] = isMove ? entry : JSON.parse(JSON.stringify(entry));
+        // Moving a directory into itself would orphan it
+        if (isMove && !isFile && destDir !== sourceDir && this._contains(entry, destDir)) return;
+
+        destDir[destName] = isMove ? entry : this._deserializeVFS(this._serializeVFS(entry));
         
         if (isMove) delete sourceDir[name];
+    }
+
+    _contains(dir, target) {
+        if (dir === target) return true;
+        for (const key in dir) {
+            if (this._isDirectory(dir[key]) && this._contains(dir[key], target)) return true;
+        }
+        return false;
     }
 
     createFile({ FILE_PATH }) {
@@ -170,7 +188,20 @@ class VirtualFileSystem {
         const dirPath = parts.slice(0, -1).join('/');
         const newPath = dirPath ? `${dirPath}/${newName[0]}` : newName[0];
         
-        this._transferEntry(args.FILE_PATH, newPath, true, true);
+        this._transferEntry(FILE_PATH, newPath, true, true);
+    }
+
+    renameDirectory({ DIR_PATH, NEW_DIR_NAME }) {
+        const parts = this._normalizePath(DIR_PATH);
+        if (parts === null || parts.length === 0) return;
+
+        const newName = this._normalizePath(NEW_DIR_NAME);
+        if (newName === null || newName.length !== 1) return;
+
+        const parentPath = parts.slice(0, -1).join('/');
+        const newPath = parentPath ? `${parentPath}/${newName[0]}` : newName[0];
+
+        this._transferEntry(DIR_PATH, newPath, true, false);
     }
 
     moveDirectory({ DIR_PATH, NEW_DIR_PATH }) {
@@ -196,7 +227,7 @@ class VirtualFileSystem {
 
         if (!parentDir || parentDir[dirName] !== undefined) return;
 
-        parentDir[dirName] = {};
+        parentDir[dirName] = this._newDir();
     }
 
     deleteDirectory({ DIR_PATH }) {
@@ -217,8 +248,7 @@ class VirtualFileSystem {
         if (parts === null) return 'Error: Invalid directory path';
 
         const dir = this._navigatePath(parts.join('/'));
-        if (!dir) return 'Error: Directory not found';
-        if (this._isFile(dir)) return 'Error: Path is a file, not a directory';
+        if (!dir) return this._getEntry(DIR_PATH, true) ? 'Error: Path is a file, not a directory' : 'Error: Directory not found';
 
         const entries = Object.keys(dir).map(key => 
             this._isFile(dir[key]) ? key : key + '/'
@@ -251,6 +281,8 @@ class VirtualFileSystem {
                 return JSON.stringify(this._serializeVFS(this.vfs));
             case 'zip':
                 return this.exportAsZip();
+            default:
+                return JSON.stringify(this._serializeVFS(this.vfs));
         }
     }
 
@@ -277,13 +309,14 @@ class VirtualFileSystem {
         if (obj && obj.__isFile === true) {
             return { 
                 [this.FILE_MARKER]: true, 
-                content: obj.content || '',
+                content: Scratch.Cast.toString(obj.content ?? ''),
                 created: obj.created || Date.now(),
                 modified: obj.modified || Date.now()
             };
         }
         
-        const result = {};
+        const result = this._newDir();
+        if (!obj || typeof obj !== 'object') return result;
         for (const key in obj) {
             result[key] = this._deserializeVFS(obj[key]);
         }
@@ -294,26 +327,24 @@ class VirtualFileSystem {
         switch (EXPORT) {
             case 'json':
                 try {
-                    const parsed = JSON.parse(FILES);
+                    const parsed = JSON.parse(Scratch.Cast.toString(FILES));
                     this.vfs = this._deserializeVFS(parsed);
                 } catch {}
                 break;
-            case 'zip':
-                const zipData = FILES;
+            case 'zip': {
+                let zipData = Scratch.Cast.toString(FILES);
                 if (!zipData) return;
 
                 if (zipData.startsWith('data:application/zip;base64,')) {
                     zipData = zipData.substring('data:application/zip;base64,'.length);
-                    this.importFromZip({ ZIP_DATA: zipData });
-                } else {
-                    console.error('Error: Invalid ZIP data, expected: "data:application/zip;base64,..."');
                 }
-                break;
+                return this.importFromZip({ ZIP_DATA: zipData });
+            }
         }
     }
 
     clearall() {
-        this.vfs = {};
+        this.vfs = this._newDir();
     }
 
     async _collectAllFiles(dir = this.vfs, currentPath = '') {
@@ -342,7 +373,7 @@ class VirtualFileSystem {
 
     async exportAsZip() {
         try {
-            const JSZip = vm.exports.JSZip;
+            const JSZip = Scratch.vm.exports.JSZip;
             if (!JSZip) {
                 return 'Error: JSZip not available';
             }
@@ -369,7 +400,7 @@ class VirtualFileSystem {
 
     async importFromZip({ ZIP_DATA }) {
         try {
-            const JSZip = vm.exports.JSZip;
+            const JSZip = Scratch.vm.exports.JSZip;
             if (!JSZip) {
                 return;
             }
@@ -381,7 +412,9 @@ class VirtualFileSystem {
 
             const files = [];
             zip.forEach((relativePath, file) => {
-                if (!file.dir) {
+                if (file.dir) {
+                    this._navigatePath(relativePath, true);
+                } else {
                     files.push({ path: relativePath, file });
                 }
             });
@@ -395,7 +428,7 @@ class VirtualFileSystem {
                 const fileName = parts.pop();
                 const dir = this._navigatePath(parts.join('/'), true);
 
-                if (!dir) continue;
+                if (!dir || this._isDirectory(dir[fileName])) continue;
 
                 dir[fileName] = {
                     [this.FILE_MARKER]: true,
@@ -603,6 +636,21 @@ class VirtualFileSystem {
                         NEW_DIR_PATH: {
                             type: Scratch.ArgumentType.STRING,
                             defaultValue: 'dir1/dir3'
+                        }
+                    }
+                },
+                {
+                    opcode: 'renameDirectory',
+                    blockType: Scratch.BlockType.COMMAND,
+                    text: 'rename directory [DIR_PATH] to [NEW_DIR_NAME]',
+                    arguments: {
+                        DIR_PATH: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir1/dir2'
+                        },
+                        NEW_DIR_NAME: {
+                            type: Scratch.ArgumentType.STRING,
+                            defaultValue: 'dir3'
                         }
                     }
                 },

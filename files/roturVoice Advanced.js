@@ -43,6 +43,8 @@
       this.peerConnections = new Set();
       this.onCallChangeCallback = null;
       this.lastCallId = null;
+      this.pendingResolves = {};
+      this.volumes = {};
       this._peerDebugLevel = 1;
 
       this._originalConsole = {
@@ -171,6 +173,21 @@
             }
           },
           {
+            opcode: 'setCallVolume',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'set volume of call [CALLID] to [VOLUME]%',
+            arguments: {
+              CALLID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'default'
+              },
+              VOLUME: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 100
+              }
+            }
+          },
+          {
             opcode: 'getAllCallIds',
             blockType: Scratch.BlockType.REPORTER,
             text: 'list all call ids'
@@ -271,7 +288,8 @@
         all: 3
       };
       const level = levelMap[String(args.LEVEL).toLowerCase()] ?? 1;
-      this._setPeerDebugLevel(level);
+      // PeerJS reads its debug level at construction; applies on next connect.
+      this._peerDebugLevel = level;
 
       this._consoleLevel = level;
     }
@@ -287,8 +305,9 @@
     async connect(args) {
       try {
         if (this.peer) {
-          this.peer.destroy();
+          const oldPeer = this.peer;
           this.peer = null;
+          oldPeer.destroy();
         }
 
         const name = Scratch.Cast.toString(args.NAME).trim() || 'user' + Math.floor(Math.random() * 1000);
@@ -296,29 +315,53 @@
 
         const debugLevel = typeof this._peerDebugLevel === 'number' ? this._peerDebugLevel : 1;
 
-        this.peer = new Peer(name, {
+        const peer = new Peer(name, {
           host: '0.peerjs.com',
           port: 443,
           secure: true,
           debug: debugLevel
         });
+        this.peer = peer;
 
         this._setupPeerEvents();
 
         return new Promise((resolve) => {
-          this.peer.on('open', (id) => {
+          peer.on('open', (id) => {
+            if (this.peer !== peer) return;
             this._log('Connected with ID:', id);
             this.connectionStatus = 'connected';
             resolve();
           });
 
-          this.peer.on('error', (err) => {
+          peer.on('error', (err) => {
+            if (this.peer !== peer) return;
             this._error('Peer connection error:', err);
+            // Calling a name that is not online fails that call, not the server connection.
+            if (err.type === 'peer-unavailable') {
+              this._failUnavailableCalls(String(err.message || ''));
+              return;
+            }
             this.connectionStatus = 'error: ' + (err.type || 'unknown');
             resolve();
           });
 
-          this.peer.on('close', () => {
+          peer.on('disconnected', () => {
+            if (this.peer !== peer) return;
+            this._log('Lost voice server, reconnecting...');
+            this.connectionStatus = 'reconnecting';
+            // Delay so a dead network does not spin; re-check since destroy() also emits this.
+            setTimeout(() => {
+              if (this.peer !== peer || peer.destroyed || !peer.disconnected) return;
+              try {
+                peer.reconnect();
+              } catch (e) {
+                this.connectionStatus = 'disconnected';
+              }
+            }, 3000);
+          });
+
+          peer.on('close', () => {
+            if (this.peer !== peer) return;
             this._log('Peer connection closed');
             this.connectionStatus = 'disconnected';
           });
@@ -357,6 +400,7 @@
           video: false
         });
         this._log('Audio stream acquired');
+        this._replaceAudioTrack();
         return true;
       } catch (error) {
         this._error('Error getting audio stream:', error);
@@ -364,10 +408,48 @@
       }
     }
 
+    _replaceAudioTrack() {
+      // PeerJS never renegotiates, so re-enabling the mic must reuse the existing senders.
+      const track = this.audioStream ? this.audioStream.getAudioTracks()[0] || null : null;
+      Object.values(this.calls).forEach(call => {
+        const pc = call.peerConnection;
+        if (!pc) return;
+        pc.getSenders().forEach(sender => {
+          if (sender.track && sender.track.kind === 'audio') {
+            sender.replaceTrack(track).catch(e => this._error('Error replacing audio track:', e));
+          }
+        });
+      });
+    }
+
+    _failUnavailableCalls(message) {
+      Object.keys(this.calls).forEach(callId => {
+        const partner = this.callPartners[callId];
+        if (this.callStatuses[callId] !== 'connecting' || !partner || !message.endsWith(' ' + partner)) return;
+        try {
+          this.calls[callId].close();
+        } catch (e) {}
+        delete this.calls[callId];
+        this.callPartners[callId] = '';
+        this.callStatuses[callId] = 'error: peer-unavailable';
+        this._resolvePending(callId);
+      });
+    }
+
+    _resolvePending(callId) {
+      const resolve = this.pendingResolves[callId];
+      if (!resolve) return;
+      delete this.pendingResolves[callId];
+      resolve();
+    }
+
     async callPeer(args) {
-      const callId = args.CALLID && args.CALLID !== 'default' ? args.CALLID : this._generateCallId(args.NAME);
+      const requestedId = Scratch.Cast.toString(args.CALLID);
+      const callId = requestedId && requestedId !== 'default' ? requestedId : this._generateCallId(args.NAME);
+      // Reusing an id replaces that call instead of leaking it.
+      if (this.calls[callId] || this.incomingCalls[callId]) this._endCall(callId);
       this.lastCallId = callId;
-      return new Promise(async (resolve) => {
+      const promise = new Promise(async (resolve) => {
         if (!this.peer) {
           this._error('Not connected to server - peer object missing');
           this.callStatuses[callId] = 'error: no peer connection';
@@ -406,20 +488,25 @@
 
         this._log(`Attempting to call ${name}...`);
 
+        let call = null;
         const callTimeout = setTimeout(() => {
-          if (this.callStatuses[callId] === 'connecting') {
+          if (this.calls[callId] === call && this.callStatuses[callId] === 'connecting') {
             this._error('Call connection timed out');
             this.callStatuses[callId] = 'timeout';
-            if (this.calls[callId]) {
-              this.calls[callId].close();
-              delete this.calls[callId];
-            }
+            delete this.calls[callId];
+            try {
+              call.close();
+            } catch (e) {}
             this.callPartners[callId] = '';
           }
-          resolve();
+          this._resolvePending(callId);
         }, 30000);
+        this.pendingResolves[callId] = () => {
+          clearTimeout(callTimeout);
+          resolve();
+        };
 
-        const call = this.peer.call(name, this.audioStream);
+        call = this.peer.call(name, this.audioStream);
 
         if (!call) {
           clearTimeout(callTimeout);
@@ -433,12 +520,17 @@
         this.calls[callId] = call;
         this._setupCallEvents(callId, call, callTimeout);
 
-        call.on('stream', () => resolve());
+        call.on('stream', () => this._resolvePending(callId));
+        call.on('close', () => this._resolvePending(callId));
+        call.on('error', () => this._resolvePending(callId));
       });
+      if (args.WAIT === 'nowait') return '';
+      return promise;
     }
 
     _setupCallEvents(callId, call, callTimeout) {
       call.on('stream', (remoteStream) => {
+        if (this.calls[callId] !== call) return;
         if (callTimeout) clearTimeout(callTimeout);
         this.remoteStreams[callId] = remoteStream;
         this.callStatuses[callId] = 'connected';
@@ -449,6 +541,7 @@
           audioElement.id = audioElementId;
           audioElement.srcObject = remoteStream;
           audioElement.autoplay = true;
+          audioElement.volume = this.volumes[callId] ?? 1;
           audioElement.style.display = 'none';
           const existingAudio = document.getElementById(audioElementId);
           if (existingAudio) existingAudio.remove();
@@ -459,6 +552,8 @@
       });
       call.on('close', () => {
         if (callTimeout) clearTimeout(callTimeout);
+        // A replaced call closing must not wipe the call now using this id.
+        if (this.calls[callId] !== call) return;
         if (this.remoteStreams[callId]) delete this.remoteStreams[callId];
         this.callStatuses[callId] = 'idle';
         this._triggerCallChangeEvent();
@@ -473,6 +568,7 @@
       });
       call.on('error', (err) => {
         if (callTimeout) clearTimeout(callTimeout);
+        if (this.calls[callId] !== call) return;
         this.callStatuses[callId] = 'error: ' + (err || 'unknown');
         this._triggerCallChangeEvent();
       });
@@ -510,14 +606,27 @@
     }
 
     hangup(args) {
-      const callId = this._resolveCallId(args.CALLID);
-      if (callId && this.calls[callId]) {
+      const callId = this._resolveCallId(Scratch.Cast.toString(args.CALLID));
+      this._endCall(callId);
+      if (Object.keys(this.calls).length === 0 && this.audioStream) {
         try {
-          this.calls[callId].close();
+          this.audioStream.getTracks().forEach(track => track.stop());
+        } catch (e) {
+          this._error('Error stopping audio tracks:', e);
+        }
+        this.audioStream = null;
+      }
+    }
+
+    _endCall(callId) {
+      if (callId && this.calls[callId]) {
+        const call = this.calls[callId];
+        delete this.calls[callId];
+        try {
+          call.close();
         } catch (e) {
           this._error('Error closing call:', e);
         }
-        delete this.calls[callId];
         delete this.callPartners[callId];
         delete this.remoteStreams[callId];
         this.callStatuses[callId] = 'idle';
@@ -529,22 +638,20 @@
         }
       }
       if (callId && this.incomingCalls[callId]) {
+        const incoming = this.incomingCalls[callId];
         delete this.incomingCalls[callId];
+        // Close it so the caller stops ringing instead of waiting for its timeout.
+        try {
+          incoming.close();
+        } catch (e) {}
         this.callStatuses[callId] = 'idle';
       }
-      if (Object.keys(this.calls).length === 0 && this.audioStream) {
-        try {
-          this.audioStream.getTracks().forEach(track => track.stop());
-        } catch (e) {
-          this._error('Error stopping audio tracks:', e);
-        }
-        this.audioStream = null;
-      }
+      this._resolvePending(callId);
     }
 
     disconnectPeer() {
-      Object.keys(this.calls).forEach(callId => {
-        this.hangup({ CALLID: callId });
+      [...Object.keys(this.calls), ...Object.keys(this.incomingCalls)].forEach(callId => {
+        this._endCall(callId);
       });
 
       if (this.audioStream) {
@@ -557,12 +664,13 @@
       }
 
       if (this.peer) {
+        const peer = this.peer;
+        this.peer = null;
         try {
-          this.peer.destroy();
+          peer.destroy();
         } catch (e) {
           this._error('Error destroying peer:', e);
         }
-        this.peer = null;
         this.connectionStatus = 'disconnected';
       }
     }
@@ -595,7 +703,16 @@
     }
 
     getName() {
-      return String(this.peer ? this.peer.id : 'Not connected');
+      return String((this.peer && this.peer.id) || 'Not connected');
+    }
+
+    setCallVolume(args) {
+      const callId = this._resolveCallId(Scratch.Cast.toString(args.CALLID));
+      if (!callId) return;
+      const volume = Math.min(100, Math.max(0, Scratch.Cast.toNumber(args.VOLUME))) / 100;
+      this.volumes[callId] = volume;
+      const audioElement = document.getElementById('roturCallAudio_' + callId);
+      if (audioElement) audioElement.volume = volume;
     }
 
     getCallPartner(args) {
@@ -613,9 +730,13 @@
 
     _resolveCallId(callId) {
       if (callId && callId !== 'default') return callId;
-      if (this.lastCallId && this.calls[this.lastCallId]) return this.lastCallId;
+      const last = this.lastCallId;
+      if (last && (this.calls[last] || this.incomingCalls[last])) return last;
       const ids = Object.keys(this.calls);
-      return ids.length ? ids[ids.length - 1] : null;
+      if (ids.length) return ids[ids.length - 1];
+      const incoming = Object.keys(this.incomingCalls);
+      if (incoming.length) return incoming[incoming.length - 1];
+      return last;
     }
 
     _generateCallId(name) {
@@ -624,13 +745,22 @@
 
     _setupPeerEvents() {
       if (!this.peer) return;
-      this.peer.on('call', (incomingCall) => {
+      const peer = this.peer;
+      peer.on('call', (incomingCall) => {
+        if (this.peer !== peer) return;
         const callId = this._generateCallId(incomingCall.peer);
         this.incomingCalls[callId] = incomingCall;
         this.callStatuses[callId] = 'incoming';
         this.callPartners[callId] = incomingCall.peer;
         this.lastCallId = callId;
         this._log('Incoming call from:', incomingCall.peer, 'id:', callId);
+        // Caller gave up before we answered.
+        incomingCall.on('close', () => {
+          if (this.incomingCalls[callId] !== incomingCall) return;
+          delete this.incomingCalls[callId];
+          delete this.callPartners[callId];
+          this.callStatuses[callId] = 'idle';
+        });
       });
     }
   }

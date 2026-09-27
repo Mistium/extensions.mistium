@@ -17,7 +17,7 @@ let blocks = [
     opcode: "addRow",
     blockType: "COMMAND",
     text: "add row to [A]",
-    code: '[A].push(new Array([A][0].length).fill(""))',
+    code: '[A].push(new Array([A][0]?.length ?? 0).fill(""))',
     arguments: {
       A: { type: "string", as: "raw", val: "" },
     },
@@ -35,7 +35,7 @@ let blocks = [
     opcode: "deleteRow",
     blockType: "COMMAND",
     text: "delete row [X] in [A]",
-    code: "[A] = ([A].splice([X], 1))",
+    code: "([A].splice([X], 1))",
     arguments: {
       A: { type: "string", as: "raw", val: "" },
       X: { type: "number", val: "0" },
@@ -56,7 +56,7 @@ let blocks = [
     opcode: "addRows",
     blockType: "COMMAND",
     text: "add [A] rows to [B]",
-    code: 'for (let i = 0; i < [A]; i++) { [B].push(new Array([B][0].length).fill("")) }',
+    code: 'for (let i = 0; i < [A]; i++) { [B].push(new Array([B][0]?.length ?? 0).fill("")) }',
     arguments: {
       A: { type: "number", val: "1" },
       B: { type: "string", as: "raw", val: "" },
@@ -76,7 +76,7 @@ let blocks = [
     opcode: "deleteRows",
     blockType: "COMMAND",
     text: "delete rows [A] to [B] in [C]",
-    code: "[C] = [C].splice([A], [B] - [A] + 1)",
+    code: "[C].splice([A], [B] - [A] + 1)",
     arguments: {
       A: { type: "number", val: "0" },
       B: { type: "number", val: "0" },
@@ -99,7 +99,7 @@ let blocks = [
     opcode: "setCell",
     blockType: "COMMAND",
     text: "set cell [X],[Y] in [A] to [B]",
-    code: "([A][[X]][[Y]] = [B])",
+    code: "(([A][[X]] ?? [])[[Y]] = [B])",
     arguments: {
       A: { type: "string", as: "raw", val: "" },
       X: { type: "number", val: "0" },
@@ -112,7 +112,7 @@ let blocks = [
     blockType: "REPORTER",
     returns: "STRING",
     text: "cell [X],[Y] in [A]",
-    code: "([A][[X]][[Y]])",
+    code: 'String([A][[X]]?.[[Y]] ?? "")',
     arguments: {
       A: { type: "string", as: "raw", val: "" },
       X: { type: "number", val: "0" },
@@ -124,7 +124,7 @@ let blocks = [
     blockType: "REPORTER",
     returns: "STRING",
     text: "row [X] in [A]",
-    code: '([A][[X]].join(","))',
+    code: '(([A][[X]] ?? []).join(","))',
     arguments: {
       A: { type: "string", as: "raw", val: "[]" },
       X: { type: "number", val: "0" },
@@ -157,7 +157,7 @@ let blocks = [
     opcode: "setColumn",
     blockType: "COMMAND",
     text: "set column [X] in [A] to [B]",
-    code: "(const temp = JSON.parse([B]); [A].map((row, i) => (row[[X]] = temp[i], row)))",
+    code: '((temp) => [A].forEach((row, i) => (row[[X]] = temp[i] ?? "")))(JSON.parse([B]))',
     arguments: {
       A: { type: "string", as: "raw", val: "" },
       X: { type: "number", val: "0" },
@@ -229,7 +229,7 @@ let blocks = [
     blockType: "REPORTER",
     returns: "STRING",
     text: "get columns in [A]",
-    code: "([A][0].length)",
+    code: "([A][0]?.length ?? 0)",
     arguments: {
       A: { type: "string", as: "raw", val: "" },
     },

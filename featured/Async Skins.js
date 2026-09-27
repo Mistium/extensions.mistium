@@ -59,6 +59,8 @@
 
   const createdSkins = new Map();
   const loadingSkins = new Set();
+  // Decoded GIFs waiting for _replaceSkin to attach them to a name, keyed by first-frame skin id
+  const pendingGifs = new Map();
 
   const gifState = {
     decoders: new Map(),
@@ -199,55 +201,72 @@
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.tempTex2, 0);
     },
     cleanup(gl) {
+      // Programs must be reset too, otherwise init() early-returns with a deleted quadVBO
+      if (this.programs) {
+        for (const p of Object.values(this.programs)) gl.deleteProgram(p.program);
+        this.programs = null;
+      }
       if (this.tempTex1) {
         gl.deleteTexture(this.tempTex1);
         gl.deleteTexture(this.tempTex2);
         gl.deleteFramebuffer(this.fbo1);
         gl.deleteFramebuffer(this.fbo2);
-        gl.deleteBuffer(this.quadVBO);
         this.tempTex1 = null;
         this.tempTex2 = null;
         this.fbo1 = null;
         this.fbo2 = null;
+      }
+      if (this.quadVBO) {
+        gl.deleteBuffer(this.quadVBO);
         this.quadVBO = null;
+      }
+      this.lastWidth = 0;
+      this.lastHeight = 0;
+    }
+  };
+  // Swap every drawable showing skinId back to its costume, and optionally on to newId
+  const refreshTargetsFromID = (skinId, reset, newId) => {
+    const drawables = renderer._allDrawables;
+    const skins = renderer._allSkins;
+
+    for (const target of runtime.targets) {
+      const drawable = drawables[target.drawableID];
+      if (!drawable || !drawable.skin) continue;
+
+      const targetSkinId = drawable.skin.id || drawable.skin._id;
+
+      if (targetSkinId === skinId) {
+        target.updateAllDrawableProperties();
+        if (!reset && newId && skins[newId])
+          drawable.skin = skins[newId];
       }
     }
   };
+
   class GifAnimator {
-    constructor(skinName, decoder, initialSkinId, renderer) {
+    constructor(skinName, decoder, cache, renderer) {
       this.skinName = skinName;
       this.decoder = decoder;
       this.paused = false;
+      this.userPaused = false;
       this.renderer = renderer;
       this.frameIndex = 0;
       this.stopped = false;
       this.lastFrameTime = 0;
       this.accumulatedTime = 0;
-      this.cache = gifState.frameCache.get(skinName);
-      this.frameCount = this.cache.frameSkins.length;
-      this.currentSkinId = initialSkinId;
+      this.cache = cache;
+      this.frameCount = cache.frameSkins.length;
+      this.currentSkinId = cache.frameSkins[0];
     }
 
-    async preloadFrames(count = 10) {
-      const framesToLoad = Math.min(this.frameCount, count);
-      const cache = gifState.frameCache.get(this.skinName);
-
-      const preloadPromises = [];
-      for (let i = 1; i < framesToLoad; i++) {
-        preloadPromises.push(this._cacheFrame(i, cache));
-      }
-
-      await Promise.allSettled(preloadPromises);
-    }
-
-    async update(currentTime) {
-      if (this.stopped || this.paused || !createdSkins.has(this.skinName)) {
-        return this.stopped ? false : true;
+    update(currentTime) {
+      if (this.stopped || this.paused || this.userPaused || !createdSkins.has(this.skinName)) {
+        return;
       }
 
       if (this.lastFrameTime === 0) {
         this.lastFrameTime = currentTime;
-        return true;
+        return;
       }
 
       const deltaTime = currentTime - this.lastFrameTime;
@@ -257,23 +276,22 @@
       const duration = this.cache.durations[this.frameIndex];
 
       if (this.accumulatedTime >= duration) {
-        this.accumulatedTime -= duration;
+        // Don't try to catch up on many frames after a long stall
+        this.accumulatedTime = Math.min(this.accumulatedTime - duration, duration);
         this.frameIndex = (this.frameIndex + 1) % this.frameCount;
         this.currentSkinId = this.cache.frameSkins[this.frameIndex];
 
         this._updateDrawablesWithNewSkin();
         this.renderer.dirty = true;
       }
-
-      return true;
     }
 
     _updateDrawablesWithNewSkin() {
       const drawables = this.renderer._allDrawables;
       const skins = this.renderer._allSkins;
-      const cache = gifState.frameCache.get(this.skinName);
+      const cache = this.cache;
 
-      if (!cache || !skins[this.currentSkinId]) return;
+      if (!skins[this.currentSkinId]) return;
 
       for (const target of runtime.targets) {
         const drawable = drawables[target.drawableID];
@@ -303,21 +321,21 @@
       this.accumulatedTime = 0;
     }
 
-    cleanup() {
+    // Targets showing any frame are restored (and moved to replacementSkinId if given)
+    // before the frames are destroyed, so no drawable is left holding a dead skin.
+    cleanup(replacementSkinId) {
       this.stop();
-      if (this.cache) {
-        for (const skinId of this.cache.frameSkins) {
-          if (this.renderer._allSkins[skinId]) {
-            this.renderer.destroySkin(skinId);
-          }
+      for (const skinId of this.cache.frameSkins) {
+        if (this.renderer._allSkins[skinId]) {
+          refreshTargetsFromID(skinId, !replacementSkinId, replacementSkinId);
+          this.renderer.destroySkin(skinId);
         }
-        gifState.frameCache.delete(this.skinName);
       }
-      if (this.decoder) {
-        this.decoder.close();
-        gifState.decoders.delete(this.skinName);
-      }
-      gifState.animations.delete(this.skinName);
+      // A newer GIF may already have been registered under the same name
+      if (gifState.frameCache.get(this.skinName) === this.cache) gifState.frameCache.delete(this.skinName);
+      if (gifState.decoders.get(this.skinName) === this.decoder) gifState.decoders.delete(this.skinName);
+      if (gifState.animations.get(this.skinName) === this) gifState.animations.delete(this.skinName);
+      if (this.decoder) this.decoder.close();
     }
   }
 
@@ -327,9 +345,10 @@
         this._refreshTargets();
       });
 
+      // GIF skins stay loaded across the stop button like every other skin;
+      // destroying their frames here left createdSkins pointing at dead skins.
       runtime.on("PROJECT_STOP_ALL", () => {
         this._refreshTargets();
-        this._stopAllGifAnimations();
       });
 
       runtime.on("PROJECT_LOADED", () => {
@@ -368,28 +387,8 @@
       if (gifState.animations.size === 0) return;
 
       const currentTime = performance.now();
-      const animatorsToRemove = [];
-
-      for (const [skinName, animator] of gifState.animations) {
-        animator.update(currentTime).then(shouldContinue => {
-          if (!shouldContinue) {
-            animatorsToRemove.push(skinName);
-          }
-        }).catch(err => {
-          console.warn(`GIF animation error for ${skinName}:`, err);
-          animatorsToRemove.push(skinName);
-        });
-      }
-
-      if (animatorsToRemove.length > 0) {
-        Promise.resolve().then(() => {
-          for (const skinName of animatorsToRemove) {
-            const animator = gifState.animations.get(skinName);
-            if (animator) {
-              animator.cleanup();
-            }
-          }
-        });
+      for (const animator of gifState.animations.values()) {
+        animator.update(currentTime);
       }
     }
 
@@ -588,6 +587,21 @@
               },
             },
           },
+          {
+            opcode: "setSkinAnimation",
+            blockType: Scratch.BlockType.COMMAND,
+            text: "[STATE] animation of skin [NAME]",
+            arguments: {
+              STATE: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "animationStates",
+              },
+              NAME: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "my skin",
+              },
+            },
+          },
 
           "---",
 
@@ -642,6 +656,10 @@
             acceptReporters: true,
             items: "_getTargets",
           },
+          animationStates: {
+            acceptReporters: true,
+            items: ["pause", "resume"],
+          },
           skinAttributes: {
             acceptReporters: true,
             items: [
@@ -671,21 +689,12 @@
       const skinName = `lms-${Cast.toString(args.NAME)}`;
       const svgData = Cast.toString(args.SVG);
 
-      let oldSkinId = null;
-      if (createdSkins.has(skinName)) {
-        oldSkinId = createdSkins.get(skinName);
-      }
-
       // This generally takes a few frames, so yield the block
       const skinId = renderer.createSVGSkin(svgData);
-      createdSkins.set(skinName, skinId);
 
       await svgSkinFinishedLoading(renderer._allSkins[skinId]);
 
-      if (oldSkinId && renderer._allSkins[oldSkinId]) {
-        this._refreshTargetsFromID(oldSkinId, false, skinId);
-        renderer.destroySkin(oldSkinId);
-      }
+      this._replaceSkin(skinName, skinId);
     }
 
     blurImage(args) {
@@ -726,21 +735,9 @@
       const skinName = `lms-${Cast.toString(args.NAME)}`;
       const skinId = Cast.toNumber(args.ID);
 
-      let oldSkinId = null;
-      if (createdSkins.has(skinName)) {
-        oldSkinId = createdSkins.get(skinName);
-        this._stopGifAnimation(skinName);
-      }
+      if (!renderer._allSkins[skinId]) return;
 
-      const skin = renderer._allSkins[skinId];
-      if (!skin) return;
-
-      createdSkins.set(skinName, skinId);
-
-      if (oldSkinId && renderer._allSkins[oldSkinId]) {
-        this._refreshTargetsFromID(oldSkinId, false, skinId);
-        renderer.destroySkin(oldSkinId);
-      }
+      this._replaceSkin(skinName, skinId);
     }
 
     async registerBlurredURLSkin(args) {
@@ -748,28 +745,15 @@
       const url = Cast.toString(args.URL);
       const blur = Cast.toNumber(args.BLUR);
 
-      let oldSkinId = null;
-      if (createdSkins.has(skinName)) {
-        oldSkinId = createdSkins.get(skinName);
-        this._stopGifAnimation(skinName);
-      }
-
       loadingSkins.add(skinName);
       try {
         const dataUri = await this.blurImage({ URL: url, BLUR: blur });
         const skinId = await this._createURLSkin(dataUri, undefined, skinName);
-        loadingSkins.delete(skinName);
-
-        if (!skinId) return;
-        createdSkins.set(skinName, skinId);
-
-        if (oldSkinId && renderer._allSkins[oldSkinId]) {
-          this._refreshTargetsFromID(oldSkinId, false, skinId);
-          renderer.destroySkin(oldSkinId);
-        }
+        if (skinId) this._replaceSkin(skinName, skinId);
       } catch (error) {
-        loadingSkins.delete(skinName);
         console.error("Failed to create blurred skin:", error);
+      } finally {
+        loadingSkins.delete(skinName);
       }
     }
 
@@ -779,7 +763,7 @@
       }
 
       const skinName = `lms-${Cast.toString(args.NAME)}`;
-      const costumeIndex = util.target.getCostumeIndexByName(args.COSTUME);
+      const costumeIndex = util.target.getCostumeIndexByName(Cast.toString(args.COSTUME));
       if (costumeIndex === -1) return;
       const costume = util.target.sprite.costumes[costumeIndex];
 
@@ -790,20 +774,12 @@
       let rotationCenter = [rotationCenterX, rotationCenterY];
       if (!rotationCenterX || !rotationCenterY) rotationCenter = undefined;
 
-      let oldSkinId = null;
-      if (createdSkins.has(skinName)) {
-        oldSkinId = createdSkins.get(skinName);
-        this._stopGifAnimation(skinName);
-      }
-
-      const skinId = await this._createURLSkin(url, rotationCenter, skinName);
-      if (!skinId) return;
-
-      createdSkins.set(skinName, skinId);
-
-      if (oldSkinId && renderer._allSkins[oldSkinId]) {
-        this._refreshTargetsFromID(oldSkinId, false, skinId);
-        renderer.destroySkin(oldSkinId);
+      loadingSkins.add(skinName);
+      try {
+        const skinId = await this._createURLSkin(url, rotationCenter, skinName);
+        if (skinId) this._replaceSkin(skinName, skinId);
+      } finally {
+        loadingSkins.delete(skinName);
       }
     }
 
@@ -811,28 +787,47 @@
       const skinName = `lms-${Cast.toString(args.NAME)}`;
       const url = Cast.toString(args.URL);
 
-      let oldSkinId = null;
-      if (createdSkins.has(skinName)) {
-        oldSkinId = createdSkins.get(skinName);
-        this._stopGifAnimation(skinName);
-      }
-
       loadingSkins.add(skinName);
       try {
         const skinId = await this._createURLSkin(url, undefined, skinName);
-        loadingSkins.delete(skinName);
-
-        if (!skinId) return;
-        createdSkins.set(skinName, skinId);
-
-        if (oldSkinId && renderer._allSkins[oldSkinId]) {
-          this._refreshTargetsFromID(oldSkinId, false, skinId);
-          renderer.destroySkin(oldSkinId);
-        }
+        if (skinId) this._replaceSkin(skinName, skinId);
       } catch (error) {
-        loadingSkins.delete(skinName);
         console.error("Failed to create URL skin:", error);
+      } finally {
+        loadingSkins.delete(skinName);
       }
+    }
+
+    // Point skinName at skinId, moving any target that showed the old skin
+    // (or any frame of an old GIF) onto the new one before the old one is destroyed.
+    _replaceSkin(skinName, skinId) {
+      const oldSkinId = createdSkins.get(skinName);
+      const oldAnimator = gifState.animations.get(skinName);
+      createdSkins.set(skinName, skinId);
+
+      if (oldAnimator) {
+        oldAnimator.cleanup(skinId);
+      } else if (oldSkinId !== undefined) {
+        this._destroyIfUnused(oldSkinId, skinId);
+      }
+
+      const animator = pendingGifs.get(skinId);
+      if (animator) {
+        pendingGifs.delete(skinId);
+        gifState.animations.set(skinName, animator);
+        gifState.frameCache.set(skinName, animator.cache);
+        gifState.decoders.set(skinName, animator.decoder);
+      }
+    }
+
+    _destroyIfUnused(oldSkinId, newSkinId) {
+      if (oldSkinId === newSkinId || !renderer._allSkins[oldSkinId]) return;
+      // "load skin from ID" can register one skin under several names
+      for (const id of createdSkins.values()) {
+        if (id === oldSkinId) return;
+      }
+      this._refreshTargetsFromID(oldSkinId, !newSkinId, newSkinId);
+      renderer.destroySkin(oldSkinId);
     }
 
     getSkinLoaded(args) {
@@ -883,8 +878,9 @@
       if (!target) return "";
       const drawableID = target.drawableID;
 
-      const skinId = renderer._allDrawables[drawableID].skin._id;
-      const skinName = this._getSkinNameFromID(skinId);
+      const skin = renderer._allDrawables[drawableID].skin;
+      if (!skin) return "";
+      const skinName = this._getSkinNameFromID(skin.id);
       return skinName ? skinName.replace("lms-", "") : "";
     }
 
@@ -906,7 +902,7 @@
           return Math.ceil(size[1]);
         case "frames":
           const cache = gifState.frameCache.get(skinName);
-          return cache ? cache.size : 0;
+          return cache ? cache.frameSkins.length : 1;
         case "id":
           return skinId;
         default:
@@ -918,14 +914,15 @@
       const skinName = `lms-${Cast.toString(args.NAME)}`;
       if (!createdSkins.has(skinName)) return;
       const skinId = createdSkins.get(skinName);
+      const animator = gifState.animations.get(skinName);
 
-      this._stopGifAnimation(skinName);
-      this._refreshTargetsFromID(skinId, true);
-      if (renderer._allSkins[skinId]) {
-        renderer.destroySkin(skinId);
-      }
       createdSkins.delete(skinName);
       loadingSkins.delete(skinName);
+      if (animator) {
+        animator.cleanup();
+      } else {
+        this._destroyIfUnused(skinId);
+      }
     }
 
     deleteAllSkins() {
@@ -940,6 +937,17 @@
 
       createdSkins.clear();
       loadingSkins.clear();
+    }
+
+    setSkinAnimation(args) {
+      const animator = gifState.animations.get(`lms-${Cast.toString(args.NAME)}`);
+      if (!animator) return;
+      const pause = Cast.toString(args.STATE).toLowerCase() === "pause";
+      if (animator.userPaused === pause) return;
+      animator.userPaused = pause;
+      // Restart timing so resuming doesn't skip ahead by the time spent paused
+      animator.lastFrameTime = 0;
+      animator.accumulatedTime = 0;
     }
 
     restoreTargets(args) {
@@ -967,9 +975,17 @@
         return "";
       }
 
+      if (!originalSkin._textureSize) {
+        console.warn(`Source skin "${args.SKIN}" can't be cloned`);
+        return "";
+      }
+
       const gl = renderer.gl;
       const width = originalSkin._textureSize[0];
       const height = originalSkin._textureSize[1];
+
+      // Make the renderer rebind its own GL state on its next draw
+      renderer._doExitDrawRegion?.();
 
       // Create framebuffer to read texture data
       const fb = gl.createFramebuffer();
@@ -990,14 +1006,19 @@
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.deleteFramebuffer(fb);
 
-      // Create ImageData from pixels
-      const imageData = new ImageData(new Uint8ClampedArray(pixels), width, height);
-
-      // Check if skin already exists
-      let oldSkinId = null;
-      if (createdSkins.has(newSkinName)) {
-        oldSkinId = createdSkins.get(newSkinName);
+      // Skin textures are premultiplied; undo it or createBitmapSkin darkens soft edges
+      for (let i = 0; i < pixels.length; i += 4) {
+        const a = pixels[i + 3];
+        if (a !== 0 && a !== 255) {
+          pixels[i] = pixels[i] * 255 / a;
+          pixels[i + 1] = pixels[i + 1] * 255 / a;
+          pixels[i + 2] = pixels[i + 2] * 255 / a;
+        }
       }
+
+      // Create ImageData from pixels
+      const imageData = new ImageData(new Uint8ClampedArray(pixels.buffer), width, height);
+
       // Create new bitmap skin
       const clonedSkinId = renderer.createBitmapSkin(
         imageData,
@@ -1005,14 +1026,7 @@
         originalSkin._rotationCenter.slice()
       );
 
-      // Store the new skin
-      createdSkins.set(newSkinName, clonedSkinId);
-
-      // Refresh targets using the old skin
-      if (oldSkinId && renderer._allSkins[oldSkinId]) {
-        this._refreshTargetsFromID(oldSkinId, false, clonedSkinId);
-        renderer.destroySkin(oldSkinId);
-      }
+      this._replaceSkin(newSkinName, clonedSkinId);
 
       return Cast.toString(args.NAME);
     }
@@ -1037,9 +1051,7 @@
         return;
       }
 
-      const newSkinId = createdSkins.get(newSkinName);
-      if (!newSkinId) {
-
+      if (!createdSkins.has(newSkinName)) {
         // Clone the skin first
         const cloneResult = this.cloneSkin({
           SKIN: args.SKIN,
@@ -1049,8 +1061,10 @@
         if (!cloneResult) return;
       }
 
-      // Now blur the cloned skin
+      // Read the id after cloning, it didn't exist before
+      const newSkinId = createdSkins.get(newSkinName);
       const skinToBlur = renderer._allSkins[newSkinId];
+      if (!skinToBlur) return;
 
       this._blurSkinTexture(skinToBlur, passes);
       this._refreshTargetsOfSkin(newSkinId);
@@ -1061,7 +1075,10 @@
       if (!gl) return;
 
       const texture = skin._texture;
-      if (!texture) return;
+      if (!texture || !skin._textureSize) return;
+
+      // Make the renderer rebind its own GL state on its next draw
+      renderer._doExitDrawRegion?.();
 
       const width = skin._textureSize[0];
       const height = skin._textureSize[1];
@@ -1091,7 +1108,8 @@
 
       gl.disable(gl.DEPTH_TEST);
       gl.disable(gl.CULL_FACE);
-      gl.enable(gl.BLEND);
+      // Blending here would mix stale temp-texture contents / the original into the result
+      gl.disable(gl.BLEND);
       gl.activeTexture(gl.TEXTURE0);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, blurCache.quadVBO);
@@ -1128,15 +1146,9 @@
       drawQuad(blurCache.programs.copy, blurCache.tempTex1, smallWidth, smallHeight);
 
       gl.deleteFramebuffer(fboOutput);
+      gl.enable(gl.BLEND);
 
       renderer.dirty = true;
-    }
-
-    _stopGifAnimation(skinName) {
-      const animator = gifState.animations.get(skinName);
-      if (animator) {
-        animator.cleanup();
-      }
     }
 
     _stopAllGifAnimations() {
@@ -1154,8 +1166,10 @@
         return null;
       }
 
+      let decoder = null;
+      let frameSkins = [];
       try {
-        const decoder = new ImageDecoder({
+        decoder = new ImageDecoder({
           data: buffer,
           type: "image/gif",
           preferAnimation: true
@@ -1169,60 +1183,47 @@
         if (frameCount === 1) {
           const result = await decoder.decode({ frameIndex: 0 });
           const bitmap = await createImageBitmap(result.image);
+          result.image.close();
+          decoder.close();
           return renderer.createBitmapSkin(bitmap);
         }
 
-        const frameSkins = new Array(frameCount);
+        frameSkins = new Array(frameCount);
         const durations = new Array(frameCount);
-        gifState.frameCache.set(skinName, { frameSkins, durations });
 
         const decodePromises = [];
         for (let i = 0; i < frameCount; i++) {
           decodePromises.push(
             decoder.decode({ frameIndex: i }).then(async (result) => {
               const bitmap = await createImageBitmap(result.image);
-              const skinId = renderer.createBitmapSkin(bitmap);
-              durations[i] = result.image.duration / 1000.0 || 0.1;
-              frameSkins[i] = skinId;
-              bitmap.close();
+              frameSkins[i] = renderer.createBitmapSkin(bitmap);
+              // VideoFrame.duration is in microseconds; browsers treat a 0 delay as 100ms
+              durations[i] = result.image.duration / 1000.0 || 100;
+              // ponytail: bitmap is not closed, the skin's silhouette may still read it lazily
+              result.image.close();
             })
           );
         }
 
         await Promise.all(decodePromises);
 
-        gifState.decoders.set(skinName, decoder);
+        // Attached to skinName by _replaceSkin once the old skin is retired
+        const animator = new GifAnimator(skinName, decoder, { frameSkins, durations }, renderer);
+        pendingGifs.set(frameSkins[0], animator);
 
-        const initialSkinId = frameSkins[0];
-        const animator = new GifAnimator(skinName, decoder, initialSkinId, renderer);
-        gifState.animations.set(skinName, animator);
-
-        return initialSkinId;
+        return frameSkins[0];
       } catch (e) {
         console.error("Error decoding GIF:", e);
+        for (const skinId of frameSkins) {
+          if (skinId !== undefined && renderer._allSkins[skinId]) renderer.destroySkin(skinId);
+        }
+        if (decoder) decoder.close();
         return null;
       }
     }
 
     _refreshTargetsFromID(skinId, reset, newId) {
-      const drawables = renderer._allDrawables;
-      const skins = renderer._allSkins;
-
-      for (const target of runtime.targets) {
-        const drawableID = target.drawableID;
-        if (!drawables[drawableID]) continue;
-
-        const targetSkin = drawables[drawableID].skin;
-        if (!targetSkin) continue;
-
-        const targetSkinId = targetSkin.id || targetSkin._id;
-
-        if (targetSkinId === skinId) {
-          target.updateAllDrawableProperties();
-          if (!reset && newId && skins[newId])
-            drawables[drawableID].skin = skins[newId];
-        }
-      }
+      refreshTargetsFromID(skinId, reset, newId);
     }
 
     _refreshTargetsOfSkin(skinId) {
@@ -1255,6 +1256,10 @@
       for (const [skinName, id] of createdSkins) {
         if (id === skinId) return skinName;
       }
+      // Targets showing a GIF skin are on one of its frames, not the first one
+      for (const [skinName, cache] of gifState.frameCache) {
+        if (cache.frameSkins.includes(skinId)) return skinName;
+      }
       return null;
     }
 
@@ -1278,7 +1283,8 @@
         return null;
       }
 
-      const contentType = imageData.headers.get("Content-Type");
+      // Strip parameters like "; charset=utf-8" that made exact matches fail
+      const contentType = (imageData.headers.get("Content-Type") || "").split(";")[0].trim().toLowerCase();
 
       try {
         if (contentType === "image/svg+xml") {
@@ -1287,11 +1293,8 @@
         } else if (contentType === "image/gif") {
           const buffer = await imageData.arrayBuffer();
           return await this._decodeGif(skinName, buffer);
-        } else if (
-          contentType === "image/png" ||
-          contentType === "image/jpeg" ||
-          contentType === "image/bmp"
-        ) {
+        } else {
+          // png, jpeg, webp, avif, bmp, or a server that sends a generic type
           const blob = await imageData.blob();
           const bitmap = await createImageBitmap(blob);
           return renderer.createBitmapSkin(bitmap);
@@ -1300,8 +1303,6 @@
         console.error("Failed to create skin:", error);
         return null;
       }
-
-      return null;
     }
 
     _getTargets() {

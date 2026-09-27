@@ -110,7 +110,7 @@ blocks = [
     opcode: "round",
     text: "round [A] to the nearest [B]",
     blockType: "REPORTER",
-    code: "Math.round(([A] / [B]) * [B])",
+    code: "((a, b) => b === 0 ? a : Math.round(a / b) * b)([A], [B])",
     returns: "NUMBER",
     arguments: {
       A: { type: "NUMBER", defaultValue: 100 },
@@ -246,7 +246,7 @@ blocks = [
     opcode: "replace",
     text: "replace [C] in [A] with [B]",
     blockType: "REPORTER",
-    code: '([C] === "" ? [A] : ([A]).replace([C], [B]))',
+    code: '([C] === "" ? [A] : ([A]).replace([C], () => [B]))',
     returns: "STRING",
     arguments: {
       A: { type: "STRING", defaultValue: "apple" },
@@ -258,7 +258,7 @@ blocks = [
     opcode: "replaceall",
     text: "replace all [C] in [A] with [B]",
     blockType: "REPORTER",
-    code: '([C] === "" ? [A] : ([A]).replaceAll([C], [B]))',
+    code: '([C] === "" ? [A] : ([A]).replaceAll([C], () => [B]))',
     returns: "STRING",
     arguments: {
       A: { type: "STRING", defaultValue: "apple" },
@@ -270,7 +270,7 @@ blocks = [
     opcode: "alltextAfterString",
     text: "text after [B] in [A]",
     blockType: "REPORTER",
-    code: '([A]).substring(([A]).indexOf(""+([B])) + 1, (([A]).length))',
+    code: '((a, b) => { const i = a.indexOf(b); return i === -1 ? a : a.substring(i + b.length); })([A], [B])',
     returns: "STRING",
     arguments: {
       A: { type: "STRING", defaultValue: "apple" },
@@ -369,7 +369,7 @@ blocks = [
     opcode: "jsonparse",
     text: "JSON.parse [A]",
     blockType: "REPORTER",
-    code: "JSON.parse([A])",
+    code: '((s) => { try { return JSON.parse(s); } catch { return ""; } })([A])',
     returns: "STRING",
     arguments: {
       A: { type: "STRING", defaultValue: '{"a": 1}' },
@@ -430,7 +430,7 @@ blocks = [
     opcode: "tonumber",
     text: "to number [A]",
     blockType: "REPORTER",
-    code: 'isNaN(Number([A])) ? 0 : Number([A])',
+    code: '(Number([A]) || 0)',
     returns: "NUMBER",
     arguments: {
       A: { type: "STRING", defaultValue: "1" },

@@ -326,6 +326,67 @@
             }
           },
           {
+            opcode: 'drawCircle',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'draw circle on [CANVAS_ID] at x: [X] y: [Y] radius: [RADIUS] with colour: [COLOUR] and fill: [FILL]',
+            arguments: {
+              CANVAS_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'canvas1'
+              },
+              X: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 0
+              },
+              Y: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 0
+              },
+              RADIUS: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 25
+              },
+              COLOUR: {
+                type: Scratch.ArgumentType.COLOR,
+                defaultValue: '#ffffff'
+              },
+              FILL: {
+                menu: 'FILL',
+              }
+            }
+          },
+          {
+            opcode: 'drawText',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'draw text [TEXT] on [CANVAS_ID] at x: [X] y: [Y] with colour: [COLOUR] and font: [FONT]',
+            arguments: {
+              CANVAS_ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'canvas1'
+              },
+              TEXT: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'Hello!'
+              },
+              X: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 0
+              },
+              Y: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 0
+              },
+              COLOUR: {
+                type: Scratch.ArgumentType.COLOR,
+                defaultValue: '#ffffff'
+              },
+              FONT: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: '16px sans-serif'
+              }
+            }
+          },
+          {
             opcode: 'stampImage',
             blockType: Scratch.BlockType.COMMAND,
             text: 'stamp image [URL] on [CANVAS_ID] at x: [X] y: [Y] width: [WIDTH] height: [HEIGHT]',
@@ -587,10 +648,7 @@
       HEIGHT = cast.toNumber(HEIGHT);
       COLOUR = cast.toString(COLOUR);
 
-      if (this.canvases[CANVAS_ID]) {
-        this.canvases[CANVAS_ID].remove();
-        delete this.canvases[CANVAS_ID];
-      }
+      this.deleteCanvas({ CANVAS_ID });
       const canvas = document.createElement('canvas');
       canvas.id = CANVAS_ID;
       canvas.style.position = 'absolute';
@@ -611,10 +669,7 @@
       HEIGHT = cast.toNumber(HEIGHT);
       COLOUR = cast.toString(COLOUR);
 
-      if (this.canvases[CANVAS_ID]) {
-        this.canvases[CANVAS_ID].remove();
-        delete this.canvases[CANVAS_ID];
-      }
+      this.deleteCanvas({ CANVAS_ID });
       const canvas = document.createElement('canvas');
       canvas.id = CANVAS_ID;
       canvas.style.position = 'absolute';
@@ -629,29 +684,32 @@
       this.canvases[CANVAS_ID] = canvas;
     }
 
+    // Sprites showing the canvas skin go back to their costume before the skin is destroyed;
+    // destroying a skin a drawable still uses crashes the renderer.
+    _disposeCanvas(canvas) {
+      if (canvas.skin && renderer._allSkins[canvas.skin]) {
+        const skin = renderer._allSkins[canvas.skin];
+        for (const target of runtime.targets) {
+          const drawable = renderer._allDrawables[target.drawableID];
+          if (drawable && drawable.skin === skin) target.updateAllDrawableProperties();
+        }
+        renderer.destroySkin(canvas.skin);
+      }
+      vm.renderer.removeOverlay(canvas);
+      canvas.remove();
+    }
+
     deleteCanvas({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return;
-      if (canvas.skin) {
-        const skinId = canvas.skin;
-        this._setSkin(null, null);
-        renderer.destroySkin(skinId);
-      }
-      vm.renderer.removeOverlay(canvas);
-      canvas.remove();
+      this._disposeCanvas(canvas);
       delete this.canvases[CANVAS_ID];
     }
 
     deleteAllCanvases() {
       for (const canvas of Object.values(this.canvases)) {
-        if (canvas.skin) {
-          const skinId = canvas.skin;
-          this._setSkin(null, null);
-          renderer.destroySkin(skinId);
-        }
-        vm.renderer.removeOverlay(canvas);
-        canvas.remove();
+        this._disposeCanvas(canvas);
       }
       this.canvases = {};
     }
@@ -722,6 +780,7 @@
       let translatedY3 = (canvas.height / 2) - Y3;
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = COLOUR;
+      ctx.strokeStyle = COLOUR;
       ctx.beginPath();
       ctx.moveTo(translatedX1, translatedY1);
       ctx.lineTo(translatedX2, translatedY2);
@@ -792,23 +851,21 @@
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return 0;
-      return canvas.style.zIndex;
+      return cast.toNumber(canvas.style.zIndex);
     }
 
     getCanvasX({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return 0;
-      const stageWidth = vm.runtime.stageWidth;
-      return (parseInt(canvas.style.left) + canvas.width / 2) - stageWidth / 2
+      return canvas.x;
     }
 
     getCanvasY({ CANVAS_ID }) {
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return 0;
-      const stageHeight = vm.runtime.stageHeight;
-      return stageHeight / 2 - (parseInt(canvas.style.top) + canvas.height / 2);
+      return canvas.y;
     }
 
     _setSkin(skinId, target) {
@@ -823,14 +880,16 @@
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return;
 
-      const skinId = canvas.skin;
+      let skinId = canvas.skin;
       if (skinId && renderer._allSkins[skinId]) {
         renderer.updateBitmapSkin(skinId, canvas, 1);
       } else {
-        const skinId = renderer.createBitmapSkin(canvas);
-        this.canvases[CANVAS_ID].skin = skinId;
+        // Same resolution as updateBitmapSkin, otherwise the first show is a different size
+        skinId = renderer.createBitmapSkin(canvas, 1);
+        canvas.skin = skinId;
       }
       this._setSkin(skinId, util.target);
+      runtime.requestRedraw();
     }
 
     getCanvasAs({ CANVAS_ID, TYPE }) {
@@ -844,12 +903,13 @@
       } else if (TYPE === 'array') {
         try {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          return imageData.data;
+          return Array.prototype.join.call(imageData.data, ',');
         } catch (e) {
           console.error(e);
           return "";
         }
       }
+      return "";
     }
 
     getPixelCount({ CANVAS_ID }) {
@@ -879,7 +939,7 @@
       CANVAS_ID = cast.toString(CANVAS_ID);
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return "";
-      INDEX = cast.toNumber(INDEX);
+      INDEX = Math.floor(cast.toNumber(INDEX));
       const ctx = canvas.getContext('2d');
       const x = INDEX % canvas.width;
       const y = Math.floor(INDEX / canvas.width);
@@ -897,7 +957,7 @@
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      INDEX = cast.toNumber(INDEX);
+      INDEX = Math.floor(cast.toNumber(INDEX));
       const x = INDEX % canvas.width;
       const y = Math.floor(INDEX / canvas.width);
       ctx.fillStyle = cast.toString(COLOUR);
@@ -947,9 +1007,15 @@
       Y = cast.toNumber(Y);
       const ctx = canvas.getContext('2d');
 
-      const bitmap = await fetch(URL)
-        .then(r => r.blob())
-        .then(b => createImageBitmap(b));
+      let bitmap;
+      try {
+        bitmap = await fetch(cast.toString(URL))
+          .then(r => r.blob())
+          .then(b => createImageBitmap(b));
+      } catch (e) {
+        console.error(`Error loading image: ${e}`);
+        return;
+      }
 
       const translatedX = (canvas.width / 2) + X - (WIDTH / 2);
       const translatedY = (canvas.height / 2) - Y - (HEIGHT / 2);
@@ -962,18 +1028,52 @@
       const canvas = this.canvases[CANVAS_ID];
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.src = cast.toString(URL);
-      img.onload = () => {
-        const pattern = ctx.createPattern(img, cast.toString(DIRECTION));
-        ctx.fillStyle = pattern;
-        const translatedX = (canvas.width / 2) + cast.toNumber(X) - (cast.toNumber(WIDTH) / 2);
-        const translatedY = (canvas.height / 2) - cast.toNumber(Y) - (cast.toNumber(HEIGHT) / 2);
-        ctx.fillRect(translatedX, translatedY, cast.toNumber(WIDTH), cast.toNumber(HEIGHT));
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const pattern = ctx.createPattern(img, cast.toString(DIRECTION));
+          ctx.fillStyle = pattern;
+          const translatedX = (canvas.width / 2) + cast.toNumber(X) - (cast.toNumber(WIDTH) / 2);
+          const translatedY = (canvas.height / 2) - cast.toNumber(Y) - (cast.toNumber(HEIGHT) / 2);
+          ctx.fillRect(translatedX, translatedY, cast.toNumber(WIDTH), cast.toNumber(HEIGHT));
+          resolve();
+        }
+        img.onerror = (err) => {
+          console.log(`Error loading image: ${err}`);
+          resolve();
+        }
+        img.src = cast.toString(URL);
+      });
+    }
+
+    drawCircle({ CANVAS_ID, X, Y, RADIUS, COLOUR, FILL }) {
+      CANVAS_ID = cast.toString(CANVAS_ID);
+      const canvas = this.canvases[CANVAS_ID];
+      if (!canvas) return;
+      COLOUR = cast.toString(COLOUR);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = COLOUR;
+      ctx.strokeStyle = COLOUR;
+      ctx.beginPath();
+      ctx.arc((canvas.width / 2) + cast.toNumber(X), (canvas.height / 2) - cast.toNumber(Y), Math.abs(cast.toNumber(RADIUS)), 0, Math.PI * 2);
+      if (cast.toString(FILL) === 'yes') {
+        ctx.fill();
+      } else {
+        ctx.stroke();
       }
-      img.onerror = (err) => {
-        console.log(`Error loading image: ${err}`);
-      }
+    }
+
+    drawText({ CANVAS_ID, TEXT, X, Y, COLOUR, FONT }) {
+      CANVAS_ID = cast.toString(CANVAS_ID);
+      const canvas = this.canvases[CANVAS_ID];
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.font = cast.toString(FONT);
+      ctx.fillStyle = cast.toString(COLOUR);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(cast.toString(TEXT), (canvas.width / 2) + cast.toNumber(X), (canvas.height / 2) - cast.toNumber(Y));
     }
 
     getCanvasList() {

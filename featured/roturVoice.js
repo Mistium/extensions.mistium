@@ -45,13 +45,13 @@
       this.onCallChangeCallback = null;
       this.callPartner = '';
       this.incomingCall = null;
+      this._pendingCallResolve = null;
       this.videoEnabled = false;
       this.remoteVideoEnabled = false;
       this.debug = false;
       
-      // Video rendering
-      this.videoCanvas = null;
-      this.videoContext = null;
+      // Video rendering (one canvas + skin per source, so both can show at once)
+      this.videoCanvases = {};
       this.videoElement = null;
       this.remoteVideoElement = null;
       this.animationFrameId = null;
@@ -217,6 +217,11 @@
             text: 'call partner name'
           },
           {
+            opcode: 'getIncomingCaller',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'incoming caller name'
+          },
+          {
             func: 'openExampleProject',
             blockType: Scratch.BlockType.BUTTON,
             text: 'open example project',
@@ -277,42 +282,74 @@
     async connect(args) {
       try {
         if (this.peer) {
-          this.peer.destroy();
+          const oldPeer = this.peer;
           this.peer = null;
+          oldPeer.destroy();
         }
 
         const name = Scratch.Cast.toString(args.NAME).trim() || 'user' + Math.floor(Math.random() * 1000);
         this.connectionStatus = 'connecting';
 
-        this.peer = new Peer(name, {
+        const peer = new Peer(name, {
           host: '0.peerjs.com',
           port: 443,
           secure: true,
           debug: 1
         });
+        this.peer = peer;
 
         return new Promise((resolve) => {
-          this.peer.on('open', (id) => {
+          peer.on('open', (id) => {
+            if (this.peer !== peer) return;
             this._debug('Connected with ID:', id);
             this.connectionStatus = 'connected';
             resolve();
           });
 
-          this.peer.on('error', (err) => {
+          peer.on('error', (err) => {
+            if (this.peer !== peer) return;
             console.error('Peer connection error:', err);
+            // Calling a name that is not online is a call failure, not a server failure.
+            if (err.type === 'peer-unavailable') {
+              this._failPendingCall('error: peer-unavailable');
+              return;
+            }
             this.connectionStatus = 'error: ' + (err.type || 'unknown');
             resolve();
           });
 
-          this.peer.on('close', () => {
+          peer.on('disconnected', () => {
+            if (this.peer !== peer) return;
+            this._debug('Lost signalling server, reconnecting...');
+            this.connectionStatus = 'reconnecting';
+            // Delay so a dead network does not spin; re-check since destroy() also emits this.
+            setTimeout(() => {
+              if (this.peer !== peer || peer.destroyed || !peer.disconnected) return;
+              try {
+                peer.reconnect();
+              } catch (e) {
+                this.connectionStatus = 'disconnected';
+              }
+            }, 3000);
+          });
+
+          peer.on('close', () => {
+            if (this.peer !== peer) return;
             this._debug('Peer connection closed');
             this.connectionStatus = 'disconnected';
           });
 
-          this.peer.on('call', (incomingCall) => {
+          peer.on('call', (incomingCall) => {
+            if (this.peer !== peer) return;
             this.incomingCall = incomingCall;
             this.callStatus = 'incoming';
             this._debug('Incoming call from:', incomingCall.peer);
+            // Caller gave up before we answered.
+            incomingCall.on('close', () => {
+              if (this.incomingCall !== incomingCall) return;
+              this.incomingCall = null;
+              if (this.callStatus === 'incoming') this.callStatus = 'idle';
+            });
           });
 
           setTimeout(() => {
@@ -479,30 +516,20 @@
 
       try {
         const pc = this.call.peerConnection;
-        const senders = pc.getSenders();
-        
-        // Remove existing media senders before adding the currently enabled tracks.
-        const mediaSenders = senders.filter(sender => sender.track && (sender.track.kind === 'audio' || sender.track.kind === 'video'));
-        mediaSenders.forEach(sender => {
-          this._debug('Removing existing media sender');
-          pc.removeTrack(sender);
-        });
-
-        if (this.audioStream) {
-          const audioTracks = this.audioStream.getAudioTracks();
-          audioTracks.forEach(track => {
-            this._debug('Adding audio track to peer connection');
-            pc.addTrack(track, this.audioStream);
-          });
-        }
-
-        // Add new video tracks if available
-        if (this.videoStream) {
-          const videoTracks = this.videoStream.getVideoTracks();
-          videoTracks.forEach(track => {
-            this._debug('Adding video track to peer connection');
-            pc.addTrack(track, this.videoStream);
-          });
+        // PeerJS never renegotiates, so removeTrack/addTrack mid-call silently stops
+        // sending. Swap tracks on the negotiated senders instead.
+        const sources = { audio: this.audioStream, video: this.videoStream };
+        for (const kind of ['audio', 'video']) {
+          const stream = sources[kind];
+          const track = stream ? stream.getTracks().find(t => t.kind === kind) || null : null;
+          const transceiver = pc.getTransceivers().find(t => t.receiver && t.receiver.track && t.receiver.track.kind === kind);
+          if (transceiver) {
+            this._debug('Replacing', kind, 'track on peer connection');
+            transceiver.sender.replaceTrack(track).catch(error => console.error('Error replacing track:', error));
+          } else if (track) {
+            // ponytail: a media kind the call was not negotiated with needs a new call to be sent
+            pc.addTrack(track, stream);
+          }
         }
 
         this._debug('Call stream updated successfully');
@@ -535,6 +562,15 @@
 
     _completeAnswerCall(stream) {
       if (!this.incomingCall) return;
+
+      // Answering while on another call replaces it instead of leaking it open.
+      if (this.call) {
+        const oldCall = this.call;
+        this.call = null;
+        try {
+          oldCall.close();
+        } catch (e) {}
+      }
 
       this.call = this.incomingCall;
       this.callPartner = this.call.peer || '';
@@ -584,26 +620,34 @@
             return;
           }
 
+          // Starting a new call replaces any current one.
+          if (this.call || this.incomingCall) this.hangup();
+
           this.callStatus = 'connecting';
           this.callPartner = name;
 
           this._debug(`Attempting to call ${name}...`);
 
+          let call = null;
           const callTimeout = setTimeout(() => {
-            if (this.callStatus === 'connecting') {
+            if (this.call === call && this.callStatus === 'connecting') {
               console.error('Call connection timed out');
-              this.callStatus = 'timeout';
-              if (this.call) {
-                this.call.close();
-                this.call = null;
-              }
+              this.call = null;
               this.callPartner = '';
+              try {
+                call.close();
+              } catch (e) {}
+              this.callStatus = 'timeout';
             }
             resolve();
           }, 30000);
+          this._pendingCallResolve = () => {
+            clearTimeout(callTimeout);
+            resolve();
+          };
 
           const streamToSend = this._getCombinedStream();
-          this.call = this.peer.call(name, streamToSend);
+          call = this.call = this.peer.call(name, streamToSend);
 
           if (!this.call) {
             clearTimeout(callTimeout);
@@ -648,10 +692,29 @@
       }
     }
 
-    _setupCallEvents(callTimeout) {
-      if (!this.call) return;
+    _failPendingCall(status) {
+      if (this.callStatus !== 'connecting') return;
+      const call = this.call;
+      this.call = null;
+      this.callPartner = '';
+      this.callStatus = status;
+      if (call) {
+        try {
+          call.close();
+        } catch (e) {}
+      }
+      if (this._pendingCallResolve) {
+        this._pendingCallResolve();
+        this._pendingCallResolve = null;
+      }
+    }
 
-      this.call.on('stream', (remoteStream) => {
+    _setupCallEvents(callTimeout) {
+      const call = this.call;
+      if (!call) return;
+
+      call.on('stream', (remoteStream) => {
+        if (this.call !== call) return;
         if (callTimeout) clearTimeout(callTimeout);
         this._debug('Received remote stream');
         this.remoteStream = remoteStream;
@@ -691,6 +754,8 @@
           if (!this.remoteVideoElement) {
             this.remoteVideoElement = document.createElement('video');
             this.remoteVideoElement.autoplay = true;
+            // Audio already plays through roturCallAudio; unmuted this doubles it.
+            this.remoteVideoElement.muted = true;
             this.remoteVideoElement.style.display = 'none';
             document.body.appendChild(this.remoteVideoElement);
           }
@@ -719,9 +784,13 @@
         }
       });
 
-      this.call.on('close', () => {
+      call.on('close', () => {
         if (callTimeout) clearTimeout(callTimeout);
+        // A stale call closing must not tear down the current one.
+        if (this.call !== call) return;
         this._debug('Call closed');
+        this.call = null;
+        this.callPartner = '';
         if (this.remoteStream) {
           this.remoteStream = null;
         }
@@ -745,8 +814,9 @@
         }
       });
 
-      this.call.on('error', (err) => {
+      call.on('error', (err) => {
         if (callTimeout) clearTimeout(callTimeout);
+        if (this.call !== call) return;
         console.error('Call error:', err);
         this.callStatus = 'error: ' + (err || 'unknown');
         this._triggerCallChangeEvent();
@@ -769,7 +839,7 @@
       renderer._allDrawables[drawableID].skin = renderer._allSkins[skinId];
     }
 
-    _renderVideoToCanvas(videoElement, util) {
+    _renderVideoToCanvas(videoElement, util, source) {
       if (!videoElement || videoElement.readyState < 2) {
         return;
       }
@@ -777,23 +847,23 @@
       const width = videoElement.videoWidth || 640;
       const height = videoElement.videoHeight || 480;
 
-      if (!this.videoCanvas) {
-        this.videoCanvas = new OffscreenCanvas(width, height);
-        this.videoContext = this.videoCanvas.getContext('2d');
-      } else if (this.videoCanvas.width !== width || this.videoCanvas.height !== height) {
-        this.videoCanvas.width = width;
-        this.videoCanvas.height = height;
+      let entry = this.videoCanvases[source];
+      if (!entry) {
+        const canvas = new OffscreenCanvas(width, height);
+        entry = this.videoCanvases[source] = { canvas, context: canvas.getContext('2d'), skin: null };
+      } else if (entry.canvas.width !== width || entry.canvas.height !== height) {
+        entry.canvas.width = width;
+        entry.canvas.height = height;
       }
 
-      this.videoContext.drawImage(videoElement, 0, 0, width, height);
-      this.videoCanvas.reusable = false;
+      entry.context.drawImage(videoElement, 0, 0, width, height);
 
-      let skinId = this.videoCanvas.skin;
-      if (skinId && renderer._allSkins[skinId]) {
-        renderer.updateBitmapSkin(skinId, this.videoCanvas, 1);
+      let skinId = entry.skin;
+      if (skinId !== null && renderer._allSkins[skinId]) {
+        renderer.updateBitmapSkin(skinId, entry.canvas, 1);
       } else {
-        skinId = renderer.createBitmapSkin(this.videoCanvas);
-        this.videoCanvas.skin = skinId;
+        skinId = renderer.createBitmapSkin(entry.canvas);
+        entry.skin = skinId;
       }
 
       this._setSkin(skinId, util.target);
@@ -805,7 +875,7 @@
         return;
       }
 
-      this._renderVideoToCanvas(this.videoElement, util);
+      this._renderVideoToCanvas(this.videoElement, util, 'local');
     }
 
     renderRemoteVideo(args, util) {
@@ -825,7 +895,7 @@
         return;
       }
 
-      this._renderVideoToCanvas(this.remoteVideoElement, util);
+      this._renderVideoToCanvas(this.remoteVideoElement, util, 'remote');
     }
 
     hangup() {
@@ -857,17 +927,25 @@
       }
 
       if (this.incomingCall) {
+        // Close it so the caller stops ringing instead of waiting for its timeout.
+        try {
+          this.incomingCall.close();
+        } catch (e) {}
         this.incomingCall = null;
         this.callStatus = 'idle';
       }
 
+      if (this._pendingCallResolve) {
+        this._pendingCallResolve();
+        this._pendingCallResolve = null;
+      }
+
+      this.remoteStream = null;
       this.remoteVideoEnabled = false;
     }
 
     disconnectPeer() {
-      if (this.call) {
-        this.hangup();
-      }
+      this.hangup();
 
       if (this.audioStream) {
         try {
@@ -896,12 +974,13 @@
       }
 
       if (this.peer) {
+        const peer = this.peer;
+        this.peer = null;
         try {
-          this.peer.destroy();
+          peer.destroy();
         } catch (e) {
           console.error('Error destroying peer:', e);
         }
-        this.peer = null;
         this.connectionStatus = 'disconnected';
       }
     }
@@ -942,7 +1021,11 @@
     }
 
     getName() {
-      return String(this.peer ? this.peer.id : 'Not connected');
+      return String((this.peer && this.peer.id) || 'Not connected');
+    }
+
+    getIncomingCaller() {
+      return String((this.incomingCall && this.incomingCall.peer) || '');
     }
 
     getCallPartner() {

@@ -12,22 +12,50 @@
     throw new Error("Python must be unsandboxed");
   }
 
-  async function setupPyodide() {
-    if (typeof pyodide === 'undefined') {
-      const languagePluginLoader = import('https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js');
-      const pyodideUrl = 'https://cdn.jsdelivr.net/pyodide/v0.25.1/full/';
-      await languagePluginLoader;
-      pyodide = await loadPyodide({ indexURL: pyodideUrl });
+  let pyodide;
+  let pyodidePromise = null;
+
+  // shared by every block, so nothing runs before pyodide exists; retries after a failed load
+  function setupPyodide() {
+    if (!pyodidePromise && globalThis.pyodide) {
+      pyodide = globalThis.pyodide;
+      pyodidePromise = Promise.resolve(pyodide);
     }
+    if (!pyodidePromise) {
+      const pyodideUrl = 'https://cdn.jsdelivr.net/pyodide/v0.25.1/full/';
+      pyodidePromise = import(pyodideUrl + 'pyodide.js')
+        .then(() => loadPyodide({ indexURL: pyodideUrl }))
+        .then((py) => (pyodide = globalThis.pyodide = py))
+        .catch((error) => {
+          pyodidePromise = null;
+          throw error;
+        });
+    }
+    return pyodidePromise;
   }
 
   const Cast = Scratch.Cast;
+
+  // PyProxy -> JSON, None/undefined -> "", primitives unchanged
+  function toScratch(value) {
+    if (value === undefined || value === null) return '';
+    if (typeof value === 'object' && typeof value.toJs === 'function') {
+      try {
+        return JSON.stringify(value.toJs({ dict_converter: Object.fromEntries }));
+      } catch {
+        return String(value);
+      } finally {
+        if (typeof value.destroy === 'function') value.destroy();
+      }
+    }
+    return value;
+  }
 
   class Python {
     constructor() {
       this.output = '';
       if (navigator.onLine) {
-        setupPyodide();
+        setupPyodide().catch((error) => console.error("Error:", error));
       }
     }
 
@@ -68,11 +96,25 @@
             },
           },
           {
+            opcode: 'setvar',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'Set Variable [NAME] to [VALUE]',
+            arguments: {
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: '' },
+              VALUE: { type: Scratch.ArgumentType.STRING, defaultValue: '' }
+            },
+          },
+          {
             opcode: 'resetvars',
             blockType: Scratch.BlockType.COMMAND,
             text: 'Reset Variables',
           },
           "---",
+          {
+            opcode: 'isLoaded',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: 'Python Loaded?',
+          },
           {
             opcode: 'loadPackage',
             blockType: Scratch.BlockType.COMMAND,
@@ -92,74 +134,91 @@
     async runPyAsync({ CODE }) {
       CODE = Cast.toString(CODE);
       try {
-        await this.redirectOutput(async () => await pyodide.runPythonAsync(CODE));
-        return this.output;
+        await setupPyodide();
       } catch (error) {
         console.error("Error:", error);
+        return '';
       }
+      await this.redirectOutput(async () => await pyodide.runPythonAsync(CODE));
+      return this.output;
     }
     
     async evalPyAsync({ CODE }) {
       CODE = Cast.toString(CODE);
       try {
-        return await pyodide.runPythonAsync(CODE);
+        await setupPyodide();
+        return toScratch(await pyodide.runPythonAsync(CODE));
       } catch (error) {
         console.error("Error:", error);
+        return '';
       }
     }
     
-    resetvars() {
+    async resetvars() {
       try {
-        pyodide.globals = {};
+        await setupPyodide();
+        // pyodide.globals is a proxy of __main__'s dict; clear user names in place, keep dunders
+        pyodide.runPython("[globals().pop(k) for k in list(globals()) if not k.startswith('__')]");
       } catch (error) {
         console.error("Error:", error);
       }
     }
 
-    loadPackage({ PACKAGE }) {
+    async loadPackage({ PACKAGE }) {
       PACKAGE = Cast.toString(PACKAGE);
       try {
-        return pyodide.loadPackage(PACKAGE);
+        await setupPyodide();
+        await pyodide.loadPackage(PACKAGE);
       } catch (error) {
         console.error("Error:", error);
       }
     }
 
-    getvar({ NAME }) {
+    async getvar({ NAME }) {
       NAME = Cast.toString(NAME);
       try {
-        if (typeof pyodide === 'undefined') {
-          throw new Error("Pyodide object not found.");
-        }
-        return pyodide.globals[NAME];
+        await setupPyodide();
+        return toScratch(pyodide.globals.get(NAME));
       } catch (error) {
         console.error("Error:", error);
-        return null;
+        return '';
       }
+    }
+
+    async setvar({ NAME, VALUE }) {
+      NAME = Cast.toString(NAME);
+      try {
+        await setupPyodide();
+        pyodide.globals.set(NAME, VALUE);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+
+    isLoaded() {
+      return pyodide !== undefined;
     }
 
     async redirectOutput(func) {
-      try {
-        // Redirect stdout and stderr
-        pyodide.runPython(`
+      // Redirect stdout and stderr
+      pyodide.runPython(`
 import sys
 from io import StringIO
 sys.stdout = StringIO()
 sys.stderr = StringIO()
-        `);
-
+      `);
+      let errorText = '';
+      try {
         // Run the provided function
         await func();
-
-        // Get the captured output
-        this.output = pyodide.runPython(`
-output = sys.stdout.getvalue() + sys.stderr.getvalue()
-sys.stdout = sys.__stdout__
-sys.stderr = sys.__stderr__
-output
-        `);
       } catch (error) {
-        console.error("Error in redirectOutput:", error);
+        // Python exceptions carry the traceback in their message
+        errorText = String(error && error.message ? error.message : error);
+        console.error("Error:", error);
+      } finally {
+        // Get the captured output and always restore the real streams
+        this.output = pyodide.runPython("import sys\nsys.stdout.getvalue() + sys.stderr.getvalue()") + errorText;
+        pyodide.runPython("import sys\nsys.stdout = sys.__stdout__\nsys.stderr = sys.__stderr__");
       }
     }
   }

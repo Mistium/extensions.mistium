@@ -9,7 +9,7 @@ let blocks = [
     func: "err",
     text: "Total Clones",
     blockType: "REPORTER",
-    code: "Scratch.vm.editingTarget.sprite.clones.length",
+    code: "target.sprite.clones.length",
     returns: "NUMBER",
     disableMonitor: true,
   },
@@ -18,7 +18,7 @@ let blocks = [
     func: "err",
     text: "Get All Variables In Clone [A]",
     blockType: "REPORTER",
-    code: "JSON.stringify(Object.values(Scratch.vm.editingTarget.sprite.clones[[A]]?.variables))",
+    code: "JSON.stringify(Object.values(target.sprite.clones[[A]]?.variables ?? {}))",
     returns: "STRING",
     arguments: {
       A: { type: "NUMBER", defaultValue: 1 },
@@ -29,7 +29,7 @@ let blocks = [
     func: "err",
     text: "Move Clone [A] to [B], [C]",
     blockType: "COMMAND",
-    code: "Scratch.vm.editingTarget.sprite.clones[[A]].setXY([B], [C])",
+    code: "target.sprite.clones[[A]]?.setXY([B], [C])",
     arguments: {
       A: { type: "NUMBER", defaultValue: 1 },
       B: { type: "NUMBER", defaultValue: 0 },

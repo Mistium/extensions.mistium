@@ -32,6 +32,17 @@
                   menu: "sprite",
                 }
               }
+            },
+            {
+              opcode: "importSprite",
+              blockType: Scratch.BlockType.COMMAND,
+              text: "Import Sprite From DataURI [URI]",
+              arguments: {
+                URI: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "",
+                }
+              }
             }
           ],
           menus: {
@@ -44,18 +55,18 @@
       }
 
       exportSprite(args, util) {
-        return new Promise((resolve, reject) => {
-          let target = this._getTargetFromMenu(Scratch.Cast.toString(args.TARGET), util);
-          if (!target) {
-            resolve("");
-            return;
-          }
-          Scratch.vm.exportSprite(target.id).then(val => {
-            this._blobToDataURL(val, (dataurl) => {
-              resolve(dataurl);
-            });
-          }).catch(reject);
-        });
+        const target = this._getTargetFromMenu(Scratch.Cast.toString(args.TARGET), util);
+        if (!target) return "";
+        return Scratch.vm.exportSprite(target.id)
+          .then(blob => this._blobToDataURL(blob))
+          .catch(() => "");
+      }
+
+      importSprite(args) {
+        return Scratch.fetch(Scratch.Cast.toString(args.URI))
+          .then(res => res.arrayBuffer())
+          .then(buffer => vm.addSprite(buffer))
+          .catch(e => console.error("Failed to import sprite:", e));
       }
 
       _getTargetFromMenu(targetName, util) {
@@ -84,11 +95,14 @@
         return spriteNames;
       }
 
-      _blobToDataURL(blob, callback) {
-        var a = new FileReader();
-        a.onload = function(e) {callback(e.target.result);}
-        a.readAsDataURL(blob);
-    }
+      _blobToDataURL(blob) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
     }
 
     Scratch.extensions.register(new ExportSprite());

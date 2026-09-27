@@ -109,8 +109,10 @@
         "zfrs",
         "bnot",
         "bcrs",
-        "bcrs",
+        "bcls",
       ];
+      this.vars = [];
+      this.output = [];
     }
 
     getInfo() {
@@ -210,11 +212,17 @@
           "https://github.com/Mistium/Origin-OS/wiki/OASM-%E2%80%90-Origin-Assembly",
           "_blank",
         )
-        .focus();
+        ?.focus();
     }
 
     run({ CODE, X, Y }, util) {
-      CODE = JSON.parse(cast.toString(CODE));
+      try {
+        CODE = JSON.parse(cast.toString(CODE));
+      } catch {
+        return "[]";
+      }
+      if (!Array.isArray(CODE)) return "[]";
+      const pen = runtime.ext_pen;
       X = cast.toNumber(X);
       Y = cast.toNumber(Y);
       const target = util.target;
@@ -235,10 +243,10 @@
             this.vars[this.in1] = "";
             break;
           case "2":
-            if (isNaN(this.in2)) {
+            if (this.in2 === "" || isNaN(this.in2)) {
               this.vars[this.in1] = this.in2;
             } else {
-              this.vars[this.in1] = parseInt(this.in2);
+              this.vars[this.in1] = Number(this.in2);
             }
             break;
           case "3":
@@ -276,7 +284,7 @@
             }
             break;
           case "11":
-            this.vars[this.in1] = +this.vars[this.in2 - 1];
+            this.vars[this.in1] = this.vars[this.in2 - 1];
             break;
           case "12":
             this.vars[this.in1] *= this.vars[this.in2 - 1];
@@ -288,19 +296,19 @@
             this.vars[this.in1] -= this.vars[this.in2 - 1];
             break;
           case "15":
-            runtime.ext_pen._penDown(target);
+            pen?._penDown(target);
             break;
           case "16":
-            runtime.ext_pen._penUp(target);
+            pen?._penUp(target);
             break;
           case "17":
-            runtime.ext_pen._setPenColorToColor(this.vars[this.in1], target);
+            pen?._setPenColorToColor(this.vars[this.in1], target);
             break;
           case "18":
-            runtime.ext_pen._setPenSizeTo(this.vars[this.in1], target);
+            pen?._setPenSizeTo(this.vars[this.in1], target);
             break;
           case "19":
-            runtime.ext_pen.clear();
+            pen?.clear();
             break;
           case "20":
             target.setXY(X + this.vars[this.in1], target.y);
@@ -328,11 +336,11 @@
                 (+runtime.ioDevices.mouse.getIsDown() || 0) - 0;
             } else if (this.in1 === "timer") {
               this.vars[this.in2 - 1] = runtime.ioDevices.clock.projectTimer();
-            } else if (this.in2 === "line") {
+            } else if (this.in1 === "line") {
               this.vars[this.in2 - 1] = this.pc;
             } else if (this.in1.startsWith("key")) {
               this.vars[this.in2 - 1] =
-                +runtime.ioDevices.keyboard.getKeyIsDown(this.in1);
+                +runtime.ioDevices.keyboard.getKeyIsDown(this.in1.slice(3));
             }
             break;
           case "25":
@@ -355,7 +363,7 @@
             break;
           case "31":
             this.vars[this.in3 - 1] =
-              this.vars[this.in1][this.vars[this.in2 - 1] - 1];
+              ("" + this.vars[this.in1])[this.vars[this.in2 - 1] - 1] ?? "";
             break;
           case "32":
             this.vars[this.in2 - 1] = ("" + this.vars[this.in1]).length;
@@ -387,7 +395,7 @@
             this.stack.shift();
             break;
           case "41":
-            this.stack[0] = this.in1;
+            this.stack[0] = this.vars[this.in1];
             break;
           case "42":
             this.output.push(JSON.stringify(this.stack))
@@ -441,18 +449,17 @@
 
     compile({ CODE }) {
       const all_oasm_commands = this.allCommands
-      const all_oasm_jumps = ["jump", "equl", "gthn", "lthn", "ngth", "nlth"];
+      const all_oasm_jumps = ["jump", "equl", "gthn", "lthn", "ngth", "nlth", "neql"];
       CODE = JSON.parse(cast.toString(CODE));
       this.vars = [];
       this.commands = [];
       this.item = "";
       for (let i = 0; i < CODE.length; i++) {
-        let cur = CODE[i].split(" ");
-        cur = cur.concat(Array(4 - cur.length).fill("0"));
+        const cur = String(CODE[i]).split(" ");
         if (cur[0] === "labl" || cur[0] === "23") {
           this.mapcur = [];
           CODE = CODE.map((line) => {
-            this.mapline = line.split(" ");
+            this.mapline = String(line).split(" ");
             if (all_oasm_jumps.indexOf(this.mapline[0]) !== -1) {
               if (this.mapline[3] === cur[1]) {
                 this.mapline[3] = (i + 2).toString();
@@ -466,20 +473,18 @@
         }
       }
       for (let i = 0; i < CODE.length; i++) {
-        this.cur = CODE[i].split(" ");
-        this.cur = this.cur.concat(Array(4 - this.cur.length).fill("0"));
+        this.cur = String(CODE[i]).split(" ");
+        this.cur = this.cur.concat(Array(Math.max(0, 4 - this.cur.length)).fill("0")).slice(0, 4);
         if (this.cur[0] === "setv") {
           this.vars.push(this.cur[1]);
           this.len = this.vars.length;
           this.mapcur = [];
           CODE = CODE.map((line) => {
-            this.mapcur = line.split(" ");
-            if (this.mapcur[1] === this.cur[1]) {
-              this.mapcur[1] = this.len;
-            } else if (this.mapcur[2] === this.cur[1]) {
-              this.mapcur[2] = this.len.toString();
-            } else if (this.mapcur[3] === this.cur[1]) {
-              this.mapcur[3] = this.len.toString();
+            this.mapcur = String(line).split(" ");
+            for (let j = 1; j <= 3; j++) {
+              if (this.mapcur[j] === this.cur[1]) {
+                this.mapcur[j] = this.len.toString();
+              }
             }
             return this.mapcur.join(" ");
           });
@@ -494,13 +499,17 @@
     }
 
     transpileOTAS({ CODE }) {
-      this.CODE = JSON.parse(cast.toString(CODE));
+      try {
+        this.CODE = JSON.parse(cast.toString(CODE));
+      } catch (e) {
+        return "Errors:\n " + e.message;
+      }
       let prep = [];
       let OUT = [];
       let vars = [];
       let errors = [];
       for (let i = 0; i < this.CODE.length; i++) {
-        this.spl = this.CODE[i].split(" ");
+        this.spl = String(this.CODE[i]).split(" ");
         switch (this.spl[0]) {
           case "print":
             this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
@@ -600,10 +609,9 @@
             this.spl[2] = this.spl[1];
             this.spl[1] = "mouseclick";
             break;
-          case "input.keypress":
+          case "input.keypress": // input.keypress <var> <key>
             this.spl[0] = "getd";
-            this.spl[2] = this.spl[1];
-            this.spl[1] = "key" + this.spl[1];
+            [this.spl[1], this.spl[2]] = ["key" + this.spl[2], this.spl[1]];
             break;
           case "stack.print":
             this.spl[0] = "ptsk";
@@ -664,7 +672,7 @@
             this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
             break;
           case "bitwise.cileft":
-            this.spl[0] = "bsrs";
+            this.spl[0] = "bcls";
             this.spl[1] = createLiteralOTAS(vars, this.spl, 1, prep);
             this.spl[2] = createLiteralOTAS(vars, this.spl, 2, prep);
             break;

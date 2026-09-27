@@ -39,13 +39,29 @@
                             STRING: { type: Scratch.ArgumentType.STRING, defaultValue: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==' }
                         }
                     },
+                    {
+                        opcode: 'dataURIToString',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'text of data URI [URI]',
+                        arguments: {
+                            URI: { type: Scratch.ArgumentType.STRING, defaultValue: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==' }
+                        }
+                    },
+                    {
+                        opcode: 'dataURIType',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'type of data URI [URI]',
+                        arguments: {
+                            URI: { type: Scratch.ArgumentType.STRING, defaultValue: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==' }
+                        }
+                    },
                 ]
             };
         }
 
         async downloadAndConvert({ URL }) {
             try {
-                const response = await fetch(URL);
+                const response = await Scratch.fetch(Scratch.Cast.toString(URL));
                 if (!response.ok) {
                     throw new Error('Failed to download the file.');
                 }
@@ -54,7 +70,7 @@
                 return dataURL;
             } catch (error) {
                 console.error('Error:', error);
-                return null;
+                return '';
             }
         }
 
@@ -69,7 +85,7 @@
         
         stringToDataURI({ STRING, TYPE }) {
             // Convert the string to base64 using the encodeURIComponent function
-            const base64String = btoa(unescape(encodeURIComponent(STRING)));
+            const base64String = btoa(unescape(encodeURIComponent(Scratch.Cast.toString(STRING))));
             // Construct and return the data URI
             return `data:${TYPE};base64,${base64String}`;
         }
@@ -77,6 +93,28 @@
 
         isDataURI({ STRING }) {
             return /^data:/.test(STRING);
+        }
+
+        _parseDataURI(uri) {
+            return /^data:([^,]*?)(;base64)?,(.*)$/s.exec(Scratch.Cast.toString(uri));
+        }
+
+        dataURIToString({ URI }) {
+            const match = this._parseDataURI(URI);
+            if (!match) return '';
+            try {
+                if (!match[2]) return decodeURIComponent(match[3]);
+                const bytes = Uint8Array.from(atob(match[3]), c => c.charCodeAt(0));
+                return new TextDecoder().decode(bytes);
+            } catch (e) {
+                return '';
+            }
+        }
+
+        dataURIType({ URI }) {
+            const match = this._parseDataURI(URI);
+            if (!match) return '';
+            return match[1].split(';')[0] || 'text/plain';
         }
     }
 

@@ -12,7 +12,21 @@
     throw new Error("GitHub API extension must be unsandboxed");
   }
 
+  const Cast = Scratch.Cast;
+
+  // btoa only accepts latin1, so encode as utf-8 first
+  function toBase64(text) {
+    const bytes = new TextEncoder().encode(Cast.toString(text));
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
   class GitHubAPI {
+    headers(extra = {}) {
+      return this.authToken ? { 'Authorization': `token ${this.authToken}`, ...extra } : extra;
+    }
+
     getInfo() {
       return {
         id: 'githubAPI',
@@ -141,6 +155,17 @@
               TITLE: { type: Scratch.ArgumentType.STRING, defaultValue: 'title' },
               BODY: { type: Scratch.ArgumentType.STRING, defaultValue: 'body' }
             }
+          },
+          {
+            opcode: 'commentOnIssue',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'comment [BODY] on issue [ISSUE] in [USER] / [REPO] (auth)',
+            arguments: {
+              BODY: { type: Scratch.ArgumentType.STRING, defaultValue: 'comment' },
+              ISSUE: { type: Scratch.ArgumentType.STRING, defaultValue: 'issue number' },
+              USER: { type: Scratch.ArgumentType.STRING, defaultValue: 'username' },
+              REPO: { type: Scratch.ArgumentType.STRING, defaultValue: 'repository' }
+            }
           }
         ],
         menus: {
@@ -151,7 +176,10 @@
             { text: 'Stars', value: 'stars' },
             { text: 'Watchers', value: 'watchers' },
             { text: 'Forks', value: 'forks' },
-            { text: 'Image URL', value: 'image' }
+            { text: 'Image URL', value: 'image' },
+            { text: 'Open Issues', value: 'open_issues' },
+            { text: 'Default Branch', value: 'default_branch' },
+            { text: 'Language', value: 'language' }
           ],
           folderContentsOptions: [
             { text: 'Names', value: 'names' },
@@ -164,16 +192,7 @@
     async getRepositoryInfo({ INFO, USER, REPO }) {
       const url = `https://api.github.com/repos/${USER}/${REPO}`;
       try {
-        let response;
-        if (this.authToken) {
-          response = await fetch(url, {
-            headers: {
-              'Authorization': `token ${this.authToken}`
-            }
-          });
-        } else {
-          response = await fetch(url);
-        }
+        const response = await fetch(url, { headers: this.headers() });
         if (!response.ok) {
           throw new Error('Failed to fetch repository info.');
         }
@@ -182,7 +201,7 @@
           case 'name':
             return data.name;
           case 'description':
-            return data.description;
+            return data.description ?? '';
           case 'owner':
             return data.owner.login;
           case 'stars':
@@ -193,33 +212,29 @@
             return data.forks_count;
           case 'image':
             return data.owner.avatar_url;
+          case 'open_issues':
+            return data.open_issues_count;
+          case 'default_branch':
+            return data.default_branch;
+          case 'language':
+            return data.language ?? '';
           default:
             throw new Error('Invalid repository info option.');
         }
       } catch (error) {
         console.error('Error:', error);
-        return null;
+        return '';
       }
     }
 
     async getFileData({ PATH, USER, REPO, BRANCH }) {
       const url = `https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/${PATH}`;
       try {
-        let response;
-        if (this.authToken) {
-          response = await fetch(url, {
-            headers: {
-              'Authorization': `token ${this.authToken}`
-            }
-          });
-        } else {
-          response = await fetch(url);
-        }
+        const response = await fetch(url, { headers: this.headers() });
         if (!response.ok) {
           throw new Error('Failed to fetch file data.');
         }
-        // Assuming the content is base64 encoded
-        return response.text();
+        return await response.text();
       } catch (error) {
         console.error('Error:', error);
         return "";
@@ -229,16 +244,7 @@
     async getFolderContents({ TYPE, FOLDER, USER, REPO }) {
       const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${FOLDER}`;
       try {
-        let response;
-        if (this.authToken) {
-          response = await fetch(url, {
-            headers: {
-              'Authorization': `token ${this.authToken}`
-            }
-          });
-        } else {
-          response = await fetch(url);
-        }
+        const response = await fetch(url, { headers: this.headers() });
         if (!response.ok) {
           throw new Error('Failed to fetch folder contents.');
         }
@@ -259,14 +265,14 @@
     }
 
     setAuthToken({ TOKEN }) {
-      this.authToken = TOKEN
+      this.authToken = Cast.toString(TOKEN);
     }
 
     async createFile({ PATH, USER, REPO, CONTENT }) {
       const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${PATH}`;
       const body = {
         message: 'Create file',
-        content: btoa(CONTENT),
+        content: toBase64(CONTENT),
         owner: USER,
         repo: REPO
       };
@@ -293,7 +299,7 @@
       const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${PATH}`;
       const body = {
         message: 'Update file',
-        content: btoa(CONTENT),
+        content: toBase64(CONTENT),
         sha: null,
         owner: USER,
         repo: REPO
@@ -367,7 +373,7 @@
     async getIssues({ USER, REPO }) {
       const url = `https://api.github.com/repos/${USER}/${REPO}/issues`;
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, { headers: this.headers() });
         if (!response.ok) {
           throw new Error('Failed to fetch issues.');
         }
@@ -375,20 +381,29 @@
         return JSON.stringify(data);
       } catch (error) {
         console.error('Error:', error);
-        return null;
+        return '';
       }
     }
 
     async deleteIssue({ ISSUE, USER, REPO }) {
+      // the REST API can't delete issues, only GraphQL can (needs repo admin)
       const url = `https://api.github.com/repos/${USER}/${REPO}/issues/${ISSUE}`;
       try {
-        const response = await fetch(url, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `token ${this.authToken}`
-          }
+        const issueResponse = await fetch(url, { headers: this.headers() });
+        if (!issueResponse.ok) {
+          throw new Error('Failed to fetch issue.');
+        }
+        const issue = await issueResponse.json();
+        const response = await fetch('https://api.github.com/graphql', {
+          method: 'POST',
+          headers: this.headers({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            query: 'mutation($id: ID!) { deleteIssue(input: { issueId: $id }) { clientMutationId } }',
+            variables: { id: issue.node_id }
+          })
         });
-        if (!response.ok) {
+        const result = await response.json();
+        if (!response.ok || result.errors) {
           throw new Error('Failed to delete issue.');
         }
         return true;
@@ -440,6 +455,24 @@
         });
         if (!response.ok) {
           throw new Error('Failed to update issue.');
+        }
+        return true;
+      } catch (error) {
+        console.error('Error:', error);
+        return false;
+      }
+    }
+
+    async commentOnIssue({ BODY, ISSUE, USER, REPO }) {
+      const url = `https://api.github.com/repos/${USER}/${REPO}/issues/${ISSUE}/comments`;
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: this.headers({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ body: Cast.toString(BODY) })
+        });
+        if (!response.ok) {
+          throw new Error('Failed to comment on issue.');
         }
         return true;
       } catch (error) {

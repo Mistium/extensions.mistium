@@ -44,18 +44,8 @@
     IRGP = IRGenerator.prototype,
     STGP = ScriptTreeGenerator.prototype;
 
-  ConstantInput.prototype.asRaw = function() {
-    return this.constantValue;
-  };
-  TypedInput.prototype.asRaw = function() {
-    return this.asUnknown();
-  };
-  TypedInput.prototype.asSafe = function() {
-    return this.asUnknown();
-  };
-  VariableInput.prototype.asRaw = function() {
-    return this._value.asRaw();
-  };
+  // comment text must not be able to end the JS comment it's placed in
+  const commentText = (input) => input.asString().replace(/[\r\n\u2028\u2029]/g, ' ').replace(/\*\//g, '*\\/');
 
   class mistiumComments {
     getInfo() {
@@ -77,8 +67,7 @@
                 "type": Scratch.ArgumentType.STRING,
                 "gen_id": "dgJwNAKLykty"
               }
-            },
-            "func": "err"
+            }
           },
           {
             "opcode": "Ccomment",
@@ -91,8 +80,7 @@
                 "type": Scratch.ArgumentType.STRING,
                 "gen_id": "rWGzJFDaGJul"
               }
-            },
-            "func": "err"
+            }
           },
           {
             "opcode": "booleancomment",
@@ -109,8 +97,7 @@
                 "type": Scratch.ArgumentType.STRING,
                 "gen_id": "vVNYvkrJtDxX"
               }
-            },
-            "func": "err"
+            }
           },
           {
             "opcode": "reportercomment",
@@ -128,8 +115,7 @@
                 "type": Scratch.ArgumentType.STRING,
                 "gen_id": "sijHjfABpYFm"
               }
-            },
-            "func": "err"
+            }
           },
           "---",
           {
@@ -140,24 +126,30 @@
             "opcode": "openMutlilineComment",
             "blockType": Scratch.BlockType.COMMAND,
             "text": "Open Mutliline Comment",
-            "code": "/*",
-            "func": "err"
+            "code": "/*"
           },
           {
             "opcode": "closeMultilineComment",
             "blockType": Scratch.BlockType.COMMAND,
             "text": "Close Multiline Comment",
-            "code": "*/",
-            "func": "err"
+            "code": "*/"
           }
         ],
       };
     }
-    err(args, util, blockJSON) {
-      const err = 'huh, weird error :shrug:';
-      runtime.visualReport(util.thread.isCompiled ? util.thread.peekStack() : util.thread.peekStackFrame().op.id, err);
-      return err;
+    // Interpreter fallbacks for when the compiler is disabled or bails out
+    blockcomment() {}
+    Ccomment(args, util) {
+      util.startBranch(1, false);
     }
+    booleancomment(args) {
+      return Scratch.Cast.toBoolean(args.boolean);
+    }
+    reportercomment(args) {
+      return args.reporter;
+    }
+    openMutlilineComment() {}
+    closeMultilineComment() {}
   }
 
   const PATCHES_ID = 'mistiumComments_patches';
@@ -190,22 +182,21 @@
       switch (node.kind) {
 
         case 'mistiumComments.blockcomment':
-          const dgJwNAKLykty = this.descendInput(node?.comment).asString();
+          const dgJwNAKLykty = commentText(this.descendInput(node?.comment));
           this.source += `\n// ${dgJwNAKLykty};\n`;
           return;
         case 'mistiumComments.Ccomment':
-          const rWGzJFDaGJul = this.descendInput(node?.comment).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", true);\n`;
+          this.descendStack(node.substack, new Frame(false));
           return;
         case 'mistiumComments.booleancomment':
           const UpWhsZMpBQNV = this.descendInput(node?.boolean).asBoolean();
-          const vVNYvkrJtDxX = this.descendInput(node?.comment).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", ${UpWhsZMpBQNV});\n`;
+          const vVNYvkrJtDxX = commentText(this.descendInput(node?.comment));
+          this.source += `\nvm.runtime.visualReport(${JSON.stringify(block.id)}, ${UpWhsZMpBQNV});\n`;
           return;
         case 'mistiumComments.reportercomment':
           const dVKsjyMOJjnW = this.descendInput(node?.reporter).asString();
-          const sijHjfABpYFm = this.descendInput(node?.comment).asString();
-          this.source += `\nvm.runtime.visualReport("${block.id}", ${dVKsjyMOJjnW});\n`;
+          const sijHjfABpYFm = commentText(this.descendInput(node?.comment));
+          this.source += `\nvm.runtime.visualReport(${JSON.stringify(block.id)}, ${dVKsjyMOJjnW});\n`;
           return;
 
 
@@ -224,18 +215,18 @@
       switch (node.kind) {
 
         case 'mistiumComments.blockcomment':
-          const dgJwNAKLykty = this.descendInput(node?.comment).asString();
+          const dgJwNAKLykty = commentText(this.descendInput(node?.comment));
           return new TypedInput(`// ${dgJwNAKLykty}`, TYPE_UNKNOWN);
         case 'mistiumComments.Ccomment':
-          const rWGzJFDaGJul = this.descendInput(node?.comment).asString();
+          const rWGzJFDaGJul = commentText(this.descendInput(node?.comment));
           return new TypedInput(`true`, TYPE_BOOLEAN);
         case 'mistiumComments.booleancomment':
           const UpWhsZMpBQNV = this.descendInput(node?.boolean).asBoolean();
-          const vVNYvkrJtDxX = this.descendInput(node?.comment).asString();
+          const vVNYvkrJtDxX = commentText(this.descendInput(node?.comment));
           return new TypedInput(`${UpWhsZMpBQNV}`, TYPE_BOOLEAN);
         case 'mistiumComments.reportercomment':
           const dVKsjyMOJjnW = this.descendInput(node?.reporter).asString();
-          const sijHjfABpYFm = this.descendInput(node?.comment).asString();
+          const sijHjfABpYFm = commentText(this.descendInput(node?.comment));
           return new TypedInput(`${dVKsjyMOJjnW}`, TYPE_STRING);
 
 
@@ -262,6 +253,7 @@
           return {
             block, kind: 'mistiumComments.Ccomment',
               comment: this.descendInputOfBlock(block, 'comment'),
+              substack: this.descendSubstack(block, 'SUBSTACK'),
           };
         case 'mistiumComments_booleancomment':
           return {

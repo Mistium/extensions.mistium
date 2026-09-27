@@ -338,17 +338,32 @@
       if (clVars.linkState.identifiedProtocol >= 2) {
         message.listener = clVars.listeners.enablerValue;
 
-        // Create listener
+        // Create listener and start awaiting its response
         clVars.listeners.varStates[message.listener] = {
           hasNew: false,
           varState: {},
           eventHatTick: false,
         };
+        if (!clVars.listeners.current.includes(String(message.listener))) {
+          clVars.listeners.current.push(String(message.listener));
+        }
 
       } else {
         //console.warn("[CloudLink] Server is too old! Must be at least 0.1.8.x to support listeners.");
       }
       clVars.listeners.enablerState = false;
+    }
+
+    // Attach selected rooms
+    if (clVars.rooms.enablerState) {
+      if (clVars.linkState.identifiedProtocol >= 2) {
+        try {
+          message.rooms = JSON.parse(clVars.rooms.enablerValue);
+        } catch {
+          message.rooms = clVars.rooms.enablerValue;
+        }
+      }
+      clVars.rooms.enablerState = false;
     }
 
     // Check if server supports rooms
@@ -393,6 +408,7 @@
   // Compare the version string of the server to known compatible variants to configure clVars.linkState.identifiedProtocol.
   async function setServerVersion(version) {
     //console.log(`[CloudLink] Server version: ${String(version)}`);
+    version = String(version);
     clVars.server_version = version;
 
     // Auto-detect versions
@@ -504,7 +520,7 @@
 
       case "direct":
         // Handle events from older server versions
-        if (Object.prototype.hasOwnProperty.call(packet.val, "cmd")) {
+        if (packet.val && typeof packet.val == "object" && Object.prototype.hasOwnProperty.call(packet.val, "cmd")) {
           switch (packet.val.cmd) {
             // Server 0.1.5 (at least)
             case "vers":
@@ -555,7 +571,7 @@
               case "username_cfg":
 
                 // Username accepted
-                if (packet.code.includes("I:100")) {
+                if (String(packet.code).includes("I:100")) {
                   clVars.myUserObject = packet.val;
                   clVars.username.value = packet.val.username;
                   clVars.username.accepted = true;
@@ -563,6 +579,8 @@
 
                   // Username rejected / error
                 } else {
+                  // Allow another attempt
+                  clVars.username.attempted = false;
                   //console.log(`[CloudLink] Username rejected by the server! Error code ${packet.code}.}`);
                 }
                 return;
@@ -575,8 +593,8 @@
               case "link":
                 // Room link accepted
                 if (!clVars.rooms.isAttemptingLink) return;
-                if (packet.code.includes("I:100")) {
-                  clVars.rooms.isAttemptingLink = false;
+                clVars.rooms.isAttemptingLink = false;
+                if (String(packet.code).includes("I:100")) {
                   clVars.rooms.isLinked = true;
                   //console.log("[CloudLink] Room linked successfully!");
 
@@ -589,8 +607,8 @@
               case "unlink":
                 // Room unlink accepted
                 if (!clVars.rooms.isAttemptingUnlink) return;
-                if (packet.code.includes("I:100")) {
-                  clVars.rooms.isAttemptingUnlink = false;
+                clVars.rooms.isAttemptingUnlink = false;
+                if (String(packet.code).includes("I:100")) {
                   clVars.rooms.isLinked = false;
                   //console.log("[CloudLink] Room unlinked successfully!");
 
@@ -659,12 +677,12 @@
               let index = -1
               for (let i = 0; i < clVars.ulist.length; i++) {
                 let user = clVars.ulist[i]
-                if (user.uuid == packet.val.uuid) {
+                if (user && packet.val && user.uuid == packet.val.uuid) {
                   index = i
                   break;
                 }
               }
-              clVars.ulist.splice(index, 1);
+              if (index !== -1) clVars.ulist.splice(index, 1);
               clVars.recentlyLeftUser = packet.val;
               Scratch.vm.runtime.startHats('cloudlink_whenuserdisconnects');
               break;
@@ -735,6 +753,9 @@
       clVars.socket = new WebSocket(url);
     } catch (e) {
       //console.warn("[CloudLink] An exception has occurred:", e);
+      // Invalid URL: mark as failed instead of staying stuck in "connecting"
+      clVars.linkState.status = 4;
+      clVars.linkState.disconnectType = 1;
       return;
     }
 
@@ -1711,7 +1732,7 @@
         //console.warn(`[CloudLink] Listener ID ${args.ID} does not exist!`);
         return "";
       }
-      return clVars.listeners.varStates[String(args.ID)].varState;
+      return makeValueScratchSafe(clVars.listeners.varStates[String(args.ID)].varState);
     }
 
     getNextPacket(args) {
@@ -1866,13 +1887,13 @@
             //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
             return "";
           }
-          return clVars.gvar.varStates[String(args.VAR)].varState;
+          return makeValueScratchSafe(clVars.gvar.varStates[String(args.VAR)].varState);
         case 'Private variables':
           if (!Object.prototype.hasOwnProperty.call(clVars.pvar.varStates, String(args.VAR))) {
             //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
             return "";
           }
-          return clVars.pvar.varStates[String(args.VAR)].varState;
+          return makeValueScratchSafe(clVars.pvar.varStates[String(args.VAR)].varState);
         default:
           return "";
       }
@@ -1904,8 +1925,13 @@
     // Reporter - Returns an entry from a JSON array (0-based).
     // NUM - Number, ARRAY - String (JSON Array)
     getFromJSONArray(args) {
-      var json_array = JSON.parse(args.ARRAY);
-      if (json_array[args.NUM] == "undefined") {
+      var json_array;
+      try {
+        json_array = JSON.parse(args.ARRAY);
+      } catch {
+        return "";
+      }
+      if (json_array == null || json_array[args.NUM] === undefined) {
         return "";
       } else {
         let data = json_array[args.NUM];
@@ -1925,30 +1951,37 @@
         .then(response => response.text())
         .catch(error => {
           //console.warn(`[CloudLink] Fetch error: ${error}`);
+          return "";
         });
     }
 
     // Reporter - Returns a RESTful request promise.
     // url - String, method - String, data - String, headers - String
     requestURL(args) {
+      let headers = {};
+      try {
+        headers = JSON.parse(args.headers);
+      } catch { }
       if (args.method == "GET" || args.method == "HEAD") {
         return Scratch.fetch(args.url, {
           method: args.method,
-          headers: JSON.parse(args.headers)
+          headers: headers
         })
           .then(response => response.text())
           .catch(error => {
             //console.warn(`[CloudLink] Request error: ${error}`);
+            return "";
           });
       } else {
         return Scratch.fetch(args.url, {
           method: args.method,
-          headers: JSON.parse(args.headers),
+          headers: headers,
           body: args.data
         })
           .then(response => response.text())
           .catch(error => {
             //console.warn(`[CloudLink] Request error: ${error}`);
+            return "";
           });
       }
     }
@@ -2130,13 +2163,13 @@
             //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
             return false;
           }
-          return clVars.gvar.varStates[String(args.ID)].hasNew;
+          return clVars.gvar.varStates[String(args.VAR)].hasNew;
         case 'Private variables':
           if (!Object.prototype.hasOwnProperty.call(clVars.pvar.varStates, String(args.VAR))) {
             //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
             return false;
           }
-          return clVars.pvar.varStates[String(args.ID)].hasNew;
+          return clVars.pvar.varStates[String(args.VAR)].hasNew;
       }
     }
 
@@ -2157,19 +2190,27 @@
       // Legacy ulist handling
       if (clVars.ulist.includes(args.ID)) return true;
 
-      // New ulist handling
-      if (clVars.linkState.identifiedProtocol > 2) {
-        if (this.isValidJSON(args.ID)) {
+      // New ulist handling (0.1.8.x and newer use user objects)
+      if (clVars.linkState.identifiedProtocol >= 2) {
+        let query = null;
+        try {
+          query = JSON.parse(args.ID);
+        } catch { }
+        if (query && typeof query == "object") {
           return clVars.ulist.some(o => (
-            (o.username === JSON.parse(args.ID).username)
+            o
             &&
-            (o.id == JSON.parse(args.ID).id)
+            (o.username === query.username)
+            &&
+            (o.id == query.id)
           ));
         } else {
           return clVars.ulist.some(o => (
-            (o.username === String(args.ID))
+            o
+            &&
+            ((o.username === String(args.ID))
             ||
-            (o.id == args.ID)
+            (o.id == args.ID))
           ));
         }
       } else return false;
@@ -2487,14 +2528,14 @@
             //console.warn(`[CloudLink] Global variable ${args.VAR} does not exist!`);
             return;
           }
-          clVars.gvar.varStates[String(args.ID)].hasNew = false;
+          clVars.gvar.varStates[String(args.VAR)].hasNew = false;
           break;
         case 'Private variables':
           if (!Object.prototype.hasOwnProperty.call(clVars.pvar.varStates, String(args.VAR))) {
             //console.warn(`[CloudLink] Private variable ${args.VAR} does not exist!`);
             return false;
           }
-          clVars.pvar.varStates[String(args.ID)].hasNew = false;
+          clVars.pvar.varStates[String(args.VAR)].hasNew = false;
       }
     }
 

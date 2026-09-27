@@ -85,6 +85,23 @@
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'all shaders',
                     },
+                    {
+                        opcode: 'shaderExists',
+                        blockType: Scratch.BlockType.BOOLEAN,
+                        text: 'shader [ID] exists?',
+                        arguments: {
+                            ID: { type: Scratch.ArgumentType.STRING, defaultValue: 'shader1' },
+                        },
+                    },
+                    {
+                        opcode: 'getUniform',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'uniform [NAME] of [ID]',
+                        arguments: {
+                            NAME: { type: Scratch.ArgumentType.STRING, defaultValue: 'u_time' },
+                            ID: { type: Scratch.ArgumentType.STRING, defaultValue: 'shader1' },
+                        },
+                    },
 
                     "---",
                     {
@@ -134,47 +151,68 @@
             return { canvas, gl };
         }
 
+        // Canvas sizes must be positive integers; NaN/0/negatives break OffscreenCanvas and WebGL
+        _size(value) {
+            return Math.max(1, Math.round(cast.toNumber(value)) || 1);
+        }
+
         compileShader(gl, source, type) {
             const shader = gl.createShader(type);
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                throw new Error(gl.getShaderInfoLog(shader));
+                const log = gl.getShaderInfoLog(shader);
+                gl.deleteShader(shader);
+                throw new Error(log);
             }
             return shader;
         }
 
         newShader(args) {
-            const id = args.ID;
+            const id = cast.toString(args.ID);
             if (this.shaders[id]) {
                 this.deleteShader({ ID: id });
             }
-            const vertSrc = args.VERT;
-            const fragSrc = args.FRAG;
-            const width = cast.toNumber(args.W);
-            const height = cast.toNumber(args.H);
+            const vertSrc = cast.toString(args.VERT);
+            const fragSrc = cast.toString(args.FRAG);
+            const width = this._size(args.W);
+            const height = this._size(args.H);
 
             const { canvas, gl } = this.createGLContext(width, height);
 
-            const vertShader = this.compileShader(gl, vertSrc, gl.VERTEX_SHADER);
-            const fragShader = this.compileShader(gl, fragSrc, gl.FRAGMENT_SHADER);
+            try {
+                const vertShader = this.compileShader(gl, vertSrc, gl.VERTEX_SHADER);
+                const fragShader = this.compileShader(gl, fragSrc, gl.FRAGMENT_SHADER);
 
-            const program = gl.createProgram();
-            gl.attachShader(program, vertShader);
-            gl.attachShader(program, fragShader);
-            gl.linkProgram(program);
-            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                throw new Error(gl.getProgramInfoLog(program));
+                const program = gl.createProgram();
+                gl.attachShader(program, vertShader);
+                gl.attachShader(program, fragShader);
+                gl.linkProgram(program);
+                if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                    throw new Error(gl.getProgramInfoLog(program));
+                }
+
+                // Fullscreen quad, created once instead of on every render
+                const buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                    -1, -1, 1, -1, -1, 1,
+                    -1, 1, 1, -1, 1, 1
+                ]), gl.STATIC_DRAW);
+
+                this.shaders[id] = { gl, program, buffer, uniforms: {}, width, height };
+                this.canvases[id] = canvas;
+            } catch (e) {
+                // Don't leak a WebGL context per failed compile; browsers cap live contexts
+                gl.getExtension('WEBGL_lose_context')?.loseContext();
+                throw e;
             }
-
-            this.shaders[id] = { gl, program, uniforms: {}, width, height };
-            this.canvases[id] = canvas;
         }
 
         resizeShader(args) {
-            const id = args.ID;
-            const width = cast.toNumber(args.W);
-            const height = cast.toNumber(args.H);
+            const id = cast.toString(args.ID);
+            const width = this._size(args.W);
+            const height = this._size(args.H);
 
             const shader = this.shaders[id];
             if (!shader) return;
@@ -183,14 +221,21 @@
             shader.height = height;
             shader.gl.canvas.width = width;
             shader.gl.canvas.height = height;
-            shader.outputCanvas.width = width;
-            shader.outputCanvas.height = height;
+        }
+
+        _parseUniform(type, value) {
+            const parts = cast.toString(value).split(',').map(Number);
+            const size = { vec2: 2, vec3: 3, vec4: 4 }[type] || 1;
+            // Pad/trim to the exact length WebGL requires, NaN -> 0
+            const out = [];
+            for (let i = 0; i < size; i++) out.push(parts[i] || 0);
+            return out;
         }
 
         setUniform(args) {
-            const id = args.ID;
-            const name = args.NAME;
-            const type = args.TYPE;
+            const id = cast.toString(args.ID);
+            const name = cast.toString(args.NAME);
+            const type = cast.toString(args.TYPE);
             const value = args.VAL;
 
             const shader = this.shaders[id];
@@ -202,11 +247,12 @@
             const location = gl.getUniformLocation(program, name);
             if (!location) return;
 
-            const parts = value.toString().split(',').map(Number);
+            const parts = this._parseUniform(type, value);
 
+            // Uniform values persist in the program, so they only need setting once
             switch (type) {
                 case 'float':
-                    gl.uniform1f(location, parseFloat(value));
+                    gl.uniform1f(location, parts[0]);
                     break;
                 case 'vec2':
                     gl.uniform2fv(location, parts);
@@ -218,46 +264,26 @@
                     gl.uniform4fv(location, parts);
                     break;
                 case 'int':
-                    gl.uniform1i(location, parseInt(value));
+                    gl.uniform1i(location, Math.trunc(parts[0]));
                     break;
                 default:
                     console.error(`Unknown uniform type: ${type}`);
                     return;
             }
 
-            shader.uniforms[name] = { type, value };
+            shader.uniforms[name] = { type, value: parts.join(',') };
         }
 
         runShader(args) {
-            const id = args.ID;
+            const id = cast.toString(args.ID);
             const shader = this.shaders[id];
             if (!shader) return;
 
-            const { gl, program, width, height, uniforms } = shader;
+            const { gl, program, buffer, width, height } = shader;
             gl.viewport(0, 0, width, height);
             gl.useProgram(program);
 
-            for (const [name, { type, value }] of Object.entries(uniforms)) {
-                const loc = gl.getUniformLocation(program, name);
-                if (!loc) continue;
-                const parts = value.toString().split(',').map(Number);
-                switch (type) {
-                    case 'float': gl.uniform1f(loc, parts[0]); break;
-                    case 'vec2': gl.uniform2fv(loc, parts); break;
-                    case 'vec3': gl.uniform3fv(loc, parts); break;
-                    case 'vec4': gl.uniform4fv(loc, parts); break;
-                    case 'int': gl.uniform1i(loc, parts[0]); break;
-                }
-            }
-
-            const verts = new Float32Array([
-                -1, -1, 1, -1, -1, 1,
-                -1, 1, 1, -1, 1, 1
-            ]);
-            const buffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
-
             const posLoc = gl.getAttribLocation(program, 'a_position');
             if (posLoc !== -1) {
                 gl.enableVertexAttribArray(posLoc);
@@ -279,7 +305,7 @@
         }
 
         renderShader(args, util) {
-            const id = args.ID;
+            const id = cast.toString(args.ID);
             const shader = this.shaders[id];
             if (!shader) return;
 
@@ -287,27 +313,38 @@
             if (!glCanvas) return;
 
             this.runShader({ ID: id });
-            glCanvas.reusable = false;
 
-            const renderer = vm.renderer;
             let skinId = glCanvas.skin;
             if (skinId && renderer._allSkins[skinId]) {
                 renderer.updateBitmapSkin(skinId, glCanvas, 1);
             } else {
-                skinId = renderer.createBitmapSkin(glCanvas);
+                skinId = renderer.createBitmapSkin(glCanvas, 1);
                 glCanvas.skin = skinId;
             }
 
             this._setSkin(skinId, util.target);
-            return;
+            runtime.requestRedraw();
         }
 
         deleteShader(args) {
-            const id = args.ID;
+            const id = cast.toString(args.ID);
             const shader = this.shaders[id];
             if (!shader) return;
 
-            const { gl, program } = shader;
+            const skinId = this.canvases[id]?.skin;
+            if (skinId && renderer._allSkins[skinId]) {
+                // Put sprites showing this shader back on their costume before the skin goes away
+                for (const target of runtime.targets) {
+                    const drawable = renderer._allDrawables[target.drawableID];
+                    if (drawable && drawable.skin === renderer._allSkins[skinId]) {
+                        target.updateAllDrawableProperties();
+                    }
+                }
+                renderer.destroySkin(skinId);
+            }
+
+            const { gl, program, buffer } = shader;
+            gl.deleteBuffer(buffer);
             gl.deleteProgram(program);
             gl.getExtension('WEBGL_lose_context')?.loseContext();
             delete this.shaders[id];
@@ -318,24 +355,34 @@
             return JSON.stringify(Object.keys(this.shaders));
         }
 
+        shaderExists(args) {
+            return Object.prototype.hasOwnProperty.call(this.shaders, cast.toString(args.ID));
+        }
+
+        getUniform(args) {
+            const shader = this.shaders[cast.toString(args.ID)];
+            const uniform = shader && shader.uniforms[cast.toString(args.NAME)];
+            return uniform ? uniform.value : '';
+        }
+
         vec2(args) {
-            const x = cast.toNumber(args.X) | 0;
-            const y = cast.toNumber(args.Y) | 0;
+            const x = cast.toNumber(args.X);
+            const y = cast.toNumber(args.Y);
             return `${x},${y}`;
         }
 
         vec3(args) {
-            const x = cast.toNumber(args.X) | 0;
-            const y = cast.toNumber(args.Y) | 0;
-            const z = cast.toNumber(args.Z) | 0;
+            const x = cast.toNumber(args.X);
+            const y = cast.toNumber(args.Y);
+            const z = cast.toNumber(args.Z);
             return `${x},${y},${z}`;
         }
 
         vec4(args) {
-            const x = cast.toNumber(args.X) | 0;
-            const y = cast.toNumber(args.Y) | 0;
-            const z = cast.toNumber(args.Z) | 0;
-            const w = cast.toNumber(args.W) | 0;
+            const x = cast.toNumber(args.X);
+            const y = cast.toNumber(args.Y);
+            const z = cast.toNumber(args.Z);
+            const w = cast.toNumber(args.W);
             return `${x},${y},${z},${w}`;
         }
     }

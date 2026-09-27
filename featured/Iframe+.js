@@ -29,6 +29,8 @@
     const featurePolicy = {};
     let globalZ = 1;
 
+    const getFrame = (ID) => iframesMap.get(Scratch.Cast.toString(ID));
+
     window.addEventListener("message", (event) => {
         for (const [id, info] of iframesMap.entries()) {
             try {
@@ -42,8 +44,16 @@
     });
 
     class IframePlusExtension {
+        constructor() {
+            // Percent-based layout depends on the stage size, so re-layout when it changes
+            Scratch.vm.on("STAGE_SIZE_CHANGED", () => {
+                for (const info of iframesMap.values()) this.updateFrameAttributes(info);
+            });
+            Scratch.vm.runtime.on("RUNTIME_DISPOSED", () => this.removeAllIframes());
+        }
+
         setZIndex({ ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (iframeInfo) {
                 const { iframe } = iframeInfo;
                 iframe.style.zIndex = String(++globalZ);
@@ -388,6 +398,17 @@
                         },
                     },
                     {
+                        opcode: "setZIndex",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("bring iframe with ID [ID] to front"),
+                        arguments: {
+                            ID: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "iframe1",
+                            },
+                        },
+                    },
+                    {
                         opcode: "getAllIframeIDs",
                         blockType: Scratch.BlockType.REPORTER,
                         text: Scratch.translate("all iframe IDs"),
@@ -461,10 +482,10 @@
         }
 
         setLayerOfIframe({ ID, LAYER }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (iframeInfo) {
                 const { iframe } = iframeInfo;
-                iframe.style.zIndex = String(LAYER);
+                iframe.style.zIndex = String(Math.round(Scratch.Cast.toNumber(LAYER)));
             }
         }
 
@@ -473,7 +494,7 @@
         }
 
         getLayerOfIframe({ ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return -1;
             return parseInt(iframeInfo.iframe.style.zIndex || "0");
         }
@@ -494,16 +515,16 @@
         showHtmlContent({ HTML, ID }) {
             this.remove({ ID });
 
-            const src = `data:text/html;charset=utf-8,${encodeURIComponent(HTML)}`;
+            const src = `data:text/html;charset=utf-8,${encodeURIComponent(Scratch.Cast.toString(HTML))}`;
             this.createFrame(src, ID);
         }
 
         duplicate({ ID, NEW_ID }) {
-            const info = iframesMap.get(String(ID));
+            const info = getFrame(ID);
             if (!info) return;
             this.remove({ ID: NEW_ID });
-            this.createFrame(info.iframe.src, String(NEW_ID));
-            const newInfo = iframesMap.get(String(NEW_ID));
+            this.createFrame(info.iframe.src, Scratch.Cast.toString(NEW_ID));
+            const newInfo = getFrame(NEW_ID);
             if (!newInfo) return;
             newInfo.x = info.x;
             newInfo.y = info.y;
@@ -518,6 +539,7 @@
         }
 
         remove({ ID }) {
+            ID = Scratch.Cast.toString(ID);
             const iframeInfo = iframesMap.get(ID);
             if (iframeInfo) {
                 Scratch.renderer.removeOverlay(iframeInfo.iframe);
@@ -537,31 +559,31 @@
         }
 
         show({ ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (iframeInfo) {
                 iframeInfo.iframe.style.display = "";
             }
         }
 
         hide({ ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (iframeInfo) {
                 iframeInfo.iframe.style.display = "none";
             }
         }
 
         isVisible({ ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return false;
             return iframeInfo.iframe.style.display !== "none";
         }
 
         doesExist({ ID }) {
-            return iframesMap.has(String(ID));
+            return iframesMap.has(Scratch.Cast.toString(ID));
         }
 
         getIframeTitle({ ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return "";
             try {
                 return iframeInfo.iframe.contentDocument?.title || "";
@@ -571,20 +593,26 @@
         }
 
         getIframeURL({ ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return "";
             return iframeInfo.iframe.src || "";
         }
 
-        setIframeURL({ ID, URL }) {
-            const iframeInfo = iframesMap.get(ID);
-            if (iframeInfo) {
-                iframeInfo.iframe.src = URL;
+        async setIframeURL({ ID, URL }) {
+            const iframeInfo = getFrame(ID);
+            if (!iframeInfo) return;
+            const src = Scratch.Cast.toString(URL);
+            try {
+                if (await Scratch.canEmbed(src)) {
+                    iframeInfo.iframe.src = src;
+                }
+            } catch (e) {
+                console.error(e);
             }
         }
 
         reload({ ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
             try {
                 iframeInfo.iframe.contentWindow?.location.reload();
@@ -596,74 +624,79 @@
         }
 
         resize({ ID, WIDTH, HEIGHT }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
-            iframeInfo.width = WIDTH;
-            iframeInfo.height = HEIGHT;
+            iframeInfo.width = Scratch.Cast.toNumber(WIDTH);
+            iframeInfo.height = Scratch.Cast.toNumber(HEIGHT);
             this.updateFrameAttributes(iframeInfo);
         }
 
         move({ ID, X, Y }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
-            iframeInfo.x = X;
-            iframeInfo.y = Y;
+            iframeInfo.x = Scratch.Cast.toNumber(X);
+            iframeInfo.y = Scratch.Cast.toNumber(Y);
             this.updateFrameAttributes(iframeInfo);
         }
 
         setCorners({ ID, X1, Y1, X2, Y2 }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
-            iframeInfo.x = X1;
-            iframeInfo.y = Y1;
+            X1 = Scratch.Cast.toNumber(X1);
+            Y1 = Scratch.Cast.toNumber(Y1);
+            X2 = Scratch.Cast.toNumber(X2);
+            Y2 = Scratch.Cast.toNumber(Y2);
+            // x/y are the centre of the frame
+            iframeInfo.x = (X1 + X2) / 2;
+            iframeInfo.y = (Y1 + Y2) / 2;
             iframeInfo.width = Math.abs(X2 - X1);
             iframeInfo.height = Math.abs(Y2 - Y1);
             this.updateFrameAttributes(iframeInfo);
         }
 
         setScale({ ID, SCALE }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
-            iframeInfo.scale = SCALE;
+            iframeInfo.scale = Scratch.Cast.toNumber(SCALE);
             this.updateFrameAttributes(iframeInfo);
         }
 
         setOpacity({ ID, OPACITY }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
             const clamped = Math.max(0, Math.min(100, Scratch.Cast.toNumber(OPACITY)));
             iframeInfo.iframe.style.opacity = String(clamped / 100);
         }
 
         setBorderRadius({ ID, RADIUS }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
             iframeInfo.iframe.style.borderRadius = `${Scratch.Cast.toNumber(RADIUS)}px`;
             iframeInfo.iframe.style.overflow = "hidden";
         }
 
         setBorder({ ID, WIDTH, COLOR }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
             iframeInfo.iframe.style.border = `${Scratch.Cast.toNumber(WIDTH)}px solid ${Scratch.Cast.toString(COLOR)}`;
             iframeInfo.iframe.style.boxSizing = "border-box";
         }
 
         clearBorder({ ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
             iframeInfo.iframe.style.border = "none";
         }
 
         setInteractive({ ID, INTERACTIVE }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
             iframeInfo.interactive = Scratch.Cast.toString(INTERACTIVE) !== "false";
             this.updateFrameAttributes(iframeInfo);
         }
 
         sendMessage({ MSG, ID }) {
-            const iframeInfo = iframesMap.get(ID);
+            const iframeInfo = getFrame(ID);
             if (!iframeInfo) return;
             try {
                 iframeInfo.iframe.contentWindow?.postMessage(Scratch.Cast.toString(MSG), "*");
@@ -673,11 +706,11 @@
         }
 
         getLastMessage({ ID }) {
-            return messageMap.get(ID) ?? "";
+            return messageMap.get(Scratch.Cast.toString(ID)) ?? "";
         }
 
         clearLastMessage({ ID }) {
-            messageMap.delete(ID);
+            messageMap.delete(Scratch.Cast.toString(ID));
         }
 
         getAllIframeIDs() {
@@ -716,7 +749,7 @@
                 scale: 1
             });
 
-            this.updateFrameAttributes(iframesMap.get(ID));
+            this.updateFrameAttributes(getFrame(ID));
         }
 
         updateFrameAttributes(iframeInfo) {
@@ -724,21 +757,16 @@
 
             const { iframe, width, height, x, y, scale, interactive } = iframeInfo;
 
-            const stageScale = Scratch.vm.renderer.canvas.clientWidth / Scratch.vm.runtime.stageWidth;
-            const centerX = Scratch.vm.runtime.stageWidth / 2;
-            const centerY = Scratch.vm.runtime.stageHeight / 2;
+            // Percentages keep the frame aligned when the stage is resized or goes fullscreen
+            const { stageWidth, stageHeight } = Scratch.vm.runtime;
 
-            const scaledW = width * stageScale;
-            const scaledH = height * stageScale;
+            iframe.style.width = `${(width / stageWidth) * 100}%`;
+            iframe.style.height = `${(height / stageHeight) * 100}%`;
+            iframe.style.left = `${(0.5 + (x - width / 2) / stageWidth) * 100}%`;
+            iframe.style.top = `${(0.5 - (y + height / 2) / stageHeight) * 100}%`;
 
-            const scaledX = (centerX + x) * stageScale - scaledW / 2;
-            const scaledY = (centerY - y) * stageScale - scaledH / 2;
-
-            iframe.style.width = `${scaledW}px`;
-            iframe.style.height = `${scaledH}px`;
-
-            iframe.style.transform = `translate(${scaledX}px, ${scaledY}px)`;
-            iframe.style.transformOrigin = "top left";
+            iframe.style.transform = scale === 1 ? "" : `scale(${scale})`;
+            iframe.style.transformOrigin = "center";
 
             iframe.style.pointerEvents = interactive ? "auto" : "none";
         }

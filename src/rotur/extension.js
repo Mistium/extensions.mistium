@@ -25,6 +25,7 @@ const LEGACY_AUTH_RETIRED =
   "Username/password login was retired. Use the login prompt or login with token.";
 const MAILBOX_ROOM_PREFIX = "rotur-ext";
 const SYNC_ROOM = "rotur-ext-sync";
+const SOCKET_TIMEOUT_MS = 15000;
 
 function apiMessage(error, fallback) {
   if (error && typeof error === "object" && "data" in error) {
@@ -98,8 +99,8 @@ class RoturExtension {
     };
 
     try {
-      vm.on("PROJECT_RUN_START", cleanUpLogin);
-      vm.on("PROJECT_RUN_STOP", cleanUpLogin);
+      Scratch.vm.on("PROJECT_RUN_START", cleanUpLogin);
+      Scratch.vm.on("PROJECT_RUN_STOP", cleanUpLogin);
     } catch (_) {}
   }
 
@@ -295,16 +296,20 @@ class RoturExtension {
     if (!this.sdk.loggedIn) return Promise.reject(new Error("Login first"));
     if (this._online()) return Promise.resolve();
     if (!this.socketTask) {
-      this.socketTask = this.sdk
+      // The SDK promise never settles if the server closes before "ready" (bad
+      // token), and stays resolved while it auto-reconnects. Wait for a real
+      // "ready" with a timeout so a login block can't hang its thread forever.
+      let timer;
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("Connection timed out")), SOCKET_TIMEOUT_MS);
+      });
+      const ready = this.sdk
         .connectSocket()
-        .catch((error) => {
-          this.socketTask = null;
-          throw error;
-        })
-        .then((conn) => {
-          this.socketTask = null;
-          return conn;
-        });
+        .then((conn) => (this._online() ? conn : this.sdk.socket.once("ready")));
+      this.socketTask = Promise.race([ready, timeout]).finally(() => {
+        clearTimeout(timer);
+        this.socketTask = null;
+      });
     }
     return this.socketTask;
   }
@@ -348,9 +353,7 @@ class RoturExtension {
       const outgoing = outRes.outgoing || outRes.requests || [];
       if (fireHats) {
         if (incoming.length > this.friends.requests.length) this._hat("whenFriendRequestReceived");
-        else if (incoming.length < this.friends.requests.length) {
-          this._hat("whenFriendRequestAccepted");
-        }
+        if (list.length > this.friends.list.length) this._hat("whenFriendRequestAccepted");
       }
       this.friends = { list, requests: incoming, outgoing };
     } catch (_) {}
@@ -409,6 +412,7 @@ class RoturExtension {
     }
     if (val.kind === "call_confirm") {
       this.callJson = { ...val.call, confirmed: true };
+      this._hat("whenCallAccepted");
       return;
     }
 
@@ -427,11 +431,21 @@ class RoturExtension {
 
   // Connection blocks
   connectToServer(args) {
+    const previous = this.designation;
     this.designation = args.DESIGNATION || "rtr";
     this.system = args.SYSTEM || "rotur";
     this.appVersion = args.VERSION || "v" + EXT_VERSION;
     this.clientInfo = { system: this.system, version: this.appVersion };
     this._ensureClient();
+    if (this._online()) {
+      try {
+        if (previous && previous !== this.designation && previous !== SYNC_ROOM) {
+          this.sdk.socket.leave([previous]);
+          delete this.roomMembers[previous];
+        }
+      } catch (_) {}
+      this._joinRooms();
+    }
     if (this.sdk.loggedIn) {
       this._connectSocket()
         .then(() => this._refreshAll())
@@ -451,12 +465,16 @@ class RoturExtension {
       this._pollTimer = null;
     }
     this.socketTask = null;
+    const wasOnline = this._online();
     try {
       if (this.sdk) this.sdk.logout();
     } catch (_) {}
     this.is_connected = false;
     this.authenticated = false;
     this.account = null;
+    this.roomMembers = {};
+    // sdk.logout() detaches the socket's onclose, so the close handler never runs.
+    if (wasOnline) this._hat("whenDisconnected");
   }
 
   connected() {
@@ -503,14 +521,19 @@ class RoturExtension {
 
   async loginToken(args) {
     this._ensureClient();
-    if (!args.TOKEN) return "No token provided";
+    const token = Scratch.Cast.toString(args.TOKEN);
+    if (!token) return "No token provided";
+    // setToken() keeps an open socket, so switching accounts needs a fresh one.
+    if (this.sdk.token && this.sdk.token !== token) this.disconnect();
     try {
-      this.sdk.setToken(args.TOKEN);
+      this.sdk.setToken(token);
       await this._connectSocket();
       await this._refreshAll();
       this._hat("whenAuthenticated");
       return "Logged In";
     } catch (error) {
+      // Drop the rejected token so the SDK stops auto-reconnecting with it.
+      this.disconnect();
       return apiMessage(error, "Login failed");
     }
   }
@@ -756,7 +779,7 @@ class RoturExtension {
     }
     const room = args.TARGET || this.designation;
     try {
-      this.sdk.socket.join([room]);
+      if (!this.sdk.socket.joinedRooms.includes(room)) this.sdk.socket.join([room]);
     } catch (_) {}
     try {
       if (args.USER) {
@@ -785,7 +808,7 @@ class RoturExtension {
   }
 
   getPacketsFromTarget(args) {
-    return JSON.stringify(this.packets[args.TARGET] || "[]");
+    return JSON.stringify(this.packets[args.TARGET] || []);
   }
 
   numberOfPacketsOnTarget(args) {
@@ -793,7 +816,7 @@ class RoturExtension {
   }
 
   getFirstPacketOnTarget(args) {
-    return JSON.stringify(this.packets[args.TARGET]?.[0] || "{}");
+    return JSON.stringify(this.packets[args.TARGET]?.[0] || {});
   }
 
   dataOfFirstPacketOnTarget(args) {
@@ -808,8 +831,10 @@ class RoturExtension {
         );
       case "source port":
         return first?.source || "Unknown";
-      case "payload":
-        return first?.payload || "";
+      case "payload": {
+        const payload = first?.payload ?? "";
+        return typeof payload === "object" ? JSON.stringify(payload) : payload;
+      }
       case "timestamp":
         return first?.timestamp || "0";
       default:
@@ -847,7 +872,7 @@ class RoturExtension {
   }
 
   RAWgetFirstPacket() {
-    return JSON.stringify(this.rawPackets?.[0] || "{}");
+    return JSON.stringify(this.rawPackets?.[0] || {});
   }
 
   RAWdeleteFirstPacket() {
@@ -944,7 +969,7 @@ class RoturExtension {
   getSyncedVariable(args) {
     if (!this._online()) return "Not Connected";
     if (!this._authed()) return "Not Logged In";
-    return JSON.stringify(this.syncedVariables[args.USER]?.[args.KEY] || "");
+    return JSON.stringify(this.syncedVariables[args.USER]?.[args.KEY] ?? "");
   }
 
   deleteSyncedVariable(args) {
@@ -1125,9 +1150,12 @@ class RoturExtension {
     }
   }
 
-  getTransactionCount() {
+  async getTransactionCount() {
     if (!this._online()) return "Not Connected";
     if (!this._authed()) return "Not Logged In";
+    try {
+      this.transactions = await this.sdk.me.transactions();
+    } catch (_) {}
     return this.transactions.length;
   }
 
@@ -1225,7 +1253,7 @@ class RoturExtension {
     if (!this._online()) return "Not Connected";
     if (!this._authed()) return "Not Logged In";
     try {
-      return JSON.stringify(await this.sdk.keys.update(args.ITEM, { [args.KEY]: args.DATA }));
+      return JSON.stringify(await this.sdk.keys.update(args.ITEM, args.KEY, args.DATA));
     } catch (error) {
       return apiMessage(error, "Failed to update key");
     }

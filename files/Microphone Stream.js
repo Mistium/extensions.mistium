@@ -43,19 +43,9 @@
       this.mp3Cache = null;
       this.chunkVersion = 0;
       this.encoderPromise = null;
+      this.startPromise = null;
 
-      this.frame = {
-        loudness: 0,
-        peak: 0,
-        decibels: -100,
-        pitch: 0,
-        frequency: 0,
-        sampleRate: 0,
-        fftSize: 0,
-        bufferSeconds: 10,
-        recordingBytes: 0,
-        recordingSeconds: 0
-      };
+      this.resetFrame();
     }
 
     getInfo() {
@@ -245,6 +235,16 @@
         return;
       }
 
+      // Concurrent starts share one getUserMedia call so no stream/context leaks.
+      if (!this.startPromise) {
+        this.startPromise = this.openStream(args.FFT).finally(() => {
+          this.startPromise = null;
+        });
+      }
+      return this.startPromise;
+    }
+
+    async openStream(fft) {
       try {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.stream = await navigator.mediaDevices.getUserMedia({
@@ -255,10 +255,16 @@
           },
           video: false
         });
+        this.stream.getAudioTracks().forEach(track => {
+          track.addEventListener("ended", () => {
+            this.lastError = "Microphone disconnected.";
+            this.stopStream();
+          });
+        });
 
         await this.audioContext.resume();
         this.source = this.audioContext.createMediaStreamSource(this.stream);
-        this.configureAnalyser(args.FFT);
+        this.configureAnalyser(fft);
         this.source.connect(this.analyser);
         this.setupPcmCapture();
         this.startUpdates();
@@ -447,18 +453,22 @@
       rms = Math.sqrt(rms / this.timeData.length);
       if (rms < 0.01) return 0;
 
+      // Cap the window: a full 32768 sample autocorrelation every 50ms freezes the page.
+      const size = Math.min(this.timeData.length, 4096);
       const sampleRate = this.audioContext.sampleRate;
       const minLag = Math.floor(sampleRate / 1200);
-      const maxLag = Math.min(Math.floor(sampleRate / 50), this.timeData.length - 1);
+      const maxLag = Math.min(Math.floor(sampleRate / 50), size - 1);
+      const correlations = new Float32Array(maxLag + 2);
       let bestLag = -1;
       let bestCorrelation = 0;
 
       for (let lag = minLag; lag <= maxLag; lag++) {
         let correlation = 0;
-        for (let i = 0; i < this.timeData.length - lag; i++) {
+        for (let i = 0; i < size - lag; i++) {
           correlation += this.timeData[i] * this.timeData[i + lag];
         }
-        correlation /= this.timeData.length - lag;
+        correlation /= size - lag;
+        correlations[lag] = correlation;
 
         if (correlation > bestCorrelation) {
           bestCorrelation = correlation;
@@ -467,6 +477,15 @@
       }
 
       if (bestLag <= 0 || bestCorrelation < 0.002) return 0;
+
+      // Every multiple of the period correlates about equally, so the global max
+      // often lands an octave or two low. Take the earliest peak close to it.
+      for (let lag = minLag + 1; lag < bestLag; lag++) {
+        const correlation = correlations[lag];
+        if (correlation >= bestCorrelation * 0.9 && correlation >= correlations[lag - 1] && correlation >= correlations[lag + 1]) {
+          return sampleRate / lag;
+        }
+      }
       return sampleRate / bestLag;
     }
 
@@ -735,6 +754,8 @@
         script.onload = () => resolve(window.lamejs || null);
         script.onerror = () => {
           this.lastError = "Could not load MP3 encoder.";
+          this.encoderPromise = null;
+          script.remove();
           resolve(null);
         };
         document.head.appendChild(script);

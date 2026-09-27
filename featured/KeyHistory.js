@@ -33,7 +33,7 @@
         'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'
       ];
 
-      vm.runtime.on("BEFORE_EXECUTE", () => {
+      Scratch.vm.runtime.on("BEFORE_EXECUTE", () => {
         this.lastDown = this.currentDown;
         this.currentDown = this.keysDown;
       });
@@ -52,8 +52,15 @@
         this.keysDown = Object.values(this.keyObj);
       });
 
+      // keyup never fires for keys released while the page is unfocused
+      window.addEventListener("blur", () => {
+        this.keyObj = {};
+        this.keysDown = [];
+      });
+
       // Add paste event listener
       document.addEventListener("paste", (e) => {
+        if (!e.clipboardData) return;
         const pastedText = e.clipboardData.getData('text');
         if (this.enabled) this.addKeyWithType("paste", pastedText);
       });
@@ -80,6 +87,10 @@
           opcode: "lastKeyPressed",
           blockType: Scratch.BlockType.REPORTER,
           text: "get last key"
+        }, {
+          opcode: "historyLength",
+          blockType: Scratch.BlockType.REPORTER,
+          text: "length of key history"
         }, "---", {
           opcode: "isKeyPressed",
           blockType: Scratch.BlockType.BOOLEAN,
@@ -104,6 +115,10 @@
           opcode: "deleteFirstKey",
           blockType: Scratch.BlockType.COMMAND,
           text: "delete the first key from history"
+        }, {
+          opcode: "deleteLastKey",
+          blockType: Scratch.BlockType.COMMAND,
+          text: "delete the last key from history"
         }, {
           opcode: "deleteAllKeys",
           blockType: Scratch.BlockType.COMMAND,
@@ -189,16 +204,27 @@
       this.keyHistory.shift();
     }
 
+    deleteLastKey() {
+      this.keyHistory.pop();
+    }
+
+    historyLength() {
+      return this.keyHistory.length;
+    }
+
     deleteAllKeys() {
       this.keyHistory = [];
     }
 
     // New method to add keys with a specific type
     addKeyWithType(type, data) {
-      if (this.keyHistory.length >= this.maxHistorySize) {
-        this.keyHistory.shift();
-      }
       this.keyHistory.push({ type: type, data: data });
+      this.trimHistory();
+    }
+
+    trimHistory() {
+      const excess = this.keyHistory.length - this.maxHistorySize;
+      if (excess > 0) this.keyHistory.splice(0, excess);
     }
 
     addKey({ KEY }) {
@@ -207,8 +233,9 @@
     }
 
     setMaxHistorySize({ LENGTH }) {
-      LENGTH = Scratch.Cast.toNumber(LENGTH);
+      LENGTH = Math.max(0, Math.floor(Scratch.Cast.toNumber(LENGTH)));
       this.maxHistorySize = LENGTH;
+      this.trimHistory();
     }
 
     enableKeyHistory() {
@@ -224,7 +251,12 @@
     }
 
     ignoreKeybinds(args) {
-      this.specialKeys = JSON.parse(args.KEYS);
+      try {
+        const keys = JSON.parse(Scratch.Cast.toString(args.KEYS));
+        if (Array.isArray(keys)) this.specialKeys = keys.map(String);
+      } catch (e) {
+        // invalid JSON: keep the current list
+      }
     }
   }
 

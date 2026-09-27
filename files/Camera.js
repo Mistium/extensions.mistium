@@ -13,6 +13,12 @@
     constructor() {
       this.video = null;
       this.stream = null;
+      this.starting = null;
+
+      // Release the camera when the project is stopped
+      if (Scratch.vm) {
+        Scratch.vm.runtime.on('PROJECT_STOP_ALL', () => this.stopCamera());
+      }
     }
 
     getInfo() {
@@ -60,12 +66,12 @@
       }
     }
 
-    async stopCamera() {
+    stopCamera() {
       if (this.stream) {
         this.stream.getTracks().forEach(track => track.stop());
-        this.stream = null;
-        this.video = null;
       }
+      this.stream = null;
+      this.video = null;
     }
 
     async captureCamera() {
@@ -73,14 +79,15 @@
         await this.setupCamera();
       }
 
-      if (this.stream) {
-        const videoTrack = this.stream.getVideoTracks()[0];
-        const imageCapture = new ImageCapture(videoTrack);
-        const blob = await imageCapture.grabFrame();
-        return URL.createObjectURL(blob);
-      }
+      const video = this.video;
+      if (!this.stream || !video || !video.videoWidth) return '';
 
-      return null;
+      // Draw the current frame to a canvas so this works in every browser (ImageCapture is Chromium-only)
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      return canvas.toDataURL('image/png');
     }
 
 
@@ -96,19 +103,36 @@
       return !!this.stream;
     }
 
-    async setupCamera() {
-      try {
-        this.video = document.createElement('video');
+    setupCamera() {
+      // Share one pending request so concurrent starts don't open the camera twice
+      if (!this.starting) {
+        this.starting = this._openCamera().finally(() => {
+          this.starting = null;
+        });
+      }
+      return this.starting;
+    }
 
+    async _openCamera() {
+      let stream = null;
+      try {
         // Request access to the user's camera
-        this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
         // Set up video element to stream from the camera
-        this.video.srcObject = this.stream;
-        await this.video.play();
+        const video = document.createElement('video');
+        video.muted = true;
+        video.playsInline = true;
+        video.srcObject = stream;
+        await video.play();
+
+        this.video = video;
+        this.stream = stream;
       } catch (error) {
         console.error('Failed to access camera:', error);
+        if (stream) stream.getTracks().forEach(track => track.stop());
         this.stream = null;
+        this.video = null;
       }
     }
   }

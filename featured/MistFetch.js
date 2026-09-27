@@ -18,6 +18,15 @@
     class MistFetch {
         constructor() {
             this.requests = {};
+            // ID -> frame it completed in, kept until its completion hats have run
+            this.justCompleted = new Map();
+            this.frame = 0;
+            Scratch.vm.runtime.on('BEFORE_EXECUTE', () => this.frame++);
+            Scratch.vm.runtime.on('AFTER_EXECUTE', () => {
+                for (const [id, frame] of this.justCompleted) {
+                    if (frame < this.frame) this.justCompleted.delete(id);
+                }
+            });
         }
 
         getInfo() {
@@ -306,6 +315,25 @@
             return value;
         }
 
+        finishRequest(ID, error) {
+            const request = this.requests[ID];
+            if (!request || request.completed) return;
+            if (error !== undefined) request.error = error;
+            request.completed = true;
+            if (request.requestTimeout) {
+                clearTimeout(request.requestTimeout);
+                request.requestTimeout = null;
+            }
+            // hat arguments are inputs, not fields, so match them in the hat predicate
+            this.justCompleted.set(ID, this.frame);
+            Scratch.vm.runtime.startHats('mistfetch_whenIdRequestCompleted');
+        }
+
+        sanitise(request) {
+            const { controller, requestTimeout, ...rest } = request;
+            return rest;
+        }
+
         headersToObject(headers) {
             const obj = {};
             headers.forEach((value, key) => { obj[key] = value; });
@@ -332,15 +360,6 @@
 
             const hasBody = method !== 'GET' && method !== 'HEAD';
 
-            if (hasBody && body) {
-                try {
-                    body = typeof body === 'string' ? JSON.parse(Cast.toString(body)) : body;
-                } catch (e) {
-                    this.requests[ID] = { totalBytes: 0, response: '', status: 0, completed: true, contentLength: 0, url: URL, method: method, error: e.message };
-                    return;
-                }
-            }
-
             const controller = new AbortController();
             const signal = controller.signal;
 
@@ -349,7 +368,7 @@
             const fetchOptions = {
                 method: method,
                 headers: headers,
-                body: hasBody && body != null ? this.stringify(body) : undefined,
+                body: hasBody && body != null && body !== '' ? this.stringify(body) : undefined,
                 signal: signal
             };
 
@@ -362,12 +381,7 @@
                     this.requests[ID].headers = this.headersToObject(response.headers);
 
                     if (!response.body) {
-                        this.requests[ID].completed = true;
-                        if (this.requests[ID].requestTimeout) {
-                            clearTimeout(this.requests[ID].requestTimeout);
-                            this.requests[ID].requestTimeout = null;
-                        }
-                        Scratch.vm.runtime.startHats('mistfetch_whenIdRequestCompleted', { ID: Cast.toString(ID) });
+                        this.finishRequest(ID);
                         return;
                     }
 
@@ -382,39 +396,23 @@
                                 if (!this.requests[ID]) return;
 
                                 if (done) {
-                                    const final = decoder.decode();
-                                    this.requests[ID].response += final;
-                                    this.requests[ID].totalBytes += final.length;
-                                    this.requests[ID].completed = true;
-                                    if (this.requests[ID].requestTimeout) {
-                                        clearTimeout(this.requests[ID].requestTimeout);
-                                        this.requests[ID].requestTimeout = null;
-                                    }
-                                    Scratch.vm.runtime.startHats('mistfetch_whenIdRequestCompleted', { ID: Cast.toString(ID) });
+                                    this.requests[ID].response += decoder.decode();
+                                    this.finishRequest(ID);
                                     break;
                                 }
 
-                                const chunk = decoder.decode(value, { stream: true });
-                                this.requests[ID].totalBytes += chunk.length;
-                                this.requests[ID].response += chunk;
+                                this.requests[ID].totalBytes += value.byteLength;
+                                this.requests[ID].response += decoder.decode(value, { stream: true });
                             }
                         } catch (streamError) {
-                            if (this.requests[ID] && !this.requests[ID].completed) {
-                                this.requests[ID].error = streamError.name === 'AbortError'
-                                    ? 'Fetch aborted'
-                                    : streamError.message;
-                                this.requests[ID].completed = true;
-                            }
+                            this.finishRequest(ID, streamError.name === 'AbortError' ? 'Fetch aborted' : streamError.message);
                         }
                     };
 
                     return processStream();
                 })
                 .catch(error => {
-                    if (this.requests[ID]) {
-                        this.requests[ID].error = error.name === 'AbortError' ? 'Fetch aborted' : error.message;
-                        this.requests[ID].completed = true;
-                    }
+                    this.finishRequest(ID, error.name === 'AbortError' ? 'Fetch aborted' : error.message);
                 });
         }
 
@@ -442,9 +440,9 @@
             }
             this.requests[ID].requestTimeout = setTimeout(() => {
                 if (this.requests[ID] && !this.requests[ID].completed) {
+                    this.requests[ID].requestTimeout = null;
+                    this.finishRequest(ID, 'Fetch aborted');
                     this.requests[ID].controller.abort();
-                    this.requests[ID].completed = true;
-                    this.requests[ID].error = 'Fetch aborted';
                 }
             }, TIMEOUT);
         }
@@ -526,7 +524,10 @@
                 return;
             }
             return new Promise(resolve => {
-                const timer = setTimeout(resolve, TIMEOUT);
+                const timer = setTimeout(() => {
+                    clearInterval(interval);
+                    resolve();
+                }, TIMEOUT);
                 const interval = setInterval(() => {
                     if (!this.requests[ID] || this.requests[ID].completed) {
                         clearInterval(interval);
@@ -565,21 +566,16 @@
         cancelRequestById({ ID }) {
             ID = Cast.toString(ID);
 
-            if (this.requests[ID]) {
-                if (this.requests[ID].requestTimeout) clearTimeout(this.requests[ID].requestTimeout);
+            if (this.requests[ID] && !this.requests[ID].completed) {
+                this.finishRequest(ID, 'Fetch aborted');
                 if (this.requests[ID].controller) this.requests[ID].controller.abort();
-                this.requests[ID].completed = true;
-                this.requests[ID].error = 'Fetch aborted';
             }
         }
 
         whenIdRequestCompleted({ ID }) {
             ID = Cast.toString(ID);
 
-            if (this.requests[ID] && this.requests[ID].completed) {
-                return true;
-            }
-            return false;
+            return this.justCompleted.has(ID);
         }
 
         inProgress() {
@@ -604,7 +600,7 @@
                 case "URL":
                     return request.url ?? "";
                 case "JSON":
-                    return JSON.stringify(request);
+                    return JSON.stringify(this.sanitise(request));
                 case "METHOD":
                     return request.method ?? "";
                 default:
@@ -635,8 +631,7 @@
         all() {
             const sanitised = {};
             for (const id of Object.keys(this.requests)) {
-                const { controller, requestTimeout, ...rest } = this.requests[id];
-                sanitised[id] = rest;
+                sanitised[id] = this.sanitise(this.requests[id]);
             }
             return JSON.stringify(sanitised);
         }
