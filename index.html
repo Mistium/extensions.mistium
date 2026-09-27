@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -7,9 +7,12 @@
     <meta content="Extensions" property="og:title" />
     <meta content="A list of scratch extensions made by @mistium" property="og:description" />
     <meta content="https://extensions.mistium.com" property="og:url" />
-    <meta content="#59d2b4" data-react-helmet="true" name="theme-color" />
+    <meta content="#0a0a0a" data-react-helmet="true" name="theme-color" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/jpeg" href="favicon.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="site-data.js"></script>
 </head>
@@ -22,82 +25,60 @@
                 <div class="hero-left">
                     <img class="brand-avatar" src="https://avatars.rotur.dev/mist" alt="Mistium avatar" />
                     <div class="hero-text">
-                        <h1 class="site-title">Extensions</h1>
-                        <p class="tagline">Scratch and TurboWarp extensions by Mistium.</p>
+                        <h1 class="site-title">extensions</h1>
+                        <p class="tagline">stuff i've made for scratch and turbowarp</p>
                     </div>
                 </div>
-                <div class="hero-right">
-                    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch theme"
-                        aria-pressed="false" title="Switch theme">
-                        <span class="theme-icon" aria-hidden="true"></span>
-                    </button>
-                </div>
             </div>
-            <div class="hero-stats" aria-label="Extension gallery stats">
-                <div class="stat">
-                    <span class="stat-value" id="totalCount">0</span>
-                    <span class="stat-label">Extensions</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value" id="featuredCount">0</span>
-                    <span class="stat-label">Featured</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value">3</span>
-                    <span class="stat-label">Examples</span>
-                </div>
-            </div>
-            <p class="disclaimer" role="note">Built for fun in my spare time. Some may be experimental or unfinished.
-                Found a bug? Consider opening a pull request.</p>
+            <p class="disclaimer">I build these in my spare time, mostly because I needed them for my own projects.
+                Some are polished, some are half-finished experiments. If something breaks, open a PR or tell me on
+                <a href="https://rotur.dev/@mist">Rotur</a> :3</p>
         </div>
     </header>
     <div class="controls-bar">
         <div class="inner">
             <div class="controls" aria-label="Extension browsing controls">
                 <div class="search-wrapper">
-                    <input id="searchInput" type="search" placeholder="Search extensions..."
+                    <input id="searchInput" type="search" placeholder="search..."
                         aria-label="Search extensions" autocomplete="off" />
                     <button id="clearSearch" class="clear-btn" aria-label="Clear search" title="Clear search"
                         hidden>&times;</button>
                 </div>
                 <select id="sortSelect" aria-label="Sort extensions">
-                    <option value="featured-first">Featured first</option>
-                    <option value="a-z">A → Z</option>
-                    <option value="z-a">Z → A</option>
-                    <option value="new-updated">New & Updated</option>
+                    <option value="featured-first">featured first</option>
+                    <option value="a-z">a to z</option>
+                    <option value="z-a">z to a</option>
+                    <option value="new-updated">new &amp; updated</option>
                 </select>
             </div>
         </div>
     </div>
     <main id="main" class="content" tabindex="-1">
         <section aria-labelledby="featuredHeading" class="section-block">
-            <h2 id="featuredHeading" class="section-title">Featured Extensions</h2>
+            <h2 id="featuredHeading" class="section-title">the ones i'm proud of</h2>
             <div id="featuredCards" class="card-grid featured-grid" data-grid="featured" aria-live="polite"></div>
         </section>
         <section aria-labelledby="allHeading" class="section-block">
-            <h2 id="allHeading" class="section-title">All Extensions</h2>
+            <h2 id="allHeading" class="section-title">everything else</h2>
             <div id="fileCards" class="card-grid" data-grid="all" aria-live="polite"></div>
-            <div id="emptyState" class="empty-state" hidden>No extensions match your search.</div>
+            <div id="emptyState" class="empty-state" hidden>nothing matches that.</div>
         </section>
         <section aria-labelledby="otherHeading" class="section-block">
-            <h2 id="otherHeading" class="section-title">Community Galleries</h2>
+            <h2 id="otherHeading" class="section-title">other galleries</h2>
             <div id="otherGalleries" class="gallery-grid" aria-live="polite"></div>
         </section>
         <footer class="site-footer">
-            <p><strong>Tip:</strong> Right‑click an extension link and copy its URL to add it to TurboWarp.</p>
-            <p class="tiny">&copy; <span id="year"></span> Mistium • MIT licensed site • Images & individual extensions
-                may have separate licenses.</p>
+            <p>hit <strong>copy url</strong> and paste it into TurboWarp's custom extension menu, or just open it in MistWarp.</p>
+            <p class="tiny">&copy; <span id="year"></span> <a href="https://mistium.com">Mist</a>. Site is MIT, extensions and images may have their own licenses.</p>
         </footer>
         <div class="footer-spacer" aria-hidden="true"></div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            initTheme();
             initKeyboardFocusStyles();
 
             Promise.all([fetchVersions(), fetchExtensionMetadata()]).then(([versions, metadata]) => {
-                updateStats(metadata);
                 generateProfileCards(metadata, versions);
                 setupFilteringAndSorting();
                 generateOtherGalleries();
@@ -164,20 +145,15 @@
             return { featured, files };
         }
 
-        function updateStats(metadata = []) {
-            document.getElementById('totalCount').textContent = metadata.length;
-            document.getElementById('featuredCount').textContent = metadata.filter(ext => ext.featured).length;
-        }
-
         function createVersionTag(itemName, cachedVersions, versions) {
             const versionTag = document.createElement("span");
             versionTag.classList.add("version-tag");
 
             if (!cachedVersions[itemName]) {
-                versionTag.textContent = "New";
+                versionTag.textContent = "new";
                 versionTag.classList.add("new-tag");
             } else if (versions[itemName] && versions[itemName] !== cachedVersions[itemName]) {
-                versionTag.textContent = "Updated";
+                versionTag.textContent = "updated";
                 versionTag.classList.add("updated-tag");
             }
 
@@ -231,7 +207,7 @@
 
             const desc = document.createElement('p');
             desc.className = 'ext-desc';
-            desc.textContent = item.metadata?.description || 'No description available yet.';
+            desc.textContent = item.metadata?.description || 'no description yet.';
             cardContent.appendChild(desc);
 
             const actions = document.createElement('div');
@@ -241,7 +217,7 @@
             copyBtn.type = 'button';
             copyBtn.className = 'icon-btn copy-btn';
             copyBtn.setAttribute('aria-label', 'Copy extension URL');
-            copyBtn.textContent = 'Copy URL';
+            copyBtn.textContent = 'copy url';
             copyBtn.dataset.url = download_url;
 
             const warpLink = document.createElement('a');
@@ -250,7 +226,7 @@
             warpLink.target = '_blank';
             warpLink.rel = 'noopener noreferrer';
             warpLink.setAttribute('aria-label', 'Open in MistWarp');
-            warpLink.textContent = 'Open in Warp';
+            warpLink.textContent = 'open in warp';
 
             actions.append(copyBtn, warpLink);
             profileCard.append(cardContent, actions);
@@ -316,7 +292,14 @@
                 const galleryHeading = document.createElement("h2");
                 galleryHeading.textContent = gallery.name;
 
-                galleryCard.appendChild(galleryHeading);
+                const favicon = document.createElement("img");
+                favicon.className = "gallery-favicon";
+                favicon.src = `https://www.google.com/s2/favicons?domain=${new URL(gallery.url).hostname}&sz=32`;
+                favicon.alt = "";
+                favicon.loading = "lazy";
+                favicon.onerror = () => favicon.remove();
+
+                galleryCard.append(favicon, galleryHeading);
                 galleryLink.appendChild(galleryCard);
                 otherGalleriesContainer.appendChild(galleryLink);
             });
@@ -375,25 +358,6 @@
             apply();
         }
 
-        function initTheme() {
-            const toggle = document.getElementById('themeToggle');
-            const saved = localStorage.getItem('theme') || 'dark';
-
-            function renderTheme(mode) {
-                document.documentElement.dataset.theme = mode;
-                toggle.dataset.mode = mode;
-                toggle.setAttribute('aria-pressed', String(mode === 'light'));
-                toggle.setAttribute('aria-label', mode === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
-            }
-
-            renderTheme(saved);
-            toggle.addEventListener('click', () => {
-                const mode = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-                renderTheme(mode);
-                localStorage.setItem('theme', mode);
-            });
-        }
-
         function initKeyboardFocusStyles() {
             function handleFirstTab(e) {
                 if (e.key === 'Tab') {
@@ -414,11 +378,11 @@
             navigator.clipboard.writeText(url).then(() => {
                 const original = btn.textContent;
                 btn.classList.add('copied');
-                btn.textContent = 'Copied';
+                btn.textContent = 'copied';
                 setTimeout(() => { btn.classList.remove('copied'); btn.textContent = original; }, 1500);
             }).catch(() => {
                 const original = btn.textContent;
-                btn.textContent = 'Copy failed';
+                btn.textContent = 'copy failed';
                 setTimeout(() => { btn.textContent = original; }, 1500);
             });
         });

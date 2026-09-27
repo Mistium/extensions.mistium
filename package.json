@@ -3,7 +3,8 @@
   "description": "Build tooling for the extensions.mistium site. The hosted extension files stay dependency-free; only scripts/ and src/ use node modules.",
   "scripts": {
     "build:rotur": "node scripts/build-rotur-extension.mjs",
-    "metadata": "node generate-metadata.js"
+    "metadata": "node generate-metadata.js",
+    "images": "node scripts/generate-images.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",
