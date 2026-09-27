@@ -211,6 +211,21 @@
       "filename": "OASM.js"
     },
     {
+      "slug": "originchats",
+      "id": "OriginChats",
+      "name": "OriginChats",
+      "description": "Make bots and clients for OriginChats servers, no JSON needed",
+      "image": "images/OriginChats.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": true,
+      "filename": "OriginChats.js"
+    },
+    {
       "slug": "persistent file system",
       "id": "Persistent File System",
       "name": "Persistent File System",

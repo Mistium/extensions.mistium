@@ -44,7 +44,8 @@ window.extensionSiteData = {
     "roturVoice Advanced.js": "2",
     "xml.js": "2",
     "Timing.js": "1",
-    "Databases.js": "1"
+    "Databases.js": "1",
+    "OriginChats.js": "1"
   },
   "metadata": {
     "extensions": [
@@ -257,6 +258,21 @@ window.extensionSiteData = {
         ],
         "featured": true,
         "filename": "OASM.js"
+      },
+      {
+        "slug": "originchats",
+        "id": "OriginChats",
+        "name": "OriginChats",
+        "description": "Make bots and clients for OriginChats servers, no JSON needed",
+        "image": "images/OriginChats.png",
+        "by": [
+          {
+            "name": "Mistium",
+            "link": "https://github.com/Mistium"
+          }
+        ],
+        "featured": true,
+        "filename": "OriginChats.js"
       },
       {
         "slug": "persistent file system",

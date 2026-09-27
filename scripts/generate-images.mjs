@@ -29,6 +29,7 @@ const CARDS = {
   MediaUtils: ["#FF66C4", "webcam", "Media Utils", "Display the user's media devices and check permissions"],
   "Mist's Utils": ["#2DA4A0", "wrench", "Mist's Utils", "Super fast blocks! 2x faster than text and lms toolbox"],
   MistFetch: ["#6fa6eb", "cloud-download", "MistFetch", "Download with more control"],
+  OriginChats: ["#6f5bd8", "messages-square", "OriginChats", "Bots and clients for OriginChats servers"],
   OASM: ["#101010", "cpu", "OASM", "Effortlessly run OASM in any project"],
   "Persistent File System": ["#4a90e2", "folder", "Persistent Files", "Store and modify a persistent file system"],
   Python: ["#b58707", "terminal", "Python", "Run Python code, isn't that epic :D"],
