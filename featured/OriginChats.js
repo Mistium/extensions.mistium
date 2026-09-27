@@ -79,6 +79,8 @@
   // Every event hat stores what triggered it on the threads it starts, so reporters inside
   // that script read their own event even when several arrive in the same frame.
   const CONTEXT = Symbol("originchats");
+  // The message a script last sent or edited, kept on that script's thread like CONTEXT.
+  const SENT = Symbol("originchats sent");
 
   const MESSAGE_FIELDS = ["content", "author", "id", "channel", "thread id", "reply to id", "reply to author", "time"];
   const USER_FIELDS = ["username", "nickname", "status", "status text", "roles", "color"];
@@ -190,7 +192,11 @@
           { opcode: "reply", blockType: BlockType.COMMAND, text: "reply [TEXT] to message", arguments: { TEXT: text("Hi!") } },
           { opcode: "react", blockType: BlockType.COMMAND, text: "react [EMOJI] to message", arguments: { EMOJI: text("👍") } },
           { opcode: "sendTyping", blockType: BlockType.COMMAND, text: "show typing in channel [CHANNEL]", arguments: { CHANNEL } },
-          { opcode: "sendAndGetID", blockType: BlockType.REPORTER, text: "send [TEXT] to channel [CHANNEL] and get its id", arguments: { TEXT: text("Hello!"), CHANNEL } },
+          { opcode: "sentMessage", blockType: BlockType.REPORTER, text: "sent message [FIELD]", arguments: { FIELD: { type: ArgumentType.STRING, menu: "messageField" } } },
+          { opcode: "editSent", blockType: BlockType.COMMAND, text: "edit sent message to [TEXT]", arguments: { TEXT: text("Done!") } },
+          { opcode: "deleteSent", blockType: BlockType.COMMAND, text: "delete sent message" },
+          // superseded by "sent message [id]"; kept so projects using it still load
+          { opcode: "sendAndGetID", blockType: BlockType.REPORTER, text: "send [TEXT] to channel [CHANNEL] and get its id", arguments: { TEXT: text("Hello!"), CHANNEL }, hideFromPalette: true },
           { opcode: "editMessage", blockType: BlockType.COMMAND, text: "edit message [ID] in channel [CHANNEL] to [TEXT]", arguments: { ID: text("id"), CHANNEL, TEXT: text("edited") } },
           { opcode: "deleteMessage", blockType: BlockType.COMMAND, text: "delete message [ID] in channel [CHANNEL]", arguments: { ID: text("id"), CHANNEL } },
           { opcode: "whenEdited", blockType: BlockType.EVENT, text: "when message edited", isEdgeActivated: false },
@@ -714,14 +720,24 @@
       return { channel: str(channel) };
     }
 
-    send({ TEXT, CHANNEL }) {
-      return this._try(() => this._request({ cmd: "message_new", channel: str(CHANNEL), content: str(TEXT) }).then(() => {}));
+    // Sends or edits, then records the resulting message on this script's thread for "sent message".
+    // A failure clears it, so a script never mistakes an older message for the one it just sent.
+    async _write(packet, util) {
+      if (util) util.thread[SENT] = null;
+      const reply = await this._request(packet);
+      const message = reply.message ? { channel: reply.channel, thread_id: reply.thread_id, ...reply.message } : null;
+      if (util) util.thread[SENT] = message;
+      return message;
     }
 
-    sendAndGetID({ TEXT, CHANNEL }) {
+    send({ TEXT, CHANNEL }, util) {
+      return this._try(() => this._write({ cmd: "message_new", channel: str(CHANNEL), content: str(TEXT) }, util).then(() => {}));
+    }
+
+    sendAndGetID({ TEXT, CHANNEL }, util) {
       return this._try(async () => {
-        const reply = await this._request({ cmd: "message_new", channel: str(CHANNEL), content: str(TEXT) });
-        return reply.message?.id ?? "";
+        const message = await this._write({ cmd: "message_new", channel: str(CHANNEL), content: str(TEXT) }, util);
+        return message?.id ?? "";
       });
     }
 
@@ -729,8 +745,27 @@
       const message = this._message(util);
       if (!message) return;
       return this._try(() =>
-        this._request({ cmd: "message_new", ...this._target(message.channel, message), content: str(TEXT), reply_to: message.id }).then(() => {})
+        this._write({ cmd: "message_new", ...this._target(message.channel, message), content: str(TEXT), reply_to: message.id }, util).then(() => {})
       );
+    }
+
+    sentMessage({ FIELD }, util) {
+      return messageField(util.thread[SENT], FIELD);
+    }
+
+    editSent({ TEXT }, util) {
+      const sent = util.thread[SENT];
+      if (!sent) return;
+      return this._try(() =>
+        this._write({ cmd: "message_edit", ...this._target(sent.channel, sent), id: sent.id, content: str(TEXT) }, util).then(() => {})
+      );
+    }
+
+    deleteSent(args, util) {
+      const sent = util.thread[SENT];
+      if (!sent) return;
+      util.thread[SENT] = null;
+      return this._try(() => this._request({ cmd: "message_delete", ...this._target(sent.channel, sent), id: sent.id }).then(() => {}));
     }
 
     react({ EMOJI }, util) {
@@ -745,9 +780,9 @@
       return this._try(() => this._send({ cmd: "typing", channel: str(CHANNEL) }));
     }
 
-    editMessage({ ID, CHANNEL, TEXT }) {
+    editMessage({ ID, CHANNEL, TEXT }, util) {
       return this._try(() =>
-        this._request({ cmd: "message_edit", channel: str(CHANNEL), id: str(ID), content: str(TEXT) }).then(() => {})
+        this._write({ cmd: "message_edit", channel: str(CHANNEL), id: str(ID), content: str(TEXT) }, util).then(() => {})
       );
     }
 
