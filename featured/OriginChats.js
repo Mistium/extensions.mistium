@@ -30,6 +30,42 @@
     return response.json();
   };
 
+  // Rotur's login page, same flow as rotur-sdk's performAuth: a popup, or a full-page iframe if
+  // popups are blocked. It asks only for "validators:generate", so the token it hands back can
+  // make OriginChats logins but can't act as the whole account. Nobody types credentials into blocks.
+  const ROTUR_ORIGIN = "https://rotur.dev";
+  const roturLogin = () =>
+    new Promise((resolve, reject) => {
+      const url = new URL(ROTUR_ORIGIN + "/auth");
+      url.searchParams.set("return_to", window.location.href);
+      url.searchParams.set("requires", "validators:generate");
+      const popup = window.open(url.href, "rotur-auth");
+      let iframe = null;
+      const timer = setTimeout(() => finish(new Error("Rotur login timed out")), 120000);
+      const onMessage = (event) => {
+        if (event.origin !== ROTUR_ORIGIN && event.origin !== window.location.origin) return;
+        if (event.data?.type !== "rotur-auth-token" || !event.data.token) return;
+        finish(null, str(event.data.token));
+      };
+      function finish(error, token) {
+        clearTimeout(timer);
+        window.removeEventListener("message", onMessage);
+        iframe?.remove();
+        try {
+          popup?.postMessage({ type: "rotur-auth-close" }, ROTUR_ORIGIN);
+          popup?.close();
+        } catch {}
+        if (error) reject(error);
+        else resolve(token);
+      }
+      window.addEventListener("message", onMessage);
+      if (popup) return;
+      iframe = document.createElement("iframe");
+      iframe.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9999";
+      iframe.src = url.href;
+      document.body.appendChild(iframe);
+    });
+
   // "wss://host/", "https://host", "host" -> "wss://host/"
   const socketURL = (text) => {
     text = str(text).trim();
@@ -104,6 +140,8 @@
       this.slashCommands = [];
       // how to log in again after a dropped connection; cleared by disconnect, kicks and bans
       this.auth = null;
+      // the scoped token from rotur.dev/auth, kept for this page only so logins don't prompt again
+      this.roturToken = null;
       this.autoReconnect = true;
       this.reconnectTimer = null;
       this.reconnecting = false;
@@ -122,9 +160,9 @@
         blocks: [
           { blockType: BlockType.LABEL, text: "Connection" },
           { opcode: "connect", blockType: BlockType.COMMAND, text: "connect to [URL]", arguments: { URL: text("wss://osl.originchats.com") } },
-          { opcode: "loginRotur", blockType: BlockType.COMMAND, text: "log in with rotur token [TOKEN]", arguments: { TOKEN: text("token") } },
-          { opcode: "login", blockType: BlockType.COMMAND, text: "log in as [USERNAME] password [PASSWORD]", arguments: { USERNAME: text("mybot"), PASSWORD: text("password") } },
-          { opcode: "registerBot", blockType: BlockType.COMMAND, text: "create bot account [USERNAME] password [PASSWORD]", arguments: { USERNAME: text("mybot"), PASSWORD: text("password") } },
+          { opcode: "loginWithRotur", blockType: BlockType.COMMAND, text: "log in with rotur" },
+          { opcode: "login", blockType: BlockType.COMMAND, text: "log in with server account [USERNAME] password [PASSWORD]", arguments: { USERNAME: text("mybot"), PASSWORD: text("password") } },
+          { opcode: "registerBot", blockType: BlockType.COMMAND, text: "create server bot account [USERNAME] password [PASSWORD]", arguments: { USERNAME: text("mybot"), PASSWORD: text("password") } },
           { opcode: "disconnect", blockType: BlockType.COMMAND, text: "disconnect" },
           { opcode: "isConnected", blockType: BlockType.BOOLEAN, text: "connected?" },
           { opcode: "isLoggedIn", blockType: BlockType.BOOLEAN, text: "logged in?" },
@@ -487,6 +525,12 @@
 
     // auth: { type: "rotur", token } | { type: "login" | "register", username, password }
     async _login(auth) {
+      const mode = this.handshake?.auth_mode;
+      if (auth.type === "rotur" && mode === "cracked-only") throw new Error("This server only allows server accounts");
+      if (auth.type !== "rotur" && mode === "rotur") throw new Error("This server only allows rotur accounts");
+      if (auth.type === "register" && !(this.handshake?.capabilities || []).includes("register")) {
+        throw new Error("This server doesn't allow creating accounts");
+      }
       if (auth.type === "rotur") {
         const key = str(this.handshake?.validator_key);
         // The key names the server it was made for. Refuse to sign in if that isn't the server
@@ -500,7 +544,13 @@
         const data = await fetchJSON(
           `https://api.rotur.dev/generate_validator?auth=${encodeURIComponent(auth.token)}&key=${encodeURIComponent(key)}`
         );
-        if (!data?.validator) throw new Error(str(data?.error ?? "Rotur rejected the token"));
+        if (!data?.validator) {
+          // the token was revoked or expired: the next "log in with rotur" asks again
+          if (this.roturToken === auth.token) this.roturToken = null;
+          const error = new Error(str(data?.error ?? "Rotur rejected the login"));
+          error.authError = true;
+          throw error;
+        }
         await this._authenticate({ cmd: "auth", validator: data.validator });
       } else {
         const { username, password } = auth;
@@ -513,8 +563,12 @@
       this.reconnectAttempts = 0;
     }
 
-    loginRotur({ TOKEN }) {
-      return this._try(() => this._login({ type: "rotur", token: str(TOKEN) }));
+    loginWithRotur() {
+      return this._try(async () => {
+        if (!this.handshake) throw new Error("Connect to a server first");
+        if (!this.roturToken) this.roturToken = await roturLogin();
+        await this._login({ type: "rotur", token: this.roturToken });
+      });
     }
 
     login({ USERNAME, PASSWORD }) {
