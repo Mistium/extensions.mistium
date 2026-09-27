@@ -42,7 +42,8 @@ window.extensionSiteData = {
     "Virtual File System.js": "2",
     "originOSL.js": "2",
     "roturVoice Advanced.js": "2",
-    "xml.js": "2"
+    "xml.js": "2",
+    "Timing.js": "1"
   },
   "metadata": {
     "extensions": [
@@ -330,6 +331,21 @@ window.extensionSiteData = {
         ],
         "featured": true,
         "filename": "Tables.js"
+      },
+      {
+        "slug": "timing",
+        "id": "Timing",
+        "name": "Timing",
+        "description": "Waits with timeouts, named timers and cooldowns",
+        "image": "images/Timing.png",
+        "by": [
+          {
+            "name": "Mistium",
+            "link": "https://github.com/Mistium"
+          }
+        ],
+        "featured": true,
+        "filename": "Timing.js"
       },
       {
         "slug": "virtual file system",

@@ -286,6 +286,21 @@
       "filename": "Tables.js"
     },
     {
+      "slug": "timing",
+      "id": "Timing",
+      "name": "Timing",
+      "description": "Waits with timeouts, named timers and cooldowns",
+      "image": "images/Timing.png",
+      "by": [
+        {
+          "name": "Mistium",
+          "link": "https://github.com/Mistium"
+        }
+      ],
+      "featured": true,
+      "filename": "Timing.js"
+    },
+    {
       "slug": "virtual file system",
       "id": "Virtual File System",
       "name": "Virtual File System",
