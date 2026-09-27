@@ -19,7 +19,7 @@ window.extensionSiteData = {
     "WebsocketPlus.js": "5",
     "roturVoice.js": "2",
     "Async Skins.js": "2",
-    "DiscordBot.js": "2",
+    "DiscordBot.js": "3",
     "Github.js": "2",
     "HTMLInputs.js": "2",
     "Camera.js": "2",

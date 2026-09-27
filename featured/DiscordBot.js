@@ -19,6 +19,18 @@
     limit: (arr, max) => { while (arr.length > max) arr.shift(); }
   };
 
+  // keep a guild's arrays (channels, roles, members...) in step with gateway events
+  function upsert(guild, key, item, match = x => x.id === item.id, merge = false) {
+    if (!item) return;
+    const list = guild[key] || (guild[key] = []);
+    const index = list.findIndex(match);
+    if (index === -1) list.push(item);
+    else list[index] = merge ? { ...list[index], ...item } : item;
+  }
+  function remove(guild, key, id) {
+    if (guild[key]) guild[key] = guild[key].filter(x => x.id !== id);
+  }
+
   class DiscordBot {
     constructor() {
       this.token = null;
@@ -28,9 +40,15 @@
       this.status = "online";
       this.activity = null;
       
+      // Caches are filled and kept current from gateway events so blocks rarely need REST.
       this.messageCache = new Map();
       this.maxCachePerChannel = 100;
+      this.completeChannels = new Set(); // channels whose whole history is in messageCache
       this.guildCache = new Map();
+      this.pendingGuilds = null; // guild IDs from READY still waiting for GUILD_CREATE
+      this.guildWaiters = [];
+      this.dmChannels = new Map(); // user ID -> DM channel ID
+      this.commands = null; // application commands, loaded once
       
       this.conn = {
         isConnecting: false,
@@ -497,7 +515,12 @@
     // ==============================================
     
     setToken({ TOKEN }) {
-      this.token = util.s(TOKEN);
+      const token = util.s(TOKEN);
+      if (token !== this.token) {
+        this.dmChannels.clear();
+        this.commands = null;
+      }
+      this.token = token;
     }
 
     connectToDiscord() {
@@ -535,47 +558,50 @@
       return bot_data ? JSON.stringify(bot_data) : "{}";
     }
 
-    getGuilds() {
-      if (this.guildCache.size > 0) {
-        const guilds = Array.from(this.guildCache.values());
-        return Promise.resolve(JSON.stringify(guilds));
-      }
-      
+    // Resolves once every guild from READY has arrived over the gateway (or after 10s).
+    _guildsLoaded() {
+      if (this.pendingGuilds && this.pendingGuilds.size === 0) return Promise.resolve();
       return new Promise(resolve => {
-        this._apiRequest('/users/@me/guilds')
-          .then(data => {
-            if (Array.isArray(data)) {
-              data.forEach(guild => this._cacheGuild(guild));
-              resolve(JSON.stringify(data));
-            } else {
-              resolve('[]');
-            }
-          })
-          .catch(err => {
-            util.err('Get guilds error:', err);
-            resolve('[]');
-          });
+        const timer = setTimeout(done, 10000);
+        function done() {
+          clearTimeout(timer);
+          resolve();
+        }
+        this.guildWaiters.push(done);
       });
     }
 
-    getGuildInfo({ GUILD_ID }) {
-      const guildId = util.s(GUILD_ID);
-      
-      if (this.guildCache.has(guildId)) {
-        return Promise.resolve(JSON.stringify(this.guildCache.get(guildId)));
+    _usingGateway() {
+      return !!this.client && this.client.readyState !== WebSocket.CLOSED;
+    }
+
+    async getGuilds() {
+      if (this._usingGateway()) {
+        await this._guildsLoaded();
+        return JSON.stringify(Array.from(this.guildCache.values()));
       }
-      
-      return new Promise(resolve => {
-        this._apiRequest(`/guilds/${guildId}`)
-          .then(data => {
-            this._cacheGuild(data);
-            resolve(JSON.stringify(data));
-          })
-          .catch(err => {
-            util.err('Get guild info error:', err);
-            resolve('{"error": "Failed to get guild info"}');
-          });
-      });
+      // offline: REST gives partial guild objects, so they aren't cached
+      try {
+        const data = await this._apiRequest('/users/@me/guilds');
+        return JSON.stringify(Array.isArray(data) ? data : []);
+      } catch (err) {
+        util.err('Get guilds error:', err);
+        return '[]';
+      }
+    }
+
+    async getGuildInfo({ GUILD_ID }) {
+      const guildId = util.s(GUILD_ID);
+      if (!this.guildCache.has(guildId) && this._usingGateway()) await this._guildsLoaded();
+      if (this.guildCache.has(guildId)) return JSON.stringify(this.guildCache.get(guildId));
+      // connected bots get every guild they're in over the gateway, so REST can't help
+      if (this._usingGateway()) return '{"error": "Bot is not in that guild"}';
+      try {
+        return JSON.stringify(await this._apiRequest(`/guilds/${guildId}`));
+      } catch (err) {
+        util.err('Get guild info error:', err);
+        return '{"error": "Failed to get guild info"}';
+      }
     }
 
     _connect(resume = false) {
@@ -704,43 +730,114 @@
     }
 
     _handleEvent(data) {
+      const d = data.d;
+      const guild = d && d.guild_id ? this.guildCache.get(d.guild_id) : null;
       switch (data.t) {
         case 'READY':
-          this.conn.sessionId = data.d.session_id;
-          this.conn.resumeUrl = data.d.resume_gateway_url || null;
-          bot_data = data.d;
+          this.conn.sessionId = d.session_id;
+          this.conn.resumeUrl = d.resume_gateway_url || null;
+          bot_data = d;
           this.conn.isConnecting = false;
           this.conn.attempts = 0;
+          // a new session may have missed events, so start the caches again
+          this.messageCache.clear();
+          this.completeChannels.clear();
+          this.guildCache.clear();
+          this.pendingGuilds = new Set((d.guilds || []).map(g => g.id));
+          this._checkGuildsLoaded();
           break;
         case 'RESUMED':
+          // Discord replays missed events on resume, so the caches stay valid
           this.conn.isConnecting = false;
           this.conn.attempts = 0;
           break;
         case 'GUILD_CREATE':
-          this._cacheGuild(data.d);
+          this._cacheGuild(d);
+          this.pendingGuilds?.delete(d.id);
+          this._checkGuildsLoaded();
           break;
         case 'GUILD_UPDATE':
-          this._cacheGuild(data.d);
+          // GUILD_UPDATE has no channels/members/threads, so merge rather than replace
+          this.guildCache.set(d.id, { ...this.guildCache.get(d.id), ...d });
           break;
         case 'GUILD_DELETE':
-          this.guildCache.delete(data.d.id);
+          if (d.unavailable && this.guildCache.has(d.id)) this.guildCache.get(d.id).unavailable = true;
+          else this.guildCache.delete(d.id);
+          this.pendingGuilds?.delete(d.id);
+          this._checkGuildsLoaded();
+          break;
+        case 'CHANNEL_CREATE':
+        case 'CHANNEL_UPDATE':
+          if (guild) upsert(guild, 'channels', d);
+          break;
+        case 'CHANNEL_DELETE':
+          if (guild) remove(guild, 'channels', d.id);
+          this.messageCache.delete(d.id);
+          this.completeChannels.delete(d.id);
+          break;
+        case 'THREAD_CREATE':
+        case 'THREAD_UPDATE':
+          if (guild) upsert(guild, 'threads', d);
+          break;
+        case 'THREAD_DELETE':
+          if (guild) remove(guild, 'threads', d.id);
+          this.messageCache.delete(d.id);
+          this.completeChannels.delete(d.id);
+          break;
+        case 'GUILD_ROLE_CREATE':
+        case 'GUILD_ROLE_UPDATE':
+          if (guild) upsert(guild, 'roles', d.role);
+          break;
+        case 'GUILD_ROLE_DELETE':
+          if (guild) remove(guild, 'roles', d.role_id);
+          break;
+        case 'GUILD_EMOJIS_UPDATE':
+          if (guild) guild.emojis = d.emojis;
+          break;
+        case 'GUILD_STICKERS_UPDATE':
+          if (guild) guild.stickers = d.stickers;
+          break;
+        case 'GUILD_MEMBER_ADD':
+          if (guild) {
+            upsert(guild, 'members', d, m => m.user?.id === d.user?.id);
+            if (typeof guild.member_count === 'number') guild.member_count++;
+          }
+          break;
+        case 'GUILD_MEMBER_UPDATE':
+          if (guild) upsert(guild, 'members', d, m => m.user?.id === d.user?.id, true);
+          break;
+        case 'GUILD_MEMBER_REMOVE':
+          if (guild) {
+            guild.members = (guild.members || []).filter(m => m.user?.id !== d.user?.id);
+            if (typeof guild.member_count === 'number') guild.member_count--;
+          }
           break;
         case 'MESSAGE_CREATE':
-          this.messages.push(JSON.stringify(data.d));
+          this.messages.push(JSON.stringify(d));
           util.limit(this.messages, 100);
-          this._cacheMessage(data.d);
+          this._cacheMessage(d);
           break;
         case 'MESSAGE_UPDATE':
-          this._updateCachedMessage(data.d);
+          this._updateCachedMessage(d);
           break;
         case 'MESSAGE_DELETE':
-          this._deleteCachedMessage(data.d.channel_id, data.d.id);
+          this._deleteCachedMessage(d.channel_id, d.id);
+          break;
+        case 'MESSAGE_DELETE_BULK':
+          for (const id of d.ids || []) this._deleteCachedMessage(d.channel_id, id);
           break;
         case 'INTERACTION_CREATE':
-          this.interactions.push(JSON.stringify(data.d));
+          this.interactions.push(JSON.stringify(d));
           util.limit(this.interactions, 100);
           break;
       }
+    }
+
+    _checkGuildsLoaded() {
+      if (!this.pendingGuilds || this.pendingGuilds.size > 0) return;
+      const waiters = this.guildWaiters;
+      this.guildWaiters = [];
+      waiters.forEach(resolve => resolve());
     }
 
     _cacheMessage(message) {
@@ -796,11 +893,13 @@
     clearCache({ CHANNEL_ID }) {
       const channelId = util.s(CHANNEL_ID);
       this.messageCache.delete(channelId);
+      this.completeChannels.delete(channelId);
     }
 
+    // guilds are kept: the gateway only sends them again on a new session
     clearAllCache() {
       this.messageCache.clear();
-      this.guildCache.clear();
+      this.completeChannels.clear();
     }
 
     getCacheSize({ CHANNEL_ID }) {
@@ -897,42 +996,46 @@
       });
     }
 
-    getChannelMessages({ AMOUNT, CHANNEL_ID }) {
-      let amount = Math.min(Math.max(parseInt(AMOUNT) || 1, 1), 100);
+    // The cache holds the newest messages with no gaps: live MESSAGE_CREATEs since this
+    // session started, plus any history fetched once. REST is only needed for older messages.
+    async getChannelMessages({ AMOUNT, CHANNEL_ID }) {
+      const amount = Math.min(Math.max(parseInt(AMOUNT) || 1, 1), 100);
       const channelId = util.s(CHANNEL_ID);
-      
-      const cache = this.messageCache.get(channelId);
-      if (cache && cache.length >= amount) {
-        return Promise.resolve(JSON.stringify(cache.slice(0, amount)));
+      const cache = this.messageCache.get(channelId) || [];
+      if (cache.length >= amount || this.completeChannels.has(channelId)) {
+        return JSON.stringify(cache.slice(0, amount));
       }
-      
-      return new Promise(resolve => {
-        this._apiRequest(`/channels/${channelId}/messages?limit=${amount}`)
-          .then(data => {
-            if (Array.isArray(data)) {
-              data.forEach(msg => this._cacheMessage(msg));
-              resolve(JSON.stringify(data));
-            } else {
-              resolve('[]');
-            }
-          })
-          .catch(() => resolve('[]'));
-      });
+      try {
+        const data = await this._apiRequest(`/channels/${channelId}/messages?limit=${amount}`);
+        if (!Array.isArray(data)) return '[]';
+        data.forEach(msg => this._cacheMessage(msg));
+        // fewer than asked for means that's the whole channel
+        if (data.length < amount) this.completeChannels.add(channelId);
+        return JSON.stringify(data);
+      } catch (err) {
+        return '[]';
+      }
     }
 
-    sendDirectMessage({ USER_ID, MESSAGE }) {
-      return this._apiRequest('/users/@me/channels', {
-        method: 'POST',
-        body: { recipient_id: util.s(USER_ID) }
-      })
-      .then(data => {
-        if (!data.id) return Promise.reject('Failed to create DM');
-        return this._apiRequest(`/channels/${data.id}/messages`, {
+    async sendDirectMessage({ USER_ID, MESSAGE }) {
+      const userId = util.s(USER_ID);
+      try {
+        // the DM channel for a user never changes, so only open it once
+        if (!this.dmChannels.has(userId)) {
+          const data = await this._apiRequest('/users/@me/channels', {
+            method: 'POST',
+            body: { recipient_id: userId }
+          });
+          if (!data.id) throw new Error('Failed to create DM');
+          this.dmChannels.set(userId, data.id);
+        }
+        await this._apiRequest(`/channels/${this.dmChannels.get(userId)}/messages`, {
           method: 'POST',
           body: { content: util.s(MESSAGE) }
         });
-      })
-      .catch(err => util.err('DM error:', err));
+      } catch (err) {
+        util.err('DM error:', err);
+      }
     }
 
     deleteMessage({ MESSAGE_ID, CHANNEL_ID }) {
@@ -1008,7 +1111,17 @@
     //                 Commands
     // ==============================================
     
-    registerSlashCommand({ NAME, DESCRIPTION, OPTIONS }) {
+    // Commands only change through these blocks, so fetch them once and keep the list in step.
+    async _loadCommands() {
+      if (!this.commands) {
+        const data = await this._apiRequest(`/applications/${bot_data.application.id}/commands`);
+        if (!Array.isArray(data)) throw new Error('Failed to get commands');
+        this.commands = data;
+      }
+      return this.commands;
+    }
+
+    async registerSlashCommand({ NAME, DESCRIPTION, OPTIONS }) {
       if (!bot_data?.application?.id) return util.err('Not connected');
       
       let options = [];
@@ -1019,52 +1132,51 @@
         options = [];
       }
       
-      return this._apiRequest(`/applications/${bot_data.application.id}/commands`, {
-        method: 'POST',
-        body: {
-          name: util.s(NAME),
-          description: util.s(DESCRIPTION),
-          options: options,
-          contexts: [0, 1, 2],
-          integration_types: [0, 1]
+      try {
+        // POST with an existing name overwrites that command
+        const data = await this._apiRequest(`/applications/${bot_data.application.id}/commands`, {
+          method: 'POST',
+          body: {
+            name: util.s(NAME),
+            description: util.s(DESCRIPTION),
+            options: options,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1]
+          }
+        });
+        if (!data.id) return util.err('Command reg failed:', data);
+        if (this.commands) {
+          this.commands = this.commands.filter(cmd => cmd.name !== data.name);
+          this.commands.push(data);
         }
-      })
-      .then(data => {
-        if (!data.id) util.err('Command reg failed:', data);
-      })
-      .catch(err => util.err('Command reg error:', err));
+      } catch (err) {
+        util.err('Command reg error:', err);
+      }
     }
 
-    deleteSlashCommand({ NAME }) {
+    async deleteSlashCommand({ NAME }) {
       if (!bot_data?.application?.id) return util.err('Not connected');
       NAME = util.s(NAME);
       
-      return this._apiRequest(`/applications/${bot_data.application.id}/commands`)
-        .then(data => {
-          if (!Array.isArray(data)) return Promise.reject('Failed to get cmds');
-          
-          const cmd = data.find(c => c.name === NAME);
-          if (!cmd) return util.err(`Command "${NAME}" not found`);
-          
-          return this._apiRequest(`/applications/${bot_data.application.id}/commands/${cmd.id}`, {
-            method: 'DELETE'
-          });
-        })
-        .catch(err => util.err('Delete cmd error:', err));
+      try {
+        const cmd = (await this._loadCommands()).find(c => c.name === NAME);
+        if (!cmd) return util.err(`Command "${NAME}" not found`);
+        await this._apiRequest(`/applications/${bot_data.application.id}/commands/${cmd.id}`, {
+          method: 'DELETE'
+        });
+        this.commands = this.commands.filter(c => c.id !== cmd.id);
+      } catch (err) {
+        util.err('Delete cmd error:', err);
+      }
     }
 
-    getAllCommands() {
+    async getAllCommands() {
       if (!bot_data?.application?.id) return '[]';
-      
-      return new Promise(resolve => {
-        this._apiRequest(`/applications/${bot_data.application.id}/commands`)
-          .then(data => {
-            if (Array.isArray(data)) {
-              resolve(JSON.stringify(data.map(cmd => `/${cmd.name}`)));
-            } else resolve('[]');
-          })
-          .catch(() => resolve('[]'));
-      });
+      try {
+        return JSON.stringify((await this._loadCommands()).map(cmd => `/${cmd.name}`));
+      } catch (err) {
+        return '[]';
+      }
     }
 
     // ==============================================
