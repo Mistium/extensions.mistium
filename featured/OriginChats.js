@@ -1,7 +1,7 @@
 // Name: OriginChats
 // Author: Mistium
 // Description: Make bots and clients for OriginChats servers, no JSON needed
-// Version: v1
+// Version: v2
 
 // License: MPL-2.0
 // This Source Code is subject to the terms of the Mozilla Public License, v2.0,
@@ -102,6 +102,12 @@
       this.pending = new Map(); // listener -> { resolve, reject, timer }
       this.nextListener = 1;
       this.slashCommands = [];
+      // how to log in again after a dropped connection; cleared by disconnect, kicks and bans
+      this.auth = null;
+      this.autoReconnect = true;
+      this.reconnectTimer = null;
+      this.reconnecting = false;
+      this.reconnectAttempts = 0;
     }
 
     getInfo() {
@@ -124,6 +130,8 @@
           { opcode: "isLoggedIn", blockType: BlockType.BOOLEAN, text: "logged in?" },
           { opcode: "whenLoggedIn", blockType: BlockType.EVENT, text: "when logged in", isEdgeActivated: false },
           { opcode: "whenDisconnected", blockType: BlockType.EVENT, text: "when disconnected", isEdgeActivated: false },
+          { opcode: "setAutoReconnect", blockType: BlockType.COMMAND, text: "turn auto reconnect [STATE]", arguments: { STATE: { type: ArgumentType.STRING, menu: "onOff" } } },
+          { opcode: "isReconnecting", blockType: BlockType.BOOLEAN, text: "reconnecting?" },
           { opcode: "myUsername", blockType: BlockType.REPORTER, text: "my username" },
           { opcode: "serverName", blockType: BlockType.REPORTER, text: "server name" },
           { opcode: "lastError", blockType: BlockType.REPORTER, text: "last error" },
@@ -186,6 +194,7 @@
           channelField: menu(CHANNEL_FIELDS),
           whichUsers: menu(["online", "all"]),
           status: menu(["online", "idle", "dnd", "invisible"]),
+          onOff: menu(["on", "off"]),
         },
       };
     }
@@ -245,8 +254,12 @@
         this.errorText = "Invalid server address";
         return;
       }
-      this.url = url;
       this.errorText = "";
+      return this._open(url);
+    }
+
+    _open(url) {
+      this.url = url;
       return new Promise((resolve) => {
         const socket = new WebSocket(url.href);
         this.socket = socket;
@@ -266,6 +279,7 @@
           this.socket = null;
           this._reset();
           this._startHats("whenDisconnected", {});
+          this._scheduleReconnect();
           resolve();
         };
         socket.onerror = () => {
@@ -275,6 +289,9 @@
     }
 
     disconnect() {
+      this.auth = null;
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
       const socket = this.socket;
       this.socket = null;
       this._reset();
@@ -283,6 +300,39 @@
         socket.close();
         this._startHats("whenDisconnected", {});
       }
+    }
+
+    // Retries with backoff (1s, 2s, 4s ... 30s) and logs in again the same way as before.
+    _scheduleReconnect() {
+      if (!this.auth || !this.autoReconnect || this.reconnectTimer || this.reconnecting) return;
+      const delay = Math.min(30000, 1000 * 2 ** this.reconnectAttempts);
+      this.reconnectTimer = setTimeout(async () => {
+        this.reconnectTimer = null;
+        this.reconnecting = true;
+        this.reconnectAttempts++;
+        await this._open(this.url);
+        if (this.handshake && this.auth) {
+          try {
+            await this._login(this.auth);
+          } catch (error) {
+            this.errorText = error.message;
+            // a rejected login won't start working by retrying
+            if (error.authError) this.auth = null;
+          }
+        }
+        this.reconnecting = false;
+        if (!this.me) {
+          // a half-open socket would never close by itself, so drop it before retrying
+          if (this.socket) {
+            const socket = this.socket;
+            this.socket = null;
+            socket.onclose = null;
+            socket.close();
+            this._reset();
+          }
+          this._scheduleReconnect();
+        }
+      }, delay);
     }
 
     _reset() {
@@ -307,7 +357,9 @@
         this.pending.delete(packet.listener);
         clearTimeout(waiting.timer);
         if (packet.cmd === "error" || packet.cmd === "auth_error" || packet.cmd === "rate_limit") {
-          waiting.reject(new Error(str(packet.val ?? packet.reason ?? packet.cmd)));
+          const error = new Error(str(packet.val ?? packet.reason ?? packet.cmd));
+          error.authError = packet.cmd === "auth_error";
+          waiting.reject(error);
         } else {
           waiting.resolve(packet);
         }
@@ -367,6 +419,11 @@
         case "user_leave":
           this.users.delete(packet.username);
           this.online.delete(packet.username);
+          // we left or were banned: reconnecting would just be refused
+          if (packet.username === this.me?.username) this.auth = null;
+          break;
+        case "user_kick":
+          if ((packet.user?.username ?? packet.user) === this.me?.username) this.auth = null;
           break;
         case "user_update": {
           const username = packet.user?.username ?? packet.user;
@@ -428,8 +485,9 @@
       for (let i = 0; i < 100 && !this.me; i++) await new Promise((r) => setTimeout(r, 20));
     }
 
-    loginRotur({ TOKEN }) {
-      return this._try(async () => {
+    // auth: { type: "rotur", token } | { type: "login" | "register", username, password }
+    async _login(auth) {
+      if (auth.type === "rotur") {
         const key = str(this.handshake?.validator_key);
         // The key names the server it was made for. Refuse to sign in if that isn't the server
         // we connected to, or a server could make us log in to a different one.
@@ -440,21 +498,45 @@
         } catch {}
         if (!keyHost || keyHost !== this.url?.host) throw new Error("Server identity mismatch, not logging in");
         const data = await fetchJSON(
-          `https://api.rotur.dev/generate_validator?auth=${encodeURIComponent(str(TOKEN))}&key=${encodeURIComponent(key)}`
+          `https://api.rotur.dev/generate_validator?auth=${encodeURIComponent(auth.token)}&key=${encodeURIComponent(key)}`
         );
         if (!data?.validator) throw new Error(str(data?.error ?? "Rotur rejected the token"));
         await this._authenticate({ cmd: "auth", validator: data.validator });
-      });
+      } else {
+        const { username, password } = auth;
+        await this._authenticate(
+          auth.type === "register" ? { cmd: "register", username, password, bot: true } : { cmd: "login", username, password }
+        );
+      }
+      // after registering once, later reconnects log in to that account
+      this.auth = auth.type === "register" ? { ...auth, type: "login" } : auth;
+      this.reconnectAttempts = 0;
+    }
+
+    loginRotur({ TOKEN }) {
+      return this._try(() => this._login({ type: "rotur", token: str(TOKEN) }));
     }
 
     login({ USERNAME, PASSWORD }) {
-      return this._try(() => this._authenticate({ cmd: "login", username: str(USERNAME), password: str(PASSWORD) }));
+      return this._try(() => this._login({ type: "login", username: str(USERNAME), password: str(PASSWORD) }));
     }
 
     registerBot({ USERNAME, PASSWORD }) {
-      return this._try(() =>
-        this._authenticate({ cmd: "register", username: str(USERNAME), password: str(PASSWORD), bot: true })
-      );
+      return this._try(() => this._login({ type: "register", username: str(USERNAME), password: str(PASSWORD) }));
+    }
+
+    setAutoReconnect({ STATE }) {
+      this.autoReconnect = str(STATE) !== "off";
+      if (!this.autoReconnect) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      } else if (!this.socket) {
+        this._scheduleReconnect();
+      }
+    }
+
+    isReconnecting() {
+      return !!this.reconnectTimer || this.reconnecting;
     }
 
     isConnected() {

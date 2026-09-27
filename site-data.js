@@ -45,7 +45,7 @@ window.extensionSiteData = {
     "xml.js": "2",
     "Timing.js": "1",
     "Databases.js": "1",
-    "OriginChats.js": "1"
+    "OriginChats.js": "2"
   },
   "metadata": {
     "extensions": [
